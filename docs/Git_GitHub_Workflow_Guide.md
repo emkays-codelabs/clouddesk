@@ -45,7 +45,7 @@ Three long-lived branches. Day-to-day work targets development only. They alread
 - Open every feature pull request into development. Do not open it into testing or main.
 - Do not push commits directly to development, testing, or main.
 - Do not stack a feature branch on another feature branch. If TASKS.md names a predecessor, merge that predecessor first.
-- One sub-task in TASKS.md is one branch, one pull request, and one status change to Completed ✅ after merge.
+- One sub-task in TASKS.md is one branch and one pull request. That same pull request sets the row to Completed ✅ and updates the Progress summary; the task counts as complete when it merges.
 - A merge to main does not mean the cloud environment is deployed. The Honest status in MEMORY.md stays accurate until a real apply has happened.
 
 # 2. Before you start
@@ -254,7 +254,7 @@ git branch -d feature/backend-config-logging
 git fetch --prune
 ```
 
-Set that TASKS.md row to Completed ✅ in a follow-up docs commit on the next branch, or in the same pull request if the tracker update is part of the sub-task. Delete the remote feature branch when GitHub offers it.
+The pull request itself already set that TASKS.md row to Completed ✅ and updated the Progress summary (see "Before requesting review"). Delete the remote feature branch when GitHub offers it.
 
 # 5. Pull requests
 
@@ -296,6 +296,7 @@ Set that TASKS.md row to Completed ✅ in a follow-up docs commit on the next br
 
 - development is merged into the feature branch if it moved during the work (git checkout feature/... ; git merge origin/development).
 - make test passes offline. make lint passes.
+- TASKS.md is updated in this pull request: the task's row is Completed ✅ and the Progress summary (phase count and total) is current.
 - A frontend change also has npm run lint and npm run test -- --run, and the ticket flow was checked in the browser when a server exists.
 - A route or payload change updates docs/API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
 - A schema change adds a new database/migrations/000N\_\<name\>.sql file and updates the model and database/schema.sql. Applied migrations are not edited.
