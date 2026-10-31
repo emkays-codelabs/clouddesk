@@ -527,6 +527,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 13. **One change, one commit, one test.** Each feature maps to a requirement ID in `PLAN.md` and a test.
 14. **Demo before production.** Every stage must still run with `make demo` at the end.
 15. **Say what is not done.** Keep the honest status (section 15.1) current.
+16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges.
 
 ### 18.1 Things that must never happen
 

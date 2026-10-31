@@ -94,9 +94,10 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 - A `viewer` receives 403 on run, reply, and approve.
 - The active phase's demo checkpoint still runs.
 - The diff holds no `.env`, `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or secret.
-- After the PR merges, and not before: set the `TASKS.md` row to `Completed ✅` and update the
-  Progress summary. When a whole phase is finished, update the Build phases table in `PLAN.md` and
-  the Honest status in `MEMORY.md`, saying only what was actually run.
+- Update `TASKS.md` in the same pull request as the task: set the row to `Completed ✅` and update
+  the Progress summary (phase count and total). A task is not done until its PR includes this.
+  Add a line to the Honest status in `MEMORY.md`, saying only what was actually run, and when a
+  whole phase is finished also update the Build phases table in `PLAN.md`.
 
 ## Hard stops
 

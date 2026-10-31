@@ -23,7 +23,7 @@ Work every task the same way:
 3. Write the test first and name the requirement (F1–F14, N1–N8) it proves. Watch it fail.
 4. Implement until the test passes. Keep the layers in `CLAUDE.md` §4.2.
 5. Run the checks for the area (`make test`, `make lint`, and the frontend commands for UI work).
-6. Open a pull request into `development`. After it merges, set the row to Completed ✅ and update the Progress summary. When a whole phase is done, update the Build phases table in `PLAN.md` and the Honest status in `MEMORY.md`.
+6. Open a pull request into `development`. **The same pull request must update this file:** set the task's row to Completed ✅ and update the Progress summary (its phase count and the total). Add a line to the Honest status in `MEMORY.md`, saying only what was run. When a whole phase is done, also update the Build phases table in `PLAN.md`. A task is not done until its pull request includes this; it counts as complete when the pull request merges.
 
 **Order.** A task can start once everything it **Needs** has merged. Tasks in the same wave have no dependency on each other and can run in parallel; each task's **Needs** line is authoritative.
 
@@ -59,7 +59,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Pending ❌ |
+| P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Completed ✅ |
 | P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Pending ❌ |
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Pending ❌ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Pending ❌ |
@@ -729,7 +729,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 4 | 0 |
+| 1 | Runtime skeleton | 4 | 1 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -743,4 +743,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **67** | **0** |
+| **Total** | | **67** | **1** |

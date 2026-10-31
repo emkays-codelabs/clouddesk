@@ -130,6 +130,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 - Contract, backend schema, and `frontend/lib/types.ts` match if the HTTP shape changed.
 - Offline tests for that area pass.
 - The honest status in `MEMORY.md` is still true.
+- The task's row in `TASKS.md` is set to Completed ✅ and its Progress summary updated, in the same pull request.
 
 ---
 

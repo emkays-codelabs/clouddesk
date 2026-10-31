@@ -11,6 +11,7 @@ Durable facts for this repository: what is really done, what has been decided, a
 - The project runs as a service with uvicorn (`[tool.uv] package = false`); there is no installable package and no CLI entry point.
 - Git flow: `feature/<name>` → `development` → `testing` → `main`, by pull request, with no direct pushes (`docs/Git_GitHub_Workflow_Guide.md`).
 - Nothing is pushed to GitHub, and no pull request is opened or closed, until the owner says so (2026-10-31).
+- Updating `TASKS.md` is part of finishing every task (owner's rule, 2026-10-31): the task's pull request sets its row to Completed ✅ and updates the Progress summary, and adds a line to the Honest status below.
 
 ## Honest status
 
@@ -18,14 +19,14 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-31 |
 |---|---|
-| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. There is no application code. |
-| Implemented | P1-1 (cached settings and JSON logging) is implemented on `feature/backend-config-logging`, local only and not merged. Nothing else. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
-| Validated locally | P1-1 only: 29 tests pass offline and `ruff check` is clean on this machine. Not merged, not run on GitHub Actions. |
+| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. Application code so far is P1-1 only (`backend/app/core/config.py` and `logging.py`) with its tests. |
+| Implemented | P1-1 (cached settings and JSON logging). The code is on `development` (pushed directly, without a pull request); its extra tests are in open pull request #3. Nothing else. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
+| Validated locally | P1-1 only: 29 tests pass offline and `ruff check` is clean on this machine. Not run on GitHub Actions. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
-| Phase plan | Phases 1–14 are not started. |
-| GitHub | `main`, `development`, and `testing` exist. `docs/consolidate-planning` (the planning documents) and `feature/phase-1-runtime-skeleton` (rolled back) are pushed. Pull requests #1 and #2 are closed. Nothing else is pushed. |
+| Phase plan | Phase 1 is in progress: P1-1 is complete (1 of 67 tasks). Phases 2–14 are not started. |
+| GitHub | `main`, `development`, and `testing` exist. `development` holds the planning documents and the P1-1 code. The branches `docs/consolidate-planning`, `feature/backend-config-logging` and `feature/phase-1-runtime-skeleton` (rolled back) are also pushed. Pull requests #1 and #2 are closed; #3 is open. |
 
 ## Locked decisions
 
@@ -44,6 +45,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 ## Update protocol
 
 - Record a new locked decision with the date and the requirement id it serves.
-- When a phase exits, set its status in the Build phases table in `PLAN.md` and in `TASKS.md`, and add one line under Honest status.
+- With every task, in the same pull request: set its `TASKS.md` row to Completed ✅, update the Progress summary, and add one line under Honest status.
+- When a phase exits, also set its status in the Build phases table in `PLAN.md`.
 - When a demo ticket’s expected behaviour changes, change `CLAUDE.md` §5 and the matching test together.
 - Leave secrets, tokens, connection strings, and ticket bodies out of this file.
