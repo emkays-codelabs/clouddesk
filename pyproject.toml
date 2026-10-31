@@ -4,44 +4,40 @@ version = "0.1.0"
 description = "CloudDesk: an autonomous customer-support and resolution platform built on FastAPI and LangGraph."
 readme = "README.md"
 authors = [{ name = "Mahesh Kumar", email = "aiwithemkay@gmail.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 keywords = ["ai", "agents", "rag", "langgraph", "fastapi"]
+# Phase 1 only. Each later phase adds the packages it introduces (see PLAN_PHASE.md).
 dependencies = [
-    "chromadb>=1.5.9",
-    "fastapi>=0.162.0",
-    "langchain>=1.4.7",
-    "langchain-openai>=1.7.3",
-    "langgraph>=1.2.19",
-    "openai>=3.42.0",
-    "pydantic>=2.14.2",
-    "python-dotenv>=1.2.4",
-    "streamlit>=1.65.0",
-    "uvicorn>=0.54.0",
+    "fastapi>=0.115",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.7",
+    "uvicorn[standard]>=0.30",
 ]
-
-[project.scripts]
-clouddesk = "main:main"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-# main.py is a top-level module, not a package, so hatchling needs it listed explicitly.
-[tool.hatch.build.targets.wheel]
-include = ["main.py"]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.27",
     "pytest>=8.0",
+    "pytest-asyncio>=0.24",
     "ruff>=0.6",
 ]
 
+# A service run with uvicorn, not a library: nothing to build or install.
+[tool.uv]
+package = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# backend/ holds the `app` package; the repo root holds agents/, rag/, memory/ (later phases).
+pythonpath = ["backend", "."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
+src = ["backend", "."]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
