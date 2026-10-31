@@ -60,7 +60,7 @@ The longest dependency chain is 16 tasks long.
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Completed ✅ |
-| P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Pending ❌ |
+| P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Completed ✅ |
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Pending ❌ |
 
@@ -75,7 +75,7 @@ The longest dependency chain is 16 tasks long.
 **P1-2 · Health routes and request-id middleware**
 - **Needs:** `P1-1`, `P1-3`
 - **Build:** `GET /health`, `GET /health/live` (no I/O), `GET /health/ready` (configuration probes, 503 when degraded), and `RequestIdMiddleware` that echoes a safe `X-Request-ID` (1–128 chars of `A-Za-z0-9._:-`) or issues a UUID. CORS is outermost and exposes the header.
-- **Files:** `backend/app/main.py`, `api/health.py`, `schemas/health.py`, `core/readiness.py`, `middleware/request_id.py`, `tests/api/test_health.py`
+- **Files:** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/readiness.py`, `backend/app/middleware/request_id.py` (plus the `__init__.py` files), `tests/api/test_health.py`
 - **Done when:** Every response, including 404 and 500, carries `X-Request-ID`; `/health` and `/health/live` call no dependency; `/health/ready` returns 503 when a check fails and never shows a URL, password, or key.
 
 **P1-3 · Offline pytest harness**
@@ -729,7 +729,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 4 | 2 |
+| 1 | Runtime skeleton | 4 | 3 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -743,4 +743,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **67** | **2** |
+| **Total** | | **67** | **3** |

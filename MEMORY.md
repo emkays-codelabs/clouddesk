@@ -19,14 +19,14 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-31 |
 |---|---|
-| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. Application code so far is P1-1 only (`backend/app/core/config.py` and `logging.py`). Tests: P1-1's, plus the offline harness (`tests/conftest.py`, P1-3). |
-| Implemented | P1-1 (cached settings and JSON logging) is on `development` (code pushed directly; tests and the tracker rule merged through pull requests #3 and #4). P1-3 (the offline test harness) is implemented on `feature/test-harness-offline`, local only and not yet merged. Nothing else. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
-| Validated locally | P1-1 and P1-3: 53 tests pass offline and `ruff check` is clean on this machine; ten deliberate breaks of the harness are each caught. P1-3 is not merged. Not run on GitHub Actions. |
+| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. Application code so far is P1-1 and P1-2 (`backend/app/`: settings, JSON logging, health routes, request-id middleware, readiness checks, and the app factory). Tests: P1-1's, the offline harness (`tests/conftest.py`, P1-3) and `tests/api/test_health.py`. |
+| Implemented | P1-1 (cached settings and JSON logging) and P1-3 (the offline test harness, PR #5) are on `development`. P1-2 (`/health`, `/health/live`, `/health/ready`, `X-Request-ID` middleware, CORS, the app factory) is implemented on `feature/backend-health-request-id`, not yet merged. Nothing else. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
+| Validated locally | P1-1, P1-2 and P1-3: 81 tests pass offline and `ruff check` is clean on this machine. Ten deliberate breaks of the harness and twelve of P1-2 are each caught. The app was booted with `uvicorn` and probed with `curl`: all three health routes, echoed and replaced request ids, 404, CORS, and JSON access logs carrying the id. P1-2 is not merged. Not run on GitHub Actions. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
-| Phase plan | Phase 1 is in progress: P1-1 and P1-3 are marked complete (2 of 67 tasks; P1-3 counts once its pull request merges). Phases 2–14 are not started. |
-| GitHub | `main`, `development`, and `testing` exist. `development` holds the planning documents and the P1-1 code. `feature/phase-1-runtime-skeleton` (the rolled-back attempt, 3 commits found nowhere else) is also still pushed; the merged `docs/consolidate-planning` and `feature/backend-config-logging` branches were deleted. Pull requests #3 and #4 are merged; #1 and #2 are closed. |
+| Phase plan | Phase 1 is in progress: P1-1, P1-2 and P1-3 are marked complete (3 of 67 tasks; P1-2 counts once its pull request merges). P1-4 (Makefile and `.env.example`) is not started. Phases 2–14 are not started. |
+| GitHub | `main`, `development`, and `testing` exist. `development` holds the planning documents and the P1-1 code. `feature/phase-1-runtime-skeleton` (the rolled-back attempt, 3 commits found nowhere else) is also still pushed; the merged `docs/consolidate-planning` and `feature/backend-config-logging` branches were deleted. Pull requests #3, #4 and #5 are merged; #1 and #2 are closed. |
 
 ## Locked decisions
 
