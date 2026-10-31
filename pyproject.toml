@@ -1,11 +1,11 @@
 [project]
 name = "clouddesk"
 version = "0.1.0"
-description = "CloudDesk: an AI-powered support desk built with FastAPI, LangGraph, and ChromaDB."
+description = "CloudDesk: an autonomous customer-support and resolution platform built on FastAPI and LangGraph."
 readme = "README.md"
 authors = [{ name = "Mahesh Kumar", email = "aiwithemkay@gmail.com" }]
 requires-python = ">=3.10"
-keywords = ["ai", "rag", "langgraph", "fastapi", "streamlit"]
+keywords = ["ai", "agents", "rag", "langgraph", "fastapi"]
 dependencies = [
     "chromadb>=1.5.9",
     "fastapi>=0.162.0",

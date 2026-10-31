@@ -40,3 +40,17 @@ secrets.json
 chroma_db/
 chroma.sqlite3
 *.log
+
+# --- Local Databases and Runtime Data (demo SQLite, LangGraph checkpoints) ---
+data/
+*.db
+*.sqlite3
+
+# --- Terraform (state, plans, and real variable files never get committed) ---
+.terraform/
+*.tfstate
+*.tfstate.*
+tfplan
+*.tfplan
+terraform.tfvars
+backend.hcl

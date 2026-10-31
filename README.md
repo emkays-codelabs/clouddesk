@@ -1,41 +1,85 @@
 # CloudDesk
 
-> An AI-powered support desk built with FastAPI, LangGraph, ChromaDB, and Streamlit.
+> An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
+> investigates it and proposes a resolution, and a human approves anything that costs money or
+> touches an account.
 
-**Status**: In Development (project scaffold) | **Version**: 0.1.0
+**Status**: In Development - phase 1 of 13 (runtime skeleton) | **Version**: 0.1.0
 
 ---
 
 ## Overview
 
-CloudDesk is the next project in this portfolio. At this stage the repository holds the
-project scaffold only: a reproducible Python environment, pinned dependencies, build and
-lint/test configuration, and a CLI entry point. Application features have not been built yet.
+CloudDesk is a support-resolution platform for a fictional SaaS company (team collaboration, cloud
+file storage, billing, workspaces, API access). It is used by **support agents**, not by customers
+directly.
 
-This README will be expanded with architecture, features, and test results as the
-implementation lands.
+Every ticket goes through one pipeline:
 
-## Technology Stack
+```text
+Understand -> Classify -> Investigate -> Retrieve -> Troubleshoot -> Decide -> Resolve -> Act -> Escalate -> Remember
+```
 
-| Area | Choice |
+The design rests on one rule: **policy is decided by rules, judgement is added by the model.**
+Cases such as payment disputes, account deletion, security incidents, and data loss are escalated by
+deterministic, tested rules and are never left to the model's probabilities. Anything involving a
+refund or an account change waits for recorded human approval.
+
+## Planned Architecture
+
+| Layer | Choice |
 |---|---|
-| Language | Python 3.12 |
-| API backend | FastAPI, Uvicorn, Pydantic |
-| Agent orchestration | LangGraph, LangChain (`langchain-openai`) |
-| Vector store | ChromaDB |
-| UI | Streamlit |
-| Configuration | `python-dotenv` |
-| Packaging | [uv](https://docs.astral.sh/uv/), Hatchling build backend |
-| Dev tooling | pytest, Ruff |
+| Frontend | Next.js 15 (App Router), TypeScript, Tailwind |
+| Backend | FastAPI, Pydantic v2, async SQLAlchemy 2 |
+| Orchestration | LangGraph workflow coordinating six specialist agents |
+| Retrieval | Hybrid semantic + keyword search with reranking, cited evidence |
+| Data | PostgreSQL (SQLite for the demo), Redis (fakeredis offline), Qdrant (in-memory offline) |
+| Safety | Prompt-injection defence, output validation, role-based access, audit log |
+| Delivery | Docker, Terraform for AWS / Azure / GCP, GitHub Actions |
+
+The six agents are the Support Supervisor, Customer, Knowledge, Troubleshooting, Resolution, and
+Escalation agents.
+
+The whole stack is designed to run **offline** with a fake LLM provider, so tests and the demo
+need no API key.
+
+## Current State
+
+Nothing user-facing exists yet. What is in the repository today:
+
+- a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/)
+- pinned dependencies and a locked `uv.lock`
+- build, lint (Ruff), and test (pytest) configuration
+- a `clouddesk` command-line entry point that currently prints a greeting
+
+Not yet built: the API, database, knowledge pipeline, agents, workflow, approval flow, memory,
+and console. No cloud resources have been created and nothing is deployed.
+
+## Build Plan
+
+| Phase | Name | Status |
+|---|---|---|
+| 1 | Runtime skeleton | in progress |
+| 2 | Persistence and demo data | not started |
+| 3 | Identity and request guards | not started |
+| 4 | Support API | not started |
+| 5 | Knowledge pipeline | not started |
+| 6 | Tools and policy | not started |
+| 7 | Rules and guardrails | not started |
+| 8 | Specialist agents | not started |
+| 9 | Workflow graph and trace | not started |
+| 10 | Approval and escalation | not started |
+| 11 | Memory | not started |
+| 12 | Agent console | not started |
+| 13 | Evaluation and delivery | not started |
 
 ## Getting Started
 
-Requires [uv](https://docs.astral.sh/uv/) and Python 3.12 (uv installs it if missing).
+Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 
 ```bash
-cd 05_CloudDesk
 uv sync                 # create .venv and install locked dependencies
-uv run clouddesk        # run the CLI entry point (currently prints a greeting)
+uv run clouddesk        # run the CLI entry point
 ```
 
 Activate the environment instead of prefixing commands with `uv run`:
@@ -48,10 +92,7 @@ Activate the environment instead of prefixing commands with `uv run`:
 source .venv/bin/activate
 ```
 
-### Configuration
-
-`langchain-openai` reads `OPENAI_API_KEY` from the environment. Put it in a local `.env`
-file, which is git-ignored. Never commit real keys.
+Secrets belong in a local `.env` file, which is git-ignored. Never commit real keys.
 
 ## Development
 
@@ -59,26 +100,6 @@ file, which is git-ignored. Never commit real keys.
 uv run ruff check .     # lint
 uv run pytest           # tests (none written yet)
 ```
-
-## Project Structure
-
-```
-05_CloudDesk/
-├── main.py             # CLI entry point (clouddesk = "main:main")
-├── pyproject.toml      # metadata, dependencies, build and tool config
-├── uv.lock             # locked dependency versions
-├── .python-version     # pinned interpreter (3.12)
-└── .gitignore
-```
-
-## Roadmap
-
-- [ ] Define the problem statement and architecture
-- [ ] Backend API (FastAPI)
-- [ ] Agent workflow (LangGraph) with retrieval over ChromaDB
-- [ ] Streamlit UI
-- [ ] Automated tests and evaluation
-- [ ] Deployment
 
 ## Author
 
