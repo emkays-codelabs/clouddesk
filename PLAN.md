@@ -72,7 +72,7 @@ Pytest uses `asyncio_mode = "auto"` and `loop_scope = "session"`. Do not add `@p
 
 ## Build phases
 
-`TASKS.md` holds the sub-tasks, branches, dependencies, and merge order. Exit criteria for each phase are at the end of this file. Phases 4, 5, 6, and 7 can start together once Phase 2 (and Phase 3, for Phase 4) has merged.
+`TASKS.md` holds the sub-tasks, branches, dependencies, and merge order. Exit criteria for each phase are at the end of this file. Phases 4, 5, 6, and 7 can start together once Phase 2 has merged. Phase 4 also waits for P3-1, Phase 5 for P3-3 (and P3-1 for P5-4), and P6-2 for P5-3.
 
 | Phase | Name | Status |
 |---|---|---|
@@ -111,7 +111,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 - Viewer tokens receive 403 on run, reply, and approve.
 - `docker compose config -q` succeeds.
 - The honest status in `MEMORY.md` still says cloud apply and GitHub execution have not happened, until they have.
-- `README.md` matches §14 commands once that file exists.
+- `README.md` matches the §14 commands.
 
 ## Risks to watch while building
 
@@ -129,7 +129,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 - The layer rules in `CLAUDE.md` §4.2 hold.
 - Contract, backend schema, and `frontend/lib/types.ts` match if the HTTP shape changed.
 - Offline tests for that area pass.
-- The honest-status table is still true.
+- The honest status in `MEMORY.md` is still true.
 
 ---
 
@@ -145,7 +145,7 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Requirements.** F14 (settings hook), N3.
 
-**Files.** `backend/app/main.py`, `backend/app/core/` (`config`, `logging`, `database` stubs), `backend/app/middleware/`, `.env.example`, `pyproject.toml`, `Makefile`, `tests/conftest.py`, `tests/api/test_health.py`.
+**Files.** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/` (`config`, `logging`, `readiness`), `backend/app/middleware/request_id.py`, `.env.example`, `pyproject.toml`, `Makefile`, `tests/conftest.py`, `tests/api/test_health.py`, `tests/unit/`.
 
 **Tests.** `/health` and `/health/live` respond without I/O. Every response carries `X-Request-ID`. Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment. The test harness sets the offline env vars before importing the app.
 
@@ -161,7 +161,7 @@ Tasks: `TASKS.md`, Phase 2.
 
 **Requirements.** Data model in `CLAUDE.md` §6. Supports F1 and F4.
 
-**Files.** `backend/app/models/entities.py`, `backend/app/repositories/`, `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/`, `sample_data/*.json`, `sample_data/knowledge_base/*.md`, seed bootstrap in the lifespan.
+**Files.** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `backend/app/services/seed_service.py`, `backend/app/repositories/`, `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/`, `sample_data/*.json`, `sample_data/knowledge_base/*.md`, seed bootstrap in the lifespan.
 
 **Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows.
 
@@ -193,9 +193,9 @@ Tasks: `TASKS.md`, Phase 4.
 
 **Requirements.** F1, F4 (read side), contract rule in §12.
 
-**Files.** `backend/app/api/` ticket and customer routers, `backend/app/schemas/`, `backend/app/services/`, `docs/API_CONTRACT.md`, `tests/api/` ticket tests.
+**Files.** `backend/app/api/` ticket, customer, ticket-action, dashboard, audit, and settings routers, `backend/app/schemas/`, `backend/app/services/`, `docs/API_CONTRACT.md`, `tests/api/`.
 
-**Tests.** `POST /api/v1/tickets` accepts email, chat, web, and API channels. List, get, and 404 behave as the contract says. Customer, subscription, workspace, and previous tickets load for a known demo customer. Duplicate run-while-waiting is specified now and enforced in Phase 11.
+**Tests.** `POST /api/v1/tickets` accepts email, chat, web, and API channels. List, get, and 404 behave as the contract says. Customer, subscription, workspace, and previous tickets load for a known demo customer. Ticket actions (`reply`, `request-info`, `escalate`, `PATCH`) follow the contract and return 403 for a viewer. `GET /dashboard/summary`, `GET /audit`, and `GET /settings` match the contract, and `/settings` never returns a key. Duplicate run-while-waiting is specified now and enforced in Phase 11.
 
 **Demo checkpoint.** `make seed` then an API call creates a ticket and fetches `CD-1001` through `CD-1013`.
 
@@ -225,9 +225,9 @@ Tasks: `TASKS.md`, Phase 6.
 
 **Requirements.** F9 (policy half).
 
-**Files.** `backend/app/tools/` (`policy.py`, registry, tool functions), `integrations/protocols.py`, `integrations/mock/services.py`, `integrations/factory.py`.
+**Files.** `backend/app/tools/` (`policy.py`, registry, tool functions), `integrations/protocols.py`, `integrations/mock/services.py`, `integrations/factory.py`, `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`.
 
-**Tests.** `tests/unit/` tool policy: reads need no approval; `update_ticket` needs none; `reset_demo_setting` and `create_refund_request` need approval; unknown tools need approval; a tool exception returns `ToolResult(ok=False)`; timeout uses `TOOL_TIMEOUT_SECONDS`.
+**Tests.** `tests/unit/` tool policy: reads need no approval; `update_ticket` needs none; `reset_demo_setting` and `create_refund_request` need approval; unknown tools need approval; a tool exception returns `ToolResult(ok=False)`; timeout uses `TOOL_TIMEOUT_SECONDS`. `search_docs` needs the retriever (Phase 5) and `check_service_status` needs the incident data (Phase 2). `GET /mcp/tools` lists `name`, `description`, and `requires_approval`, and exposes no write tool.
 
 **Demo checkpoint.** A direct registry call to `create_refund_request` without `approved=True` does not write a refund.
 
@@ -241,7 +241,7 @@ Tasks: `TASKS.md`, Phase 7.
 
 **Requirements.** F3 (rules), F10 (rule table), N4, N5, N7 (scrub function).
 
-**Files.** `agents/rules.py`, `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/` guardrails (`scan_for_injection`, `validate_customer_output`, `scrub`).
+**Files.** `agents/rules.py`, `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`), `backend/app/core/output_validation.py` (`validate_customer_output`), `backend/app/core/scrub.py` (`scrub`).
 
 **Tests.** Category and severity rules. Severity never lowers a model score. Escalation rules match dispute, deletion, security, data loss, legal, and enterprise outage, each with a named team. `CD-1013` is flagged and wrapped as data. Output validation rejects internal URLs, secrets, and another customer’s data, and that failure is defined as risk `high`. `scrub` removes card numbers, API keys, and passwords.
 
@@ -253,15 +253,15 @@ Tasks: `TASKS.md`, Phase 7.
 
 Tasks: `TASKS.md`, Phase 8.
 
-**Goal.** Every completed run recalls prior notes and writes scrubbed, de-duplicated memory.
+**Goal.** A memory service that recalls prior notes and records scrubbed, de-duplicated ones, ready for the graph nodes in Phase 10 to call.
 
 **Requirements.** F4 (notes), F11 (write), N7.
 
-**Files.** `memory/short_term.py`, `memory/long_term.py`, `memory/memory_service.py`, `customer_context` recall, `memory_update` node.
+**Files.** `memory/short_term.py`, `memory/long_term.py`, `memory/memory_service.py`. The graph nodes that call the service (`customer_context` recall and `memory_update`) are built in Phase 10.
 
-**Tests.** Recall returns at most 10 notes. A completed run writes a past issue, the first three troubleshooting steps, and a resolution note. Exact duplicates are skipped. Card numbers, API keys, passwords, and raw ticket bodies are absent from `customer_memory`. Retrieval cache keys match `rag:{mode}:{category}:{top_k}:{query}` and expire in 300 seconds. Short-term TTL is 24 hours. Tests use fakeredis.
+**Tests.** Recall returns at most 10 notes. `record_resolution` writes a past issue, the first three troubleshooting steps, and a resolution note. Exact duplicates are skipped. Card numbers, API keys, passwords, and raw ticket bodies are absent from `customer_memory`. Retrieval cache keys match `rag:{mode}:{category}:{top_k}:{query}` and expire in 300 seconds. Short-term TTL is 24 hours. Tests use fakeredis.
 
-**Demo checkpoint.** Running `CD-1002` through approval twice does not duplicate the resolution note.
+**Demo checkpoint.** Calling `record_resolution` twice with the same resolution leaves one resolution note. The end-to-end version, running `CD-1002` through approval twice, is the Phase 11 demo checkpoint.
 
 **Exit.** Memory facades are the only writers of `customer_memory`. Notes never include another customer’s data.
 
@@ -289,9 +289,9 @@ Tasks: `TASKS.md`, Phase 10.
 
 **Requirements.** F11 (summary node), F13, graph shape in §7.3.
 
-**Files.** `agents/state.py`, `agents/graph.py`, `agents/checkpointer.py`, `agents/nodes/`, workflow service (`create_run`, `start_workflow`), `GET /tickets/{id}/workflow`, `GET /tickets/{id}/events`.
+**Files.** `agents/state.py`, `agents/graph.py`, `agents/checkpointer.py`, `agents/nodes/`, workflow service (`create_run`, `start_workflow`), `GET /tickets/{id}/workflow`, `GET /tickets/{id}/events`, `GET /agents`, and the `customer_context` and `memory_update` nodes that call the memory service.
 
-**Tests.** `tests/workflow/` graph shape, routing, and risk levels. A low-risk ticket completes `execute_resolution` → `ticket_summary` → `memory_update` → END. Events include node start/complete, tool, and llm records with duration. Reducers append `errors` and `completed_nodes`. Checkpointer uses `:memory:` under pytest.
+**Tests.** `tests/workflow/` graph shape, routing, and risk levels. A low-risk ticket completes `execute_resolution` → `ticket_summary` → `memory_update` → END. Events include node start/complete, tool, and llm records with duration. Reducers append `errors` and `completed_nodes`. Checkpointer uses `:memory:` under pytest. `GET /agents` matches the contract. A ticket that is not low risk executes no action until Phase 11 adds the approval and escalation branches.
 
 **Demo checkpoint.** `POST /tickets/{id}/run` on a low-risk ticket returns 202, and polling `/workflow` reaches the end.
 
@@ -305,11 +305,11 @@ Tasks: `TASKS.md`, Phase 11.
 
 **Requirements.** F9, F10, N4 on the live path. 409 behaviour in §10.
 
-**Files.** `human_approval` node, `approval_service.decide`, approval routes, `EscalationAgent`, `execute_resolution`, ticket status transitions.
+**Files.** `human_approval` node, `approval_service.decide`, approval routes, the escalations API, `EscalationAgent`, the approved path of `execute_resolution`, ticket status transitions.
 
 **Tests.** `CD-1002` pauses with `waiting_on_approval` and an `approval_requests` row; approve resumes and runs the refund tool once; reject routes to escalation. A second run during the pause returns 409. Resume of a run that is not paused returns 409. `CD-1005`, `CD-1006`, `CD-1009`, and `CD-1011` escalate without an approval wait. `CD-1013` does not take an export action. Risk is `high` for approval-required plans, policy escalation, critical severity, injection, and failed output validation.
 
-**Demo checkpoint.** `make demo` pauses on `CD-1002`. `make demo TICKET=CD-1005` escalates.
+**Demo checkpoint.** `make demo` pauses on `CD-1002`. `make demo TICKET=CD-1005` escalates. Running `CD-1002` through approval twice does not duplicate the resolution note.
 
 **Exit.** Code before `interrupt()` is idempotent. The approved path and the automatic path share `ToolRegistry.execute`. A viewer token receives 403 on run, approve, and reject.
 

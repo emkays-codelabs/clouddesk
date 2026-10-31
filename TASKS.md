@@ -27,17 +27,19 @@ Work every task the same way:
 
 **Order.** A task can start once everything it **Needs** has merged. Tasks in the same wave have no dependency on each other and can run in parallel; each task's **Needs** line is authoritative.
 
+**Expected small conflicts.** Most tasks add packages, so `pyproject.toml` and `uv.lock` will conflict when branches overlap: rebase, then run `uv lock`. Every API task registers a router in `main.py`, and several tasks add a `Makefile` target. Resolve these by keeping both sides.
+
 | Wave | Tasks that can start |
 |---|---|
 | 1 | `P1-1` |
 | 2 | `P1-3`, `P1-4`, `P2-1` |
 | 3 | `P1-2`, `P2-2`, `P2-3`, `P4-1`, `P7-1`, `P7-2`, `P7-3`, `P7-4` |
 | 4 | `P2-4`, `P3-1`, `P3-3`, `P6-1`, `P6-4`, `P8-2`, `P12-1`, `P12-2` |
-| 5 | `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P5-1`, `P6-2`, `P6-3`, `P8-1` |
-| 6 | `P4-4`, `P4-5`, `P5-2`, `P6-5`, `P8-3`, `P12-3` |
+| 5 | `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P5-1`, `P6-3`, `P8-1` |
+| 6 | `P4-4`, `P4-5`, `P5-2`, `P8-3`, `P12-3` |
 | 7 | `P5-3`, `P12-4` |
-| 8 | `P5-4` |
-| 9 | `P9-1` |
+| 8 | `P5-4`, `P6-2` |
+| 9 | `P6-5`, `P9-1` |
 | 10 | `P9-2`, `P9-3`, `P9-4`, `P9-5`, `P9-6`, `P9-7`, `P9-8`, `P10-1` |
 | 11 | `P10-2`, `P10-3`, `P10-4`, `P10-6` |
 | 12 | `P10-5` |
@@ -260,7 +262,7 @@ The longest dependency chain is 16 tasks long.
 
 ## Phase 6 — Tools and mocks
 
-> Depends on: P2-3. Parallel with: Phases 4, 5, 7, and 12.
+> Depends on: P2-3. P6-2 also needs P5-3 (`search_docs` calls the retriever) and P2-4 (`check_service_status` reads the incident data). Parallel with: Phases 4, 5, 7, and 12.
 > Merge order: P6-1 and P6-4 in parallel. P6-2 and P6-3 in parallel after both. P6-5 after P6-2.
 
 | Task | Covers | Branch | Status |
@@ -280,7 +282,7 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** Reads and `update_ticket` need no approval; `reset_demo_setting` and `create_refund_request` do; unknown tools do; a raising tool returns `ok=False`; a slow tool times out.
 
 **P6-2 · Read-only support tools**
-- **Needs:** `P6-1`, `P6-4`
+- **Needs:** `P6-1`, `P6-4`, `P5-3`, `P2-4`
 - **Build:** The read-only tools: `get_customer`, `get_subscription`, `get_ticket_history`, `search_docs`, `check_service_status`. Each is an async `@tool` whose docstring is its description.
 - **Files:** `backend/app/tools/read_tools.py`, `tests/unit/test_read_tools.py`
 - **Done when:** Every tool runs only through the registry and returns the documented shape; none writes.
@@ -328,19 +330,19 @@ The longest dependency chain is 16 tasks long.
 **P7-2 · Injection wrapping and security preamble**
 - **Needs:** `P2-1`
 - **Build:** Prompt-injection defence: `SECURITY_PREAMBLE`, `wrap_untrusted`, and `scan_for_injection`.
-- **Files:** `agents/prompts.py`, `backend/app/core/guardrails.py`, `tests/unit/test_injection.py`
+- **Files:** `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`), `tests/unit/test_injection.py`
 - **Done when:** `CD-1013` is flagged and its text is wrapped as data, never as instruction (N4).
 
 **P7-3 · Customer output validation**
 - **Needs:** `P2-1`
 - **Build:** `validate_customer_output`, which blocks internal URLs, secrets, and another customer's data; a failure raises risk to `high`.
-- **Files:** `backend/app/core/guardrails.py`, `tests/unit/test_output_validation.py`
+- **Files:** `backend/app/core/output_validation.py`, `tests/unit/test_output_validation.py`
 - **Done when:** Each blocked pattern is rejected and the failure is reported as high risk (N5).
 
 **P7-4 · Secret scrub**
 - **Needs:** `P2-1`
 - **Build:** `scrub()` and `SECRET_PATTERNS` for card numbers, API keys, and passwords.
-- **Files:** `backend/app/core/guardrails.py`, `tests/unit/test_scrub.py`
+- **Files:** `backend/app/core/scrub.py`, `tests/unit/test_scrub.py`
 - **Done when:** Card, key, and password fixtures are removed; clean text is unchanged (N7).
 
 ---
@@ -472,31 +474,31 @@ The longest dependency chain is 16 tasks long.
 **P10-2 · Supervisor graph nodes**
 - **Needs:** `P10-1`, `P9-2`
 - **Build:** Graph nodes for the supervisor: `understand_ticket`, `classify_severity`, `ticket_summary`, each in the standard node shape with tracer start and finish.
-- **Files:** `agents/nodes/`, `tests/workflow/test_nodes_supervisor.py`
+- **Files:** `agents/nodes/supervisor.py`, `tests/workflow/test_nodes_supervisor.py`
 - **Done when:** Each node returns a partial state dict with its id in `completed_nodes`.
 
 **P10-3 · Investigate graph nodes**
 - **Needs:** `P10-1`, `P9-3`, `P9-4`, `P9-5`
 - **Build:** Graph nodes that investigate: `customer_context`, `knowledge_retrieval`, `troubleshooting`.
-- **Files:** `agents/nodes/`, `tests/workflow/test_nodes_investigate.py`
+- **Files:** `agents/nodes/investigate.py`, `tests/workflow/test_nodes_investigate.py`
 - **Done when:** Each node records its tool calls and model usage and returns a partial state dict.
 
 **P10-4 · Resolution and risk nodes**
 - **Needs:** `P10-1`, `P9-6`, `P9-7`
-- **Build:** Graph nodes for the decision: `resolution_planning`, `risk_check` (`assess_risk()` returns `high` for approval-required plans, policy escalation, critical severity, injection, or failed output validation), and `memory_update`.
-- **Files:** `agents/nodes/`, `tests/workflow/test_risk.py`
-- **Done when:** Risk is `high` in each listed case and `low` for `CD-1010`.
+- **Build:** Graph nodes for the decision: `resolution_planning`, `risk_check` (`assess_risk()` returns `high` for approval-required plans, policy escalation, critical severity, injection, or failed output validation), `execute_resolution` (runs the planned actions that need no approval through `ToolRegistry.execute`), and `memory_update`.
+- **Files:** `agents/nodes/decision.py`, `tests/workflow/test_risk.py`, `tests/workflow/test_execute_resolution.py`
+- **Done when:** Risk is `high` in each listed case and `low` for `CD-1010`; a low-risk plan's actions run through the registry and nothing that needs approval runs.
 
 **P10-5 · Graph wiring and run API**
 - **Needs:** `P10-2`, `P10-3`, `P10-4`
-- **Build:** Wire the graph and the run API: `agents/graph.py` (with `GRAPH_NODES` and `GRAPH_EDGES`), `workflow_service`, `POST /tickets/{id}/run` (202, and 409 while `waiting_on_approval`), and `GET /tickets/{id}/workflow`. State is saved after every node.
-- **Files:** `agents/graph.py`, `backend/app/services/workflow_service.py`, `backend/app/api/tickets.py`, `tests/workflow/test_graph.py`
-- **Done when:** A low-risk ticket runs to END; polling `/workflow` reaches `completed`; graph shape and routing are tested.
+- **Build:** Wire the graph and the run API: `agents/graph.py` (with `GRAPH_NODES` and `GRAPH_EDGES`), `workflow_service`, `POST /tickets/{id}/run` (202) and `GET /tickets/{id}/workflow`. State is saved after every node. The approval and escalation branches are named edges to nodes that P11-1 and P11-3 add; until then a ticket that is not low risk ends the run as `failed` with an error and executes nothing.
+- **Files:** `agents/graph.py`, `backend/app/services/workflow_service.py`, `backend/app/api/workflow.py`, `tests/workflow/test_graph.py`
+- **Done when:** A low-risk ticket runs to END; polling `/workflow` reaches `completed`; a ticket that is not low risk executes no action; graph shape and routing are tested.
 
 **P10-6 · Workflow tracer and events API**
 - **Needs:** `P10-1`
 - **Build:** `WorkflowTracer` writing `workflow_events` and never raising (`node_started`, `node_completed`, `tool_called`, `llm_called`, `approval_requested`, `approval_resolved`, `error`, `workflow_completed`) and `GET /tickets/{id}/events`.
-- **Files:** `backend/app/core/observability.py`, `backend/app/api/tickets.py`, `tests/workflow/test_trace.py`
+- **Files:** `backend/app/core/observability.py`, `backend/app/api/events.py`, `tests/workflow/test_trace.py`
 - **Done when:** Events include duration, tokens, and cost; a failing tracer does not fail the run; raw prompts are never stored (F13).
 
 **P10-7 · Agents overview API (`GET /agents`)**
@@ -525,9 +527,9 @@ The longest dependency chain is 16 tasks long.
 
 **P11-1 · Human approval interrupt**
 - **Needs:** `P10-5`, `P6-3`
-- **Build:** The `human_approval` node calls `interrupt()`; the service writes `approval_requests` and sets the ticket to `waiting_on_approval`. Code before `interrupt()` is idempotent.
+- **Build:** The `human_approval` node calls `interrupt()`; the service writes `approval_requests` and sets the ticket to `waiting_on_approval`. `POST /tickets/{id}/run` returns 409 while the ticket is `waiting_on_approval`. Code before `interrupt()` is idempotent.
 - **Files:** `agents/nodes/human_approval.py`, `tests/workflow/test_approval_interrupt.py`
-- **Done when:** `CD-1002` pauses with a pending approval row and the ticket in `waiting_on_approval` (F9).
+- **Done when:** `CD-1002` pauses with a pending approval row and the ticket in `waiting_on_approval`; a second run during the pause returns 409 (F9).
 
 **P11-2 · Approval decide and resume API**
 - **Needs:** `P11-1`
@@ -543,8 +545,8 @@ The longest dependency chain is 16 tasks long.
 
 **P11-4 · Execute resolution on the shared tool path**
 - **Needs:** `P11-1`, `P11-3`
-- **Build:** `execute_resolution`: run planned actions through `ToolRegistry.execute`, with `approved=True` after a human approval. The automatic and approved paths are the same code.
-- **Files:** `agents/nodes/execute_resolution.py`, `tests/workflow/test_execute_resolution.py`
+- **Build:** Extend `execute_resolution` (built for low-risk plans in P10-4) so that after a human approval the approved actions run through the same `ToolRegistry.execute` with `approved=True`. The automatic and approved paths stay one code path.
+- **Files:** `agents/nodes/decision.py`, `tests/workflow/test_execute_resolution.py`
 - **Done when:** The refund tool runs exactly once after approval; nothing runs unapproved.
 
 **P11-5 · Demo script for CD-1002 and CD-1005**

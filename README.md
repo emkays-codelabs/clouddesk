@@ -47,7 +47,7 @@ need no API key.
 
 No application code exists yet. What is in the repository today:
 
-- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, and the documents in `docs/`
+- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` (status and decisions), and the documents in `docs/`
 - a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/), with
   dependencies in `pyproject.toml` and a locked `uv.lock`
 - lint (Ruff) and test (pytest) configuration
@@ -85,7 +85,7 @@ Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 uv sync                 # create .venv and install locked dependencies
 ```
 
-There is nothing to run yet; the first runnable piece is Phase 1 (`TASKS.md`, task `P1-1`).
+There is nothing to run yet. Work starts at task `P1-1` in `TASKS.md`; the first runnable piece, the health endpoints, arrives with `P1-2`.
 
 Activate the environment instead of prefixing commands with `uv run`:
 
@@ -103,7 +103,7 @@ Secrets belong in a local `.env` file, which is git-ignored. Never commit real k
 
 ```bash
 uv run ruff check .     # lint
-uv run pytest           # tests (none written yet)
+uv run pytest           # no tests exist until task P1-3, so it reports none
 ```
 
 ## Author

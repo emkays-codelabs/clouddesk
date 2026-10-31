@@ -2,7 +2,7 @@
 
 CloudDesk — Autonomous Customer Support & Resolution Platform
 
-*Version 1.0  \|  Last updated: October 23, 2026*
+*Version 1.1  \|  Last updated: October 31, 2026*
 
 |  |  |
 |---|---|
@@ -12,7 +12,7 @@ CloudDesk — Autonomous Customer Support & Resolution Platform
 | Default integration branch | development |
 | Long-lived branches | development, testing, main |
 | Task tracker | TASKS.md — one feature/\<name\> branch per sub-task |
-| Remote status | Empty as of October 23, 2026. No commits have been pushed. |
+| Remote status | `main`, `development`, and `testing` exist on GitHub. Pushes wait for the owner's go-ahead (see MEMORY.md). |
 
 This guide is how code moves for CloudDesk. Feature work branches from development and merges back through a pull request. testing and main are promotion branches for staging and production. Follow it so main stays releasable and every sub-task in TASKS.md has one reviewable branch.
 
@@ -31,7 +31,7 @@ This guide is how code moves for CloudDesk. Feature work branches from developme
 
 # 1. Branch model at a glance
 
-Three long-lived branches. Day-to-day work targets development only. The GitHub repository is empty until the first push, so main, development, and testing do not exist there yet. Section 3 creates them. After that, do not recreate them per feature.
+Three long-lived branches. Day-to-day work targets development only. They already exist on GitHub; never recreate them per feature.
 
 | **Branch** | **Purpose** | **Who merges here** | **What it represents** |
 |---|---|---|---|
@@ -53,7 +53,7 @@ Three long-lived branches. Day-to-day work targets development only. The GitHub 
 ## Access
 
 - Use the GitHub account that owns https://github.com/emkays-codelabs/clouddesk. Collaborators need write access before they can push.
-- Confirm the repository page loads. As of October 23, 2026 it has no commits.
+- Confirm the repository page loads and lists main, development, and testing.
 - Turn on two-factor authentication on the GitHub account.
 - Prefer HTTPS with GitHub CLI, or SSH if you already have a key on the account. Do not put tokens in the repo.
 
@@ -63,7 +63,8 @@ Three long-lived branches. Day-to-day work targets development only. The GitHub 
 |---|---|---|
 | Git | 2.40+ | Git for Windows includes Git Bash. PowerShell is the shell used in this project. |
 | GitHub CLI (gh) | Latest | Recommended for pull requests from the terminal. |
-| Python | 3.12 | Backend, agents, RAG, and pytest. Use .venv\\Scripts\\python.exe. |
+| Python | 3.12 | Backend, agents, RAG, and pytest. uv installs it if missing. |
+| uv | Latest | Creates .venv and installs dependencies (`uv sync`, `uv run`). |
 | Node.js | 22 | Next.js 15 console. Frontend image uses node:22-alpine. |
 | Docker | Current | Compose stack: frontend, backend, redis, qdrant. |
 | Editor | Cursor or VS Code | Python, TypeScript, and Docker extensions. |
@@ -73,6 +74,7 @@ Three long-lived branches. Day-to-day work targets development only. The GitHub 
 ```
 git --version
 gh --version
+uv --version
 python --version
 node --version
 docker --version
@@ -94,7 +96,7 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 
 # 3. First-time setup
 
-The GitHub repository is empty. The working copy on disk already has the specification files (CLAUDE.md, TASKS.md, PLAN.md, MEMORY.md, docs/ARCHITECTURE.md, and this guide). Connect that copy to the remote, then create the three long-lived branches. Do this once.
+The GitHub repository already has main, development, and testing, so you normally clone it (see "Clone the repository" below) instead of seeding it. The steps in the next section are only for re-seeding a remote that has been emptied.
 
 ## Configure your identity (once per machine)
 
@@ -105,12 +107,12 @@ git config --global user.name "Your Full Name"
 git config --global user.email "you@example.com"
 ```
 
-## Seed the empty remote
+## Re-seed an empty remote
 
 From the project directory, in PowerShell. Skip git init if the folder is already a repository.
 
 ```
-cd C:\Users\anuls\Videos\Euron_AgenticAI1.0
+cd <path to your clouddesk folder>
 git init
 git checkout -b main
 git add CLAUDE.md PLAN.md TASKS.md MEMORY.md docs .claude
@@ -139,11 +141,11 @@ SSH remote, if you use keys:
 git remote add origin git@github.com:emkays-codelabs/clouddesk.git
 ```
 
-## Clone later, after the remote has commits
+## Clone the repository
 
 ```
 git clone https://github.com/emkays-codelabs/clouddesk.git
-cd CloudDesk
+cd clouddesk
 git fetch origin
 git checkout development
 git pull origin development
@@ -162,14 +164,12 @@ Choose HTTPS or SSH and finish in the browser. gh auth login does not store a to
 These commands matter from Phase 1 onward. They are not required to push the specification.
 
 ```
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
-$env:PYTHONPATH = "backend"
+uv sync
 $env:PYTHONIOENCODING = "utf-8"
 Copy-Item .env.example .env
 ```
 
-DEMO\_MODE=true, LLM\_PROVIDER=fake, VECTOR\_STORE=memory, and USE\_FAKE\_REDIS=true are the offline defaults. Tests must pass with no API key. get\_settings() is cached, so restart the server after an .env change.
+DEMO\_MODE=true, LLM\_PROVIDER=fake, VECTOR\_STORE=memory, and USE\_FAKE\_REDIS=true are the offline defaults. Tests must pass with no API key. get\_settings() is cached, so restart the server after an .env change. `uv run` finds .venv, and pytest's `pythonpath` setting finds backend, so PYTHONPATH is not needed.
 
 # 4. Daily workflow (feature → development)
 
@@ -382,7 +382,7 @@ Run the checks that exist for the phase you are in. Do not claim a later checkpo
 | Compose | docker compose config -q | Delivery phase, when the compose file exists. |
 | Smoke | BASE\_URL=http://localhost:8000 make smoke | Against a local stack only, until a real host exists. |
 
-On Windows, put backend on PYTHONPATH with a semicolon and set PYTHONIOENCODING=utf-8. Call Python as .venv\\Scripts\\python.exe.
+On Windows, prefer uv run, which finds .venv and backend for you. Set PYTHONIOENCODING=utf-8 for CLI output with symbols.
 
 **Behavior that must remain true**
 
@@ -418,7 +418,7 @@ main is the production candidate. Deploy is a separate, reviewed apply. Nothing 
 # 10. Questions
 
 - Branch and release policy: this guide and the repository admin.
-- Which sub-task to pick: TASKS.md. Respect the Depends-on line for that phase.
+- Which sub-task to pick: TASKS.md. Respect the task's Needs line.
 - Spec, layers, and safety rules: CLAUDE.md.
 - Diagrams: docs/ARCHITECTURE.md.
 

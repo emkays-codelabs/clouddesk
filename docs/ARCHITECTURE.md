@@ -438,7 +438,7 @@ Graph > Checkpoint: interrupt human_approval
 Graph > DB: approval_requests and waiting_on_approval
 
 Agent > UI: Approve or reject
-UI > API: POST /approvals/id/decide
+UI > API: POST /approvals/id/approve or reject
 API > Graph: Command resume
 Graph > DB: execute_resolution then summary then memory
 Agent > UI: Send reply
@@ -467,7 +467,7 @@ sequenceDiagram
   end
   Graph->>DB: interrupt, approval_requests, waiting_on_approval
   Agent->>UI: Approve or reject
-  UI->>API: POST /approvals/{id}/decide
+  UI->>API: POST /approvals/{id}/approve or reject
   API->>Graph: Command resume
   Graph->>DB: execute, summary, memory
   Agent->>UI: Send reply

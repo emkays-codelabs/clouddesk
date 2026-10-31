@@ -113,12 +113,12 @@ Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID
 | Integrations | `integrations/` | Protocols + mock adapters + MCP server | be imported by `core` |
 | Frontend | `frontend/` | pages, components, typed API client | hold the service-role key |
 
-### 4.3 Folder layout (`project-01-customer-support/`)
+### 4.3 Folder layout (repository root)
 
 ```text
 backend/app/   main.py · api/ · core/ · middleware/ · models/entities.py · schemas/ · repositories/ · services/ · tools/
 agents/        state.py · graph.py · checkpointer.py · rules.py · prompts.py · nodes/ · specialists/
-rag/           chunking.py · vector_store.py · retriever.py · ingest.py
+rag/           chunking.py · embeddings.py · vector_store.py · retriever.py · ingest.py
 memory/        short_term.py · long_term.py · memory_service.py
 integrations/  protocols.py · mock/services.py · factory.py · mcp/server.py · mcp/client_example.py
 frontend/      app/ (App Router) · components/ · lib/ (api.ts, types.ts, hooks.ts, format.ts, cn.ts) · __tests__/
@@ -129,6 +129,13 @@ tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · d
 deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
 data/          (git-ignored) support.db · checkpoints.db
 docs/          API_CONTRACT.md (the API contract – source of truth for routes and types)
+               ARCHITECTURE.md · Git_GitHub_Workflow_Guide.md
+datasets/      eval_cases.json
+scripts/       demo.py
+.github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
+.claude/       skills/clouddesk-support/SKILL.md
+(root)         CLAUDE.md · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
+               .env.example · pyproject.toml · uv.lock
 ```
 
 ---
@@ -416,7 +423,7 @@ Adding an eval case: append to `eval_cases.json` with a valid `expected_category
 pytest: `asyncio_mode = "auto"`, `loop_scope = "session"` in `pyproject.toml`. Do not mix in
 `@pytest.mark.asyncio` with a different scope.
 
-Every PRD acceptance criterion must map to at least one test. Add the mapping when you add a feature.
+Every requirement in `PLAN.md` (F1–F14, N1–N8) must map to at least one test. Add the mapping when you add a feature.
 
 ---
 
@@ -438,8 +445,9 @@ make terraform-validate
 BASE_URL=http://localhost:8000 make smoke
 ```
 
-Windows: use `.venv/Scripts/python.exe`; `PYTHONPATH` must include `backend` (use `;` separator).
-Set `PYTHONIOENCODING=utf-8` for CLI output with symbols.
+Windows: prefer `uv run`, which finds `.venv` and (through pytest's `pythonpath` setting) `backend`. Otherwise use
+`.venv/Scripts/python.exe` with `backend` on `PYTHONPATH` (`;` separator). Set `PYTHONIOENCODING=utf-8` for CLI
+output with symbols.
 
 Git and GitHub flow is in [`docs/Git_GitHub_Workflow_Guide.md`](docs/Git_GitHub_Workflow_Guide.md). Feature branches open against `development`,
 then `development` promotes to `testing`, then `main`. Remote:
@@ -504,7 +512,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 
 ## 18. Coding rules for this project
 
-1. **Read before you write.** Check `API_CONTRACT.md`, the relevant PRD row, and the existing test before changing behaviour.
+1. **Read before you write.** Check `API_CONTRACT.md`, the relevant requirement row in `PLAN.md`, and the existing test before changing behaviour.
 2. **Keep the layers clean** (section 4.2). If you need a shortcut across layers, stop and refactor.
 3. **Rules first, LLM second.** Any policy decision must be deterministic and tested.
 4. **No LLM call without** `call_structured` (for telemetry, usage and retry), and no tool call without `ToolRegistry`.
@@ -516,7 +524,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 10. **Money and accounts are approval-gated.** Refunds, setting resets, deletions, disputes never run unattended.
 11. **Never commit** `.env`, `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
 12. **Migrations are additive.** Never edit an applied migration; never drop data in a migration without an explicit decision.
-13. **One change, one commit, one test.** Each feature maps to a PRD row and a test.
+13. **One change, one commit, one test.** Each feature maps to a requirement ID in `PLAN.md` and a test.
 14. **Demo before production.** Every stage must still run with `make demo` at the end.
 15. **Say what is not done.** Keep the honest status (section 15.1) current.
 

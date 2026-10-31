@@ -12,7 +12,7 @@ __pycache__/
 .coverage
 htmlcov/
 
-# --- Build Output (hatchling / uv build) ---
+# --- Build Output (wheels and source distributions) ---
 dist/
 build/
 *.egg-info/
@@ -35,11 +35,20 @@ secrets.json
 # --- Claude Code (local, per-machine settings) ---
 .claude/settings.local.json
 
-# --- AI Data & Local Cache Vector Stores ---
-.chroma/
-chroma_db/
-chroma.sqlite3
+# --- Local Vector Store Data (Qdrant) and Logs ---
+qdrant_storage/
 *.log
+
+# --- Frontend (Next.js) ---
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
 
 # --- Local Databases and Runtime Data (demo SQLite, LangGraph checkpoints) ---
 data/

@@ -18,13 +18,14 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-31 |
 |---|---|
-| Repository contents | Specification documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `docs/`), and `pyproject.toml`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. |
+| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. There is no application code. |
 | Implemented | Nothing. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
 | Validated locally | Nothing. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
 | Phase plan | Phases 1–14 are not started. |
+| GitHub | `main`, `development`, and `testing` exist. `docs/consolidate-planning` (the planning documents) and `feature/phase-1-runtime-skeleton` (rolled back) are pushed. Pull requests #1 and #2 are closed. Nothing else is pushed. |
 
 ## Locked decisions
 
@@ -43,6 +44,6 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 ## Update protocol
 
 - Record a new locked decision with the date and the requirement id it serves.
-- When a phase exits, set its status in the Build phases table and in `TASKS.md`, and add one line under Honest status.
+- When a phase exits, set its status in the Build phases table in `PLAN.md` and in `TASKS.md`, and add one line under Honest status.
 - When a demo ticket’s expected behaviour changes, change `CLAUDE.md` §5 and the matching test together.
 - Leave secrets, tokens, connection strings, and ticket bodies out of this file.
