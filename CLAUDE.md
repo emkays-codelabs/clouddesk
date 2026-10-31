@@ -448,6 +448,7 @@ BASE_URL=http://localhost:8000 make smoke
 Windows: prefer `uv run`, which finds `.venv` and (through pytest's `pythonpath` setting) `backend`. Otherwise use
 `.venv/Scripts/python.exe` with `backend` on `PYTHONPATH` (`;` separator). Set `PYTHONIOENCODING=utf-8` for CLI
 output with symbols.
+GNU make is not part of Windows: `winget install ezwinports.make`, then open a new terminal.
 
 Git and GitHub flow is in [`docs/Git_GitHub_Workflow_Guide.md`](docs/Git_GitHub_Workflow_Guide.md). Feature branches open against `development`,
 then `development` promotes to `testing`, then `main`. Remote:
@@ -552,7 +553,7 @@ this file. Stage 17 is optional and is not a core exit criterion.
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | not started |
+| 1 | Runtime skeleton | validated locally |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
@@ -571,9 +572,9 @@ this file. Stage 17 is optional and is not a core exit criterion.
 
 ## 20. Known gaps and open questions
 
-- The section 14 commands are taken from the course stage docs and have not been run yet. Check
-  each `make` target against reality when the task that creates it lands (see `TASKS.md`), and fix
-  this file if one differs.
+- The section 14 commands come from the course stage docs. Verified so far (GNU Make 4.4.1, Windows
+  PowerShell): `make setup`, `make backend`, `make test` and `make lint`. Check each remaining target
+  when the task that creates it lands (see `TASKS.md`), and fix this file if one differs.
 - `terraform.tfvars` is contradictory: section 15 describes committed per-environment var-files while
   section 18 says never to commit it. Decide before Phase 14 (also tracked in `MEMORY.md`).
 - The course documents reference `../docs/…`, `../deployment-agent/…` and `../shared-infrastructure/…`
