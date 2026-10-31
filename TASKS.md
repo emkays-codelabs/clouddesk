@@ -69,7 +69,7 @@ The longest dependency chain is 16 tasks long.
 **P1-1 · Settings and JSON logging**
 - **Needs:** nothing
 - **Build:** Cached `get_settings()` with every variable in `CLAUDE.md` §10.1 (secrets and URL passwords redacted in `model_dump()`), and JSON logging with `request_id` and `workflow_id` bound through `log_context()`.
-- **Files:** `backend/app/core/config.py`, `backend/app/core/logging.py`, `tests/unit/test_config_logging.py`
+- **Files:** `backend/app/__init__.py`, `backend/app/core/__init__.py`, `backend/app/core/config.py`, `backend/app/core/logging.py`, `tests/unit/test_config_logging.py`, `pyproject.toml` (the `pydantic-settings` dependency, pytest `pythonpath`, and Ruff `src` so `app` imports resolve)
 - **Done when:** Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment; `model_dump()` hides secrets and URL passwords; every log line carries `request_id` and `workflow_id` (`null` when unset).
 
 **P1-2 · Health routes and request-id middleware**
@@ -81,7 +81,7 @@ The longest dependency chain is 16 tasks long.
 **P1-3 · Offline pytest harness**
 - **Needs:** `P1-1`
 - **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), a `client` fixture that imports `create_app` lazily (so the harness can land before the app exists), and pytest `asyncio_mode = "auto"` with session loop scope.
-- **Files:** `tests/conftest.py`, `pyproject.toml` (pytest and ruff settings)
+- **Files:** `tests/conftest.py`, `pyproject.toml` (pytest `asyncio_mode` and session loop scope; `pythonpath` already set by P1-1)
 - **Done when:** `pytest` passes with no network and no API key; a test that changes env vars sees the change after `get_settings.cache_clear()`.
 
 **P1-4 · Makefile and `.env.example`**
