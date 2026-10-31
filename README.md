@@ -4,7 +4,7 @@
 > investigates it and proposes a resolution, and a human approves anything that costs money or
 > touches an account.
 
-**Status**: In Development - phase 1 of 13 (runtime skeleton) | **Version**: 0.1.0
+**Status**: Specification and planning complete; implementation not started (0 of 14 phases) | **Version**: 0.1.0
 
 ---
 
@@ -59,19 +59,23 @@ and console. No cloud resources have been created and nothing is deployed.
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | in progress |
+| 1 | Runtime skeleton | not started |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
 | 5 | Knowledge pipeline | not started |
-| 6 | Tools and policy | not started |
+| 6 | Tools and mocks | not started |
 | 7 | Rules and guardrails | not started |
-| 8 | Specialist agents | not started |
-| 9 | Workflow graph and trace | not started |
-| 10 | Approval and escalation | not started |
-| 11 | Memory | not started |
-| 12 | Agent console | not started |
-| 13 | Evaluation and delivery | not started |
+| 8 | Memory | not started |
+| 9 | Specialist agents | not started |
+| 10 | Workflow graph and trace | not started |
+| 11 | Approval and escalation | not started |
+| 12 | Console shell | not started |
+| 13 | Ticket workflow screen | not started |
+| 14 | Evaluation and delivery | not started |
+
+Sub-tasks, branches, and dependencies are in `TASKS.md`; the requirements and each phase's exit
+criteria are in `PLAN.md`; the full design is in `CLAUDE.md`.
 
 ## Getting Started
 

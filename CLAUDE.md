@@ -441,7 +441,7 @@ BASE_URL=http://localhost:8000 make smoke
 Windows: use `.venv/Scripts/python.exe`; `PYTHONPATH` must include `backend` (use `;` separator).
 Set `PYTHONIOENCODING=utf-8` for CLI output with symbols.
 
-Git and GitHub flow is in `Git_GitHub_Workflow_Guide.docx`. Feature branches open against `development`,
+Git and GitHub flow is in [`docs/Git_GitHub_Workflow_Guide.md`](docs/Git_GitHub_Workflow_Guide.md). Feature branches open against `development`,
 then `development` promotes to `testing`, then `main`. Remote:
 `https://github.com/emkays-codelabs/clouddesk.git`.
 
@@ -533,29 +533,30 @@ the same principles: policy outside the model, approval gates, audit trail.
 
 ## 19. Phase plan
 
-The 13-phase build is [`PLAN_PHASE.md`](PLAN_PHASE.md). Each phase states a goal, files touched,
-PRD rows covered, tests added, a `make demo` checkpoint, and exit criteria. [`PLAN.md`](PLAN.md)
-is the requirement catalog. [`MEMORY.md`](MEMORY.md) holds locked facts and honest status. The
-agent procedure is [`.cursor/skills/clouddesk-support/SKILL.md`](.cursor/skills/clouddesk-support/SKILL.md).
+The 14-phase build is in [`TASKS.md`](TASKS.md): one row per sub-task with its branch, dependencies,
+and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and also holds each phase's exit
+criteria, the honest status, locked decisions, and open questions. The agent procedure is
+[`.claude/skills/clouddesk-support/SKILL.md`](.claude/skills/clouddesk-support/SKILL.md).
 
 Course documents 00–17 are not in this repo. Phase boundaries follow the dependency order in
 this file. Stage 17 is optional and is not a core exit criterion.
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | in progress |
+| 1 | Runtime skeleton | not started |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
 | 5 | Knowledge pipeline | not started |
-| 6 | Tools and policy | not started |
+| 6 | Tools and mocks | not started |
 | 7 | Rules and guardrails | not started |
-| 8 | Specialist agents | not started |
-| 9 | Workflow graph and trace | not started |
-| 10 | Approval and escalation | not started |
-| 11 | Memory | not started |
-| 12 | Agent console | not started |
-| 13 | Evaluation and delivery | not started |
+| 8 | Memory | not started |
+| 9 | Specialist agents | not started |
+| 10 | Workflow graph and trace | not started |
+| 11 | Approval and escalation | not started |
+| 12 | Console shell | not started |
+| 13 | Ticket workflow screen | not started |
+| 14 | Evaluation and delivery | not started |
 
 ---
 

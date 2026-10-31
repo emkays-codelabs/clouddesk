@@ -46,7 +46,7 @@ Three long-lived branches. Day-to-day work targets development only. The GitHub 
 - Do not push commits directly to development, testing, or main.
 - Do not stack a feature branch on another feature branch. If TASKS.md names a predecessor, merge that predecessor first.
 - One sub-task in TASKS.md is one branch, one pull request, and one status change to Completed ✅ after merge.
-- A merge to main does not mean the cloud environment is deployed. MEMORY.md stays honest until a real apply has happened.
+- A merge to main does not mean the cloud environment is deployed. The Honest status in PLAN.md stays accurate until a real apply has happened.
 
 # 2. Before you start
 
@@ -86,16 +86,14 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 |---|---|
 | CLAUDE.md | Specification: layers, domain, tools, workflow, and what must never happen. |
 | TASKS.md | The sub-task you are doing, its feature/\<name\> branch, and Pending ❌ or Completed ✅. |
-| PLAN\_PHASE.md | Exit criteria, tests, and the demo checkpoint for the phase. |
-| PLAN.md | Requirement catalog F1–F14 and N1–N8. |
-| MEMORY.md | Locked decisions and honest status. Update it when status changes. |
+| PLAN.md | Requirement catalog F1–F14 and N1–N8, each phase's exit criteria and demo checkpoint, and the Honest status. Update the status when it changes. |
 | docs/ARCHITECTURE.md | Component and infrastructure diagrams. |
-| .cursor/skills/clouddesk-support/SKILL.md | How to implement a change in this repo. |
+| .claude/skills/clouddesk-support/SKILL.md | How to implement a change in this repo. |
 | docs/API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
 
 # 3. First-time setup
 
-The GitHub repository is empty. The working copy on disk already has the specification files (CLAUDE.md, TASKS.md, PLAN.md, PLAN\_PHASE.md, MEMORY.md, docs/ARCHITECTURE.md, and this guide). Connect that copy to the remote, then create the three long-lived branches. Do this once.
+The GitHub repository is empty. The working copy on disk already has the specification files (CLAUDE.md, TASKS.md, PLAN.md, docs/ARCHITECTURE.md, and this guide). Connect that copy to the remote, then create the three long-lived branches. Do this once.
 
 ## Configure your identity (once per machine)
 
@@ -114,7 +112,7 @@ From the project directory, in PowerShell. Skip git init if the folder is alread
 cd C:\Users\anuls\Videos\Euron_AgenticAI1.0
 git init
 git checkout -b main
-git add CLAUDE.md MEMORY.md PLAN.md PLAN_PHASE.md TASKS.md docs .cursor/skills Git_GitHub_Workflow_Guide.docx
+git add CLAUDE.md PLAN.md TASKS.md docs .claude
 git status
 git commit -m "docs: add CloudDesk specification and git workflow"
 git remote add origin https://github.com/emkays-codelabs/clouddesk.git
@@ -216,7 +214,7 @@ Message prefixes: feat, fix, docs, test, chore, infra.
 - feat(workflow): pause CD-1002 until the refund is approved
 - fix(guardrails): keep CD-1013 ticket text as data
 - test(rag): expect the MFA article for the lockout query
-- docs: record Phase 1 as validated locally in MEMORY.md
+- docs: record Phase 1 as validated locally in PLAN.md
 
 Name the requirement in the test (F1–F14 or N1–N8). Stay inside one layer from CLAUDE.md section 4.2. Policy stays in code: agents/rules.py and backend/app/tools/policy.py.
 
@@ -301,7 +299,7 @@ Set that TASKS.md row to Completed ✅ in a follow-up docs commit on the next br
 - A route or payload change updates docs/API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
 - A schema change adds a new database/migrations/000N\_\<name\>.sql file and updates the model and database/schema.sql. Applied migrations are not edited.
 - The diff contains no .env, data/, \*.db, terraform.tfvars, backend.hcl, tfplan, or service-role key.
-- MEMORY.md is updated when implementation, local validation, cloud credentials, or deploy state changed.
+- The Honest status in PLAN.md is updated when implementation, local validation, cloud credentials, or deploy state changed.
 
 ## After merge
 
