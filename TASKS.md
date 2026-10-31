@@ -62,7 +62,7 @@ The longest dependency chain is 16 tasks long.
 | P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Completed ✅ |
 | P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Completed ✅ |
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
-| P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Pending ❌ |
+| P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Completed ✅ |
 
 #### Task definitions
 
@@ -86,9 +86,9 @@ The longest dependency chain is 16 tasks long.
 
 **P1-4 · Makefile and `.env.example`**
 - **Needs:** `P1-1`
-- **Build:** `.env.example` listing every §10.1 variable with placeholders only, and a `Makefile` with `setup`, `backend`, `test`, and `lint` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`).
-- **Files:** `.env.example`, `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py`
-- **Done when:** A test proves `.env.example` covers every variable in the spec and every `Settings` field, and holds no real key; `make test` and `make lint` run.
+- **Build:** `.env.example` listing every §10.1 variable with placeholders only, and a `Makefile` with `setup`, `backend`, `test`, `lint` and `format` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`). Every recipe calls only `uv`, so the targets run in cmd.exe, PowerShell and sh alike (`setup` copies `.env.example` to `.env` through Python, never overwriting an existing `.env`).
+- **Files:** `.env.example`, `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py`, `tests/unit/test_makefile.py`
+- **Done when:** A test proves `.env.example` covers every variable in the spec and every `Settings` field, declares nothing the app does not read, and holds no real key; tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only `uv` commands; `make test` and `make lint` run (checked with GNU Make 4.4.1).
 
 ---
 
@@ -729,7 +729,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 4 | 3 |
+| 1 | Runtime skeleton | 4 | 4 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -743,4 +743,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **67** | **3** |
+| **Total** | | **67** | **4** |

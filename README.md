@@ -4,7 +4,7 @@
 > investigates it and proposes a resolution, and a human approves anything that costs money or
 > touches an account.
 
-**Status**: Specification and planning complete; implementation not started (0 of 14 phases) | **Version**: 0.1.0
+**Status**: In Development - phase 1 of 14 complete (runtime skeleton, validated locally) | **Version**: 0.1.0
 
 ---
 
@@ -45,21 +45,22 @@ need no API key.
 
 ## Current State
 
-No application code exists yet. What is in the repository today:
+Phase 1 (the runtime skeleton) is complete and validated locally. The service boots offline and answers health probes. What exists today:
 
-- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` (status and decisions), and the documents in `docs/`
-- a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/), with
-  dependencies in `pyproject.toml` and a locked `uv.lock`
-- lint (Ruff) and test (pytest) configuration
+- `GET /health`, `GET /health/live` (no dependency I/O) and `GET /health/ready` (configuration probes, `503` when degraded)
+- an `X-Request-ID` on every response, including errors, echoed when safe and bound to every log line of the request
+- cached settings for every variable in `.env.example`, with secrets and URL passwords redacted
+- JSON logging with `request_id` and `workflow_id`
+- an offline test suite (97 tests: no network, no API key), lint (Ruff), and a `Makefile`
+- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` (status and decisions), and `docs/`
 
-Not yet built: everything in the build plan below. No cloud resources have been created and
-nothing is deployed.
+Not yet built: the database and demo data, authentication, the support API, the knowledge pipeline, tools, agents, the workflow, approvals, memory, and the console. No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
 
 ## Build Plan
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | not started |
+| 1 | Runtime skeleton | validated locally |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
@@ -82,10 +83,19 @@ criteria are in `PLAN.md`; the full design is in `CLAUDE.md`.
 Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 
 ```bash
-uv sync                 # create .venv and install locked dependencies
+make setup              # uv sync, and copy .env.example to .env if there is none
+make backend            # FastAPI on http://localhost:8000 (reloads on edits)
+curl http://localhost:8000/health/ready
 ```
 
-There is nothing to run yet. Work starts at task `P1-1` in `TASKS.md`; the first runnable piece, the health endpoints, arrives with `P1-2`.
+`make` is not part of Windows; `winget install ezwinports.make` adds it. Without it, run the same steps through uv:
+
+```bash
+uv sync
+uv run uvicorn app.main:app --app-dir backend --reload --port 8000
+```
+
+Routes so far: `GET /health`, `GET /health/live`, `GET /health/ready`. The next phase starts at task `P2-1` in `TASKS.md`.
 
 Activate the environment instead of prefixing commands with `uv run`:
 
@@ -102,8 +112,9 @@ Secrets belong in a local `.env` file, which is git-ignored. Never commit real k
 ## Development
 
 ```bash
-uv run ruff check .     # lint
-uv run pytest           # no tests exist until task P1-3, so it reports none
+make test               # pytest, fully offline (or: uv run pytest)
+make lint               # ruff (or: uv run ruff check .)
+make format             # ruff format
 ```
 
 ## Author

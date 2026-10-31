@@ -76,7 +76,7 @@ Pytest uses `asyncio_mode = "auto"` and `loop_scope = "session"`. Do not add `@p
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | not started |
+| 1 | Runtime skeleton | validated locally |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
