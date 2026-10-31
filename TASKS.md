@@ -1,7 +1,7 @@
 # CloudDesk Support — Task tracker
 
 > Concise checklist for GitHub-visible progress.
-> Full plan and phase exit criteria: `PLAN.md` · Spec: `CLAUDE.md`
+> Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
 
 **Branch convention:** `feature/<name>` (one feature branch per sub-task; open the PR against `development`)
 **Status:** `Pending ❌` · `Completed ✅`
@@ -23,19 +23,19 @@ Work every task the same way:
 3. Write the test first and name the requirement (F1–F14, N1–N8) it proves. Watch it fail.
 4. Implement until the test passes. Keep the layers in `CLAUDE.md` §4.2.
 5. Run the checks for the area (`make test`, `make lint`, and the frontend commands for UI work).
-6. Open a pull request into `development`. After it merges, set the row to Completed ✅ and update the Progress summary. When a whole phase is done, update `PLAN.md` (Build phases table and Honest status).
+6. Open a pull request into `development`. After it merges, set the row to Completed ✅ and update the Progress summary. When a whole phase is done, update the Build phases table in `PLAN.md` and the Honest status in `MEMORY.md`.
 
 **Order.** A task can start once everything it **Needs** has merged. Tasks in the same wave have no dependency on each other and can run in parallel; each task's **Needs** line is authoritative.
 
 | Wave | Tasks that can start |
 |---|---|
 | 1 | `P1-1` |
-| 2 | `P1-2`, `P1-4`, `P2-1` |
-| 3 | `P1-3`, `P2-2`, `P2-3`, `P3-1`, `P3-3`, `P4-1`, `P7-1`, `P7-2`, `P7-3`, `P7-4` |
-| 4 | `P2-4`, `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P6-1`, `P6-4`, `P8-1`, `P8-2`, `P12-1`, `P12-2` |
-| 5 | `P4-4`, `P4-5`, `P5-1`, `P6-2`, `P6-3`, `P8-3`, `P12-3` |
-| 6 | `P5-2`, `P6-5`, `P12-4` |
-| 7 | `P5-3` |
+| 2 | `P1-3`, `P1-4`, `P2-1` |
+| 3 | `P1-2`, `P2-2`, `P2-3`, `P4-1`, `P7-1`, `P7-2`, `P7-3`, `P7-4` |
+| 4 | `P2-4`, `P3-1`, `P3-3`, `P6-1`, `P6-4`, `P8-2`, `P12-1`, `P12-2` |
+| 5 | `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P5-1`, `P6-2`, `P6-3`, `P8-1` |
+| 6 | `P4-4`, `P4-5`, `P5-2`, `P6-5`, `P8-3`, `P12-3` |
+| 7 | `P5-3`, `P12-4` |
 | 8 | `P5-4` |
 | 9 | `P9-1` |
 | 10 | `P9-2`, `P9-3`, `P9-4`, `P9-5`, `P9-6`, `P9-7`, `P9-8`, `P10-1` |
@@ -53,7 +53,7 @@ The longest dependency chain is 16 tasks long.
 ## Phase 1 — Runtime skeleton
 
 > Depends on: nothing. Unblocks: every later phase.
-> Merge order: P1-1 first. P1-2 and P1-4 in parallel after it. P1-3 after P1-2.
+> Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -71,14 +71,14 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment; `model_dump()` hides secrets and URL passwords; every log line carries `request_id` and `workflow_id` (`null` when unset).
 
 **P1-2 · Health routes and request-id middleware**
-- **Needs:** `P1-1`
+- **Needs:** `P1-1`, `P1-3`
 - **Build:** `GET /health`, `GET /health/live` (no I/O), `GET /health/ready` (configuration probes, 503 when degraded), and `RequestIdMiddleware` that echoes a safe `X-Request-ID` (1–128 chars of `A-Za-z0-9._:-`) or issues a UUID. CORS is outermost and exposes the header.
 - **Files:** `backend/app/main.py`, `api/health.py`, `schemas/health.py`, `core/readiness.py`, `middleware/request_id.py`, `tests/api/test_health.py`
 - **Done when:** Every response, including 404 and 500, carries `X-Request-ID`; `/health` and `/health/live` call no dependency; `/health/ready` returns 503 when a check fails and never shows a URL, password, or key.
 
 **P1-3 · Offline pytest harness**
-- **Needs:** `P1-2`
-- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), a `client` fixture, and pytest `asyncio_mode = "auto"` with session loop scope.
+- **Needs:** `P1-1`
+- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), a `client` fixture that imports `create_app` lazily (so the harness can land before the app exists), and pytest `asyncio_mode = "auto"` with session loop scope.
 - **Files:** `tests/conftest.py`, `pyproject.toml` (pytest and ruff settings)
 - **Done when:** `pytest` passes with no network and no API key; a test that changes env vars sees the change after `get_settings.cache_clear()`.
 
@@ -698,7 +698,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
 - All 67 tasks are Completed ✅ and the Progress summary reads 67 of 67.
-- `PLAN.md` Honest status is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
+- The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
 

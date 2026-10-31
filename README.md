@@ -45,15 +45,15 @@ need no API key.
 
 ## Current State
 
-Nothing user-facing exists yet. What is in the repository today:
+No application code exists yet. What is in the repository today:
 
-- a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/)
-- pinned dependencies and a locked `uv.lock`
-- build, lint (Ruff), and test (pytest) configuration
-- a `clouddesk` command-line entry point that currently prints a greeting
+- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, and the documents in `docs/`
+- a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/), with
+  dependencies in `pyproject.toml` and a locked `uv.lock`
+- lint (Ruff) and test (pytest) configuration
 
-Not yet built: the API, database, knowledge pipeline, agents, workflow, approval flow, memory,
-and console. No cloud resources have been created and nothing is deployed.
+Not yet built: everything in the build plan below. No cloud resources have been created and
+nothing is deployed.
 
 ## Build Plan
 
@@ -83,8 +83,9 @@ Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 
 ```bash
 uv sync                 # create .venv and install locked dependencies
-uv run clouddesk        # run the CLI entry point
 ```
+
+There is nothing to run yet; the first runnable piece is Phase 1 (`TASKS.md`, task `P1-1`).
 
 Activate the environment instead of prefixing commands with `uv run`:
 

@@ -534,8 +534,8 @@ the same principles: policy outside the model, approval gates, audit trail.
 ## 19. Phase plan
 
 The 14-phase build is in [`TASKS.md`](TASKS.md): one row per sub-task with its branch, dependencies,
-and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and also holds each phase's exit
-criteria, the honest status, locked decisions, and open questions. The agent procedure is
+and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and holds each phase's exit criteria.
+[`MEMORY.md`](MEMORY.md) holds the honest status, locked decisions, and open questions. The agent procedure is
 [`.claude/skills/clouddesk-support/SKILL.md`](.claude/skills/clouddesk-support/SKILL.md).
 
 Course documents 00–17 are not in this repo. Phase boundaries follow the dependency order in
@@ -562,8 +562,11 @@ this file. Stage 17 is optional and is not a core exit criterion.
 
 ## 20. Known gaps and open questions
 
-- `README.md` for Project 1 was referenced by the course documents but was not supplied; section 14
-  commands are taken from the stage docs and must be checked against it.
+- The section 14 commands are taken from the course stage docs and have not been run yet. Check
+  each `make` target against reality when the task that creates it lands (see `TASKS.md`), and fix
+  this file if one differs.
+- `terraform.tfvars` is contradictory: section 15 describes committed per-environment var-files while
+  section 18 says never to commit it. Decide before Phase 14 (also tracked in `MEMORY.md`).
 - The course documents reference `../docs/…`, `../deployment-agent/…` and `../shared-infrastructure/…`
   that sit outside Project 1. Decide whether they are copied in or referenced.
 - Document counts differ slightly between files (for example tables: 16 in the database doc, 15 data

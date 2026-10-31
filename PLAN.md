@@ -110,7 +110,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 - `CD-1013` does not export records and does not change the route the graph takes.
 - Viewer tokens receive 403 on run, reply, and approve.
 - `docker compose config -q` succeeds.
-- The honest status below still says cloud apply and GitHub execution have not happened, until they have.
+- The honest status in `MEMORY.md` still says cloud apply and GitHub execution have not happened, until they have.
 - `README.md` matches §14 commands once that file exists.
 
 ## Risks to watch while building
@@ -359,41 +359,10 @@ Tasks: `TASKS.md`, Phase 14.
 
 **Demo checkpoint.** `make test`, then `make demo` for `CD-1002` and `make demo TICKET=CD-1005`.
 
-**Exit.** Core Project 1 is complete only when phases 1–14 are validated locally. Honest status may say implemented and validated locally. It still says no cloud credentials, nothing applied, and workflows not executed on GitHub, until those things are true. Stage 17 is not required and is not started by this phase.
+**Exit.** Core Project 1 is complete only when phases 1–14 are validated locally. The honest status in `MEMORY.md` may say implemented and validated locally. It still says no cloud credentials, nothing applied, and workflows not executed on GitHub, until those things are true. Stage 17 is not required and is not started by this phase.
 
 ---
 
-## Honest status
+## Status and decisions
 
-Update each row in place. Do not mark a row done from intention.
-
-| Surface | State on 2026-10-31 |
-|---|---|
-| Repository contents | Specification documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `docs/`), the `uv init` scaffold (`main.py`, `src/clouddesk/`), and `pyproject.toml`. |
-| Implemented | Nothing. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
-| Validated locally | Nothing. |
-| Cloud credentials | None used. |
-| Applied to a real account | Nothing. |
-| GitHub Actions | Workflow files are not in the repo. None have been executed. |
-| Phase plan | Phases 1–14 are not started. |
-
-## Locked decisions
-
-Carried over from the earlier attempt. They are design decisions, not claims about code.
-
-- 2026-10-25, F14 and observability: process settings come from a cached `get_settings()` in `backend/app/core/config.py`. JSON logs come from `setup_logging()` and `log_context()` in `backend/app/core/logging.py`, and every line carries `request_id` and `workflow_id` (`null` when unset). `model_dump()` redacts secrets and URL passwords; connection code reads the attributes.
-- 2026-10-25, N3: `RequestIdMiddleware` echoes a safe `X-Request-ID` or assigns a UUID, binds `log_context`, and sets the header on application responses, including 404 and 500. CORS sits outside it and exposes the header. `/health` and `/health/live` do no dependency I/O. `/health/ready` returns 200 `ready` or 503 `degraded` from configuration checks until the database, Redis, vector store, and LLM clients exist, and its details never include a URL, password, or API key.
-
-## Open questions
-
-- `CLAUDE.md` §15 says environments are committed var-files (`environments/{dev,staging,prod}/terraform.tfvars`) while §18 says never to commit `terraform.tfvars`. Decide which holds before Phase 14.
-- The course paths `../docs/`, `../deployment-agent/`, and `../shared-infrastructure/` sit outside this repo and are not copied in.
-- Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). `database/schema.sql` becomes the authority once it is written.
-- Stage documents 00–17 are not in this repo. This plan is derived from `CLAUDE.md`, not from those missing files.
-
-## Update protocol
-
-- Record a new locked decision with the date and the requirement id it serves.
-- When a phase exits, set its status in the Build phases table and in `TASKS.md`, and add one line under Honest status.
-- When a demo ticket’s expected behaviour changes, change `CLAUDE.md` §5 and the matching test together.
-- Leave secrets, tokens, connection strings, and ticket bodies out of this file.
+The honest status, locked decisions, open questions, and the update protocol live in [`MEMORY.md`](MEMORY.md), so the facts that change are kept apart from the plan that does not.

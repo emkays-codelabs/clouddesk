@@ -5,17 +5,27 @@ description: Use when implementing, changing, or reviewing any code in the Cloud
 
 # CloudDesk implementation procedure
 
-`CLAUDE.md` is the spec and wins over this file. `TASKS.md` says which sub-task to do and which
-branch to use. `PLAN.md` holds the requirement IDs, the phase exit criteria, and the honest status.
+## The files, and which one to trust
+
+| File | Holds |
+|---|---|
+| `CLAUDE.md` | The spec: layers, agents, tools, rules. **Wins over every other file, including this one.** |
+| `TASKS.md` | The 67 tasks: what to build, files, **Needs**, **Done when**, branch, and the order. |
+| `PLAN.md` | Requirement IDs (F1-F14, N1-N8) and each phase's exit criteria and demo checkpoint. |
+| `MEMORY.md` | The honest status, locked decisions, open questions, and working agreements. |
+| `docs/` | `API_CONTRACT.md` (routes and shapes), `ARCHITECTURE.md`, `Git_GitHub_Workflow_Guide.md`. |
 
 ## Before writing code
 
-1. Find the row in `TASKS.md`. Its branch name is `feature/<name>`; open the PR against `development`.
-   Do not stack a branch on another feature branch. Merge the named predecessor first.
-2. Read the phase in `PLAN.md` (goal, files, tests, demo checkpoint, exit criteria) and the matching
-   section of `CLAUDE.md`.
+1. Find the task in `TASKS.md`. Check its **Needs** line: every predecessor must already be merged.
+   Its branch is `feature/<name>`; the PR goes against `development`. Never stack a branch on
+   another feature branch.
+2. Read the task's **Build / Files / Done when**, the phase in `PLAN.md`, and the matching section of
+   `CLAUDE.md`. Read `MEMORY.md` for decisions that already apply.
 3. If the change touches an HTTP shape, read `docs/API_CONTRACT.md`. Contract, `backend/app/schemas/`,
    and `frontend/lib/types.ts` change in the same commit.
+4. Do not start a task that is not in `TASKS.md`. If the work needs one, add the row first, with its
+   **Needs** and **Done when**, and trace it to a requirement ID.
 
 ## While writing code
 
@@ -41,11 +51,15 @@ branch to use. `PLAN.md` holds the requirement IDs, the phase exit criteria, and
 - Memory notes containing card numbers, keys, passwords, or raw ticket bodies.
 - Committing `.env`, `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
 - Editing an applied migration, or introducing a ticket category anywhere but `backend/app/schemas/common.py`.
+- Pushing to GitHub, or opening, closing, or merging a pull request, without the owner saying so.
+  Commit locally by default. Never push directly to `development`, `testing`, or `main`.
+- Writing "deployed", "passes in CI", or "validated" in any file before it is true.
 
 ## Done means
 
-- The requirement ID is named in a passing test and the offline suite for that area passes.
-- `uv run ruff check .` is clean.
-- The honest status in `PLAN.md` is still true: say what is not done, and do not write "deployed" or
-  "passes in CI" until it is.
-- The `TASKS.md` row is set to Completed after the PR merges, not before.
+- The task's **Done when** is true, and the requirement ID is named in a passing test.
+- `uv run ruff check .` is clean and the offline suite for that area passes.
+- The diff holds no `.env`, database, or secret.
+- Then, and only after the PR merges: set the `TASKS.md` row to Completed and update the Progress
+  summary. When a whole phase is finished, update the Build phases table in `PLAN.md` and the Honest
+  status in `MEMORY.md`, saying only what was actually run.
