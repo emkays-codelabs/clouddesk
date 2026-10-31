@@ -1,0 +1,47 @@
+[project]
+name = "clouddesk"
+version = "0.1.0"
+description = "CloudDesk: an AI-powered support desk built with FastAPI, LangGraph, and ChromaDB."
+readme = "README.md"
+authors = [{ name = "Mahesh Kumar", email = "aiwithemkay@gmail.com" }]
+requires-python = ">=3.10"
+keywords = ["ai", "rag", "langgraph", "fastapi", "streamlit"]
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.162.0",
+    "langchain>=1.4.7",
+    "langchain-openai>=1.7.3",
+    "langgraph>=1.2.19",
+    "openai>=3.42.0",
+    "pydantic>=2.14.2",
+    "python-dotenv>=1.2.4",
+    "streamlit>=1.65.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+clouddesk = "main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# main.py is a top-level module, not a package, so hatchling needs it listed explicitly.
+[tool.hatch.build.targets.wheel]
+include = ["main.py"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

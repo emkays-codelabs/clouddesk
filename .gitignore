@@ -1,0 +1,33 @@
+# --- Virtual Environments (uv isolation) ---
+.venv/
+ai_env/
+venv/
+env/
+
+# --- Python Operational Cache ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# --- Environment Configurations & Secrets ---
+.env
+*.env
+secrets.json
+
+# --- IDEs and Workspace Metadata ---
+.vscode/
+.idea/
+*.swp
+
+# --- AI Data & Local Cache Vector Stores ---
+.chroma/
+chroma.sqlite3
+*.log
+
+# --- Added by optimize_portfolio ---
+.ruff_cache/
+.env.*
+!.env.example
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
