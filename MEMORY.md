@@ -127,15 +127,15 @@ Cases live in `datasets/eval_cases.json` and each case needs a valid `expected_c
 
 Update each row in place. Do not mark a row done from intention.
 
-| Surface | State on 2026-10-25 |
+| Surface | State on 2026-10-31 |
 |---|---|
-| Repository contents | Requirement files are in place. P1-1 is merged. P1-2 adds health routes, request-id middleware, and `tests/api/test_health.py`. Sample data and the rest of the backend are absent. `frontend/lib/types.ts` is still created in P12-2. |
-| Implemented | P1-1 merged: cached settings and JSON logging. P1-2, not merged: `GET /health`, `GET /health/live` (no dependency I/O), `GET /health/ready` (configuration probes, 503 when degraded), `RequestIdMiddleware`, and CORS exposing `X-Request-ID`. The pytest harness, Makefile, and `.env.example` are still absent. Ready probes do not open a database, Redis, Qdrant, or LLM connection. |
-| Validated locally | `tests/unit/test_config_logging.py` and `tests/api/test_health.py`: 24 passed on this machine. `make test` and `make demo` do not exist yet. This is not a Phase 1 exit. |
+| Repository contents | Phase 1 is in the repo: settings, JSON logging, request-id middleware, health routes, the offline pytest harness, `.env.example`, and a `Makefile`. Sample data and the rest of the backend are absent. `frontend/lib/types.ts` is still created in P12-2. |
+| Implemented | Phase 1: `GET /health`, `GET /health/live` (no dependency I/O), `GET /health/ready` (configuration probes, 503 when degraded), `RequestIdMiddleware`, CORS exposing `X-Request-ID`, cached `get_settings()` with a redacted `model_dump()`, and JSON logs carrying `request_id` and `workflow_id`. Ready probes do not open a database, Redis, Qdrant, or LLM connection. The `core/database` stub listed in the Phase 1 files was not created: it has nothing to hold until Phase 2. |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/unit/test_env_example.py` and `tests/api/test_health.py`: 37 passed on this machine, offline. `ruff check` is clean. The server was booted with uvicorn and probed with curl. Not run on GitHub Actions. `make demo` does not exist yet. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
-| Phase plan | Phase 1 is in progress (P1-1 merged, P1-2 implemented locally). Phases 2–13 are not started. |
+| Phase plan | Phase 1 is validated locally (both exit criteria met). Phases 2-13 are not started. |
 
 ## Open questions from `CLAUDE.md` §20
 

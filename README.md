@@ -4,7 +4,7 @@
 > investigates it and proposes a resolution, and a human approves anything that costs money or
 > touches an account.
 
-**Status**: In Development - phase 1 of 13 (runtime skeleton) | **Version**: 0.1.0
+**Status**: In Development - phase 1 of 13 complete (runtime skeleton, validated locally) | **Version**: 0.1.0
 
 ---
 
@@ -45,21 +45,25 @@ need no API key.
 
 ## Current State
 
-Nothing user-facing exists yet. What is in the repository today:
+Phase 1 (the runtime skeleton) is complete and validated locally. The service boots offline and
+answers health probes. What exists today:
 
-- a reproducible Python 3.12 environment managed by [uv](https://docs.astral.sh/uv/)
-- pinned dependencies and a locked `uv.lock`
-- build, lint (Ruff), and test (pytest) configuration
-- a `clouddesk` command-line entry point that currently prints a greeting
+- `GET /health`, `GET /health/live` (no dependency I/O) and `GET /health/ready` (configuration
+  probes, `503` when degraded)
+- an `X-Request-ID` on every response, including errors, echoed when safe and bound to every log line
+- cached settings for every variable in `.env.example`, with secrets and URL passwords redacted
+- JSON logging with `request_id` and `workflow_id`
+- an offline test harness (37 tests, no network and no API key), lint (Ruff), and a `Makefile`
 
-Not yet built: the API, database, knowledge pipeline, agents, workflow, approval flow, memory,
-and console. No cloud resources have been created and nothing is deployed.
+Not yet built: the database and demo data, authentication, the support API, the knowledge
+pipeline, tools, agents, workflow, approval flow, memory, and console. No cloud resources have
+been created and nothing is deployed. Tests have not been run on GitHub Actions.
 
 ## Build Plan
 
 | Phase | Name | Status |
 |---|---|---|
-| 1 | Runtime skeleton | in progress |
+| 1 | Runtime skeleton | validated locally |
 | 2 | Persistence and demo data | not started |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
@@ -78,8 +82,10 @@ and console. No cloud resources have been created and nothing is deployed.
 Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 
 ```bash
-uv sync                 # create .venv and install locked dependencies
-uv run clouddesk        # run the CLI entry point
+uv sync                                                     # create .venv, install locked dependencies
+cp .env.example .env                                        # optional: the defaults already run offline
+uv run uvicorn app.main:app --app-dir backend --port 8000   # or: make backend
+curl http://localhost:8000/health/ready
 ```
 
 Activate the environment instead of prefixing commands with `uv run`:
@@ -97,8 +103,8 @@ Secrets belong in a local `.env` file, which is git-ignored. Never commit real k
 ## Development
 
 ```bash
-uv run ruff check .     # lint
-uv run pytest           # tests (none written yet)
+uv run pytest           # tests, fully offline (or: make test)
+uv run ruff check .     # lint (or: make lint)
 ```
 
 ## Author
