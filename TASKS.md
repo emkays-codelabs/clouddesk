@@ -61,7 +61,7 @@ The longest dependency chain is 16 tasks long.
 |------|--------|--------|--------|
 | P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Completed ✅ |
 | P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Pending ❌ |
-| P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Pending ❌ |
+| P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Pending ❌ |
 
 #### Task definitions
@@ -80,8 +80,8 @@ The longest dependency chain is 16 tasks long.
 
 **P1-3 · Offline pytest harness**
 - **Needs:** `P1-1`
-- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), a `client` fixture that imports `create_app` lazily (so the harness can land before the app exists), and pytest `asyncio_mode = "auto"` with session loop scope.
-- **Files:** `tests/conftest.py`, `pyproject.toml` (pytest `asyncio_mode` and session loop scope; `pythonpath` already set by P1-1)
+- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), every credential blanked so a key exported in the shell cannot reach a test, a guard that fails any attempt to reach a non-local host (loopback still works), a `client` fixture that imports `create_app` lazily and skips with a clear reason until the app exists (so the harness can land first), and pytest `asyncio_mode = "auto"` with session loop scope.
+- **Files:** `tests/conftest.py`, `tests/unit/test_harness.py`, `pyproject.toml` (pytest `asyncio_mode` and session loop scope, and the `pytest-asyncio` and `httpx` dev dependencies; `pythonpath` already set by P1-1)
 - **Done when:** `pytest` passes with no network and no API key; a test that changes env vars sees the change after `get_settings.cache_clear()`.
 
 **P1-4 · Makefile and `.env.example`**
@@ -729,7 +729,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 4 | 1 |
+| 1 | Runtime skeleton | 4 | 2 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -743,4 +743,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **67** | **1** |
+| **Total** | | **67** | **2** |
