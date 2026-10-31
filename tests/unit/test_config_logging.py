@@ -6,8 +6,8 @@ import sys
 
 import pytest
 
-from app.core.config import Settings, get_settings
-from app.core.logging import JsonFormatter, log_context
+from app.core.config import Settings, get_settings, redact_url
+from app.core.logging import JsonFormatter, log_context, setup_logging
 
 
 @pytest.fixture(autouse=True)
@@ -172,3 +172,112 @@ class TestJsonLogging:
         line = json.loads(JsonFormatter().format(record))
 
         assert "ValueError: boom" in line["exception"]
+
+
+class TestRedactUrl:
+    @pytest.mark.parametrize(
+        ("url", "expected"),
+        [
+            (
+                "postgresql+asyncpg://app:hunter2@db.example.com/x",
+                "postgresql+asyncpg://app:***@db.example.com/x",
+            ),
+            ("redis://:hunter2@cache.example.com:6379/0", "redis://:***@cache.example.com:6379/0"),
+            (
+                "https://u:p%40ss@host.example.com:8443/path?q=1",
+                "https://u:***@host.example.com:8443/path?q=1",
+            ),
+        ],
+        ids=["user-and-password", "password-only", "port-query-and-encoded-password"],
+    )
+    def test_masks_only_the_password(self, url: str, expected: str):
+        assert redact_url(url) == expected
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "sqlite+aiosqlite:///./data/support.db",
+            "redis://cache.example.com:6379/0",
+            "",
+            "not a url",
+        ],
+        ids=["sqlite-file", "no-credentials", "empty", "not-a-url"],
+    )
+    def test_leaves_urls_without_a_password_unchanged(self, url: str):
+        assert redact_url(url) == url
+
+
+class TestSetupLogging:
+    @pytest.fixture(autouse=True)
+    def _restore_logging_state(self):
+        """setup_logging() edits global loggers; put them back so other tests are unaffected."""
+        root = logging.getLogger()
+        names = ("uvicorn", "uvicorn.error", "uvicorn.access")
+        saved_root = (list(root.handlers), root.level)
+        saved = {
+            n: (list(logging.getLogger(n).handlers), logging.getLogger(n).propagate) for n in names
+        }
+        yield
+        root.handlers[:] = saved_root[0]
+        root.setLevel(saved_root[1])
+        for n, (handlers, propagate) in saved.items():
+            logging.getLogger(n).handlers[:] = handlers
+            logging.getLogger(n).propagate = propagate
+
+    @staticmethod
+    def _json_handlers() -> list[logging.Handler]:
+        return [h for h in logging.getLogger().handlers if isinstance(h.formatter, JsonFormatter)]
+
+    def test_writes_json_lines_with_the_bound_ids_to_stdout(
+        self, capsys: pytest.CaptureFixture[str]
+    ):
+        setup_logging()
+
+        with log_context(request_id="req-7", workflow_id="wf-3"):
+            logging.getLogger("clouddesk.test").info("hello from a request")
+
+        line = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+        assert line["message"] == "hello from a request"
+        assert line["logger"] == "clouddesk.test"
+        assert line["request_id"] == "req-7"
+        assert line["workflow_id"] == "wf-3"
+
+    def test_is_idempotent_and_installs_exactly_one_json_handler(self):
+        setup_logging()
+        setup_logging()
+        setup_logging()
+
+        assert len(self._json_handlers()) == 1
+
+    def test_leaves_handlers_it_did_not_install_alone(self):
+        foreign = logging.NullHandler()
+        logging.getLogger().addHandler(foreign)
+
+        setup_logging()
+
+        assert foreign in logging.getLogger().handlers
+
+    def test_applies_the_requested_level(self, capsys: pytest.CaptureFixture[str]):
+        setup_logging("WARNING")
+
+        logging.getLogger("clouddesk.test").info("quiet")
+        logging.getLogger("clouddesk.test").warning("loud")
+
+        out = capsys.readouterr().out
+        assert "loud" in out
+        assert "quiet" not in out
+
+    def test_hands_uvicorn_records_to_the_json_handler(self, capsys: pytest.CaptureFixture[str]):
+        uvicorn_logger = logging.getLogger("uvicorn.access")
+        uvicorn_logger.addHandler(logging.NullHandler())
+        uvicorn_logger.propagate = False
+
+        setup_logging()
+
+        assert uvicorn_logger.handlers == []
+        assert uvicorn_logger.propagate is True
+        uvicorn_logger.info("GET /health 200")
+        assert (
+            json.loads(capsys.readouterr().out.strip().splitlines()[-1])["logger"]
+            == "uvicorn.access"
+        )

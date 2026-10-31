@@ -20,7 +20,7 @@ Update each row in place. Do not mark a row done from intention.
 |---|---|
 | Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill in `.claude/`, and `pyproject.toml` with `uv.lock`. The `uv init` stubs (`main.py`, `src/clouddesk/`) were removed. There is no application code. |
 | Implemented | P1-1 (cached settings and JSON logging) is implemented on `feature/backend-config-logging`, local only and not merged. Nothing else. A Phase 1 attempt (commits `ffa6a46` and `4066c11` on `feature/phase-1-runtime-skeleton`) was rolled back on 2026-10-31 to restart from scratch. |
-| Validated locally | P1-1 only: 17 tests pass offline and `ruff check` is clean on this machine. Not merged, not run on GitHub Actions. |
+| Validated locally | P1-1 only: 29 tests pass offline and `ruff check` is clean on this machine. Not merged, not run on GitHub Actions. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
