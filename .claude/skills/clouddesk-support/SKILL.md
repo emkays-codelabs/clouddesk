@@ -21,8 +21,23 @@ description: >-
 | `docs/ARCHITECTURE.md` | Component and infrastructure diagrams. |
 | `docs/API_CONTRACT.md` | Every route and payload type. |
 | `docs/Git_GitHub_Workflow_Guide.md` | Branches, pull requests, promotion. |
+| `docs/01a_BRD_…`, `01b_PRD_…`, `02_HLD_…`, `03_LLD_…` | The upstream design of **ACSRP**, the full product this repo is a v1 of. Read for intent. |
 
 If a change would contradict `CLAUDE.md`, update `CLAUDE.md` first, then the plan, then the code.
+
+### Do not “fix” CloudDesk to match the upstream documents
+
+The documents in `docs/01a`–`03` specify the full multi-tenant product. This repo is a deliberately
+scoped single-tenant v1, and `CLAUDE.md` §1.1 tables every difference. CloudDesk's own vocabulary is
+built and under test: severity is `low`/`medium`/`high`/`critical` (not `P1`–`P4`), statuses are
+`waiting_on_*` (not `awaiting_*`), the channels are email/chat/web/api, and environment variables
+carry no `ACSRP_` prefix. Renaming any of these to match a document breaks the schema, the API
+contract and the tests at once. Change `CLAUDE.md` §5 or §10.1 first if it is genuinely wanted.
+
+Six larger differences are open decisions **D1–D6** in `CLAUDE.md` §20: multi-tenancy, a `prohibited`
+risk tier, write-capable MCP servers, model tiering, Kubernetes, and the harder eval bar. None is
+decided. Do not build any of them, and do not assume one — D1 (multi-tenancy) has to be settled
+before P2-1 writes the models.
 
 ## Before coding
 
@@ -65,6 +80,16 @@ If a change would contradict `CLAUDE.md`, update `CLAUDE.md` first, then the pla
 - A node returns a partial state dict. Reducers append `errors` and `completed_nodes` and sum
   `token_usage` with `merge_usage`; they never overwrite.
 - Code that runs before `interrupt()` stays small and idempotent, because it re-runs on resume.
+- **Every action is idempotent and verified.** It carries the key `ticket_id:tool:stable_hash(args)`;
+  a key that already succeeded returns its stored result instead of acting again, and a write is
+  read back afterwards. This is what stops a second refund on a retried or resumed run.
+- **Tool arguments need provenance.** An id or an amount comes from customer context or an earlier
+  tool result, never from ticket text. A failure rejects the argument and revises the plan.
+- **Runs are bounded**: 12 graph steps, 2 investigation cycles, 2 clarifying questions, and escalate
+  below 0.6 confidence. A run that exhausts a budget escalates; it never loops.
+- **Retrieved chunks are untrusted too**: scan each one for instructions and drop it if it fails. A
+  reply scoring below 0.8 groundedness is revised once, then escalated.
+- A memory fact is kept only at confidence ≥ 0.7, and erasure removes rows and vectors together.
 - Refunds, setting resets, deletions, and disputes need a recorded approval.
   `MAX_REFUND_WITHOUT_APPROVAL` defaults to `0`.
 - `assess_risk()` returns `high` when the plan needs approval, a policy escalation fired, severity is
@@ -108,5 +133,7 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 - Memory notes containing card numbers, keys, passwords, or raw ticket bodies.
 - Deploying production from the dev var-file, or applying an unreviewed plan.
 - Writing "deployed", "passes in CI", or "validated" before it is true.
+- Building any of decisions D1–D6, or renaming a status, severity, channel or environment variable to
+  match an upstream document, without that decision being taken in `CLAUDE.md` first.
 - Pushing to GitHub, or opening, closing, or merging a pull request, without the owner saying so.
   Commit locally by default. Never push directly to `development`, `testing`, or `main`.

@@ -76,7 +76,12 @@ Not yet built: the database and demo data, authentication, the support API, the 
 | 14 | Evaluation and delivery | not started |
 
 Sub-tasks, branches, and dependencies are in `TASKS.md`; the requirements and each phase's exit
-criteria are in `PLAN.md`; the full design is in `CLAUDE.md`.
+criteria are in `PLAN.md`; the implementation spec is in `CLAUDE.md`.
+
+The upstream design documents this is built from are in `docs/`: a BRD and PRD
+(`01a`, `01b`), a high-level design (`02`) and a low-level design (`03`), written by the course
+author. They specify the full multi-tenant product; this repo is a single-tenant v1 of the same
+architecture, and `CLAUDE.md` §1.1 tables the differences.
 
 ## Getting Started
 

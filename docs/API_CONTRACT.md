@@ -6,6 +6,11 @@ Every response carries `X-Request-ID`. A caller-supplied value is echoed when it
 from `A-Za-z0-9._:-`; any other value is replaced with a UUID. CORS exposes `X-Request-ID`.
 Errors: `{ "detail": string }` with proper HTTP status.
 
+This is the v1 surface. The upstream LLD §4 also specifies routes this contract does not carry — an
+editable approval decision, customer feedback, analytics, memory erasure, the widget session and the
+SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk requirement” in
+`PLAN.md` and needs a decision before it is added here.
+
 ## Health (no prefix, no auth)
 | Method | Path | Response |
 |---|---|---|
