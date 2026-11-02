@@ -1,5 +1,7 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
 ---
@@ -166,7 +168,8 @@ docs/          API_CONTRACT.md (the API contract – source of truth for routes 
                ARCHITECTURE.md · Git_GitHub_Workflow_Guide.md
                01a_BRD_… · 01b_PRD_… · 02_HLD_… · 03_LLD_… (upstream design, §1.1)
 datasets/      eval_cases.json
-scripts/       demo.py
+scripts/       demo.py · stamp_docs.py
+.githooks/     pre-commit (committed, installed by `make setup`)
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
 .claude/       skills/clouddesk-support/SKILL.md
 (root)         CLAUDE.md · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
@@ -527,6 +530,7 @@ make demo TICKET=CD-1005
 make mcp              # MCP server (read-only tools)
 make test             # backend pytest, ~6 s, offline
 make lint             # ruff
+git commit            # the pre-commit hook stamps each staged document with the time it changed
 cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
 docker compose config -q && docker compose up --build
 make terraform-validate
@@ -537,6 +541,13 @@ Windows: prefer `uv run`, which finds `.venv` and (through pytest's `pythonpath`
 `.venv/Scripts/python.exe` with `backend` on `PYTHONPATH` (`;` separator). Set `PYTHONIOENCODING=utf-8` for CLI
 output with symbols.
 GNU make is not part of Windows: `winget install ezwinports.make`, then open a new terminal.
+
+`make setup` also runs `git config core.hooksPath .githooks`, so the committed pre-commit hook is
+shared rather than living in an untracked `.git/hooks`. It stamps only the documents listed in
+`scripts/stamp_docs.py` and only when they are already staged, so each `_Last updated:` line
+belongs to the commit that caused it. The upstream author's documents are never stamped: they carry
+their own version date. Git remains the real record (`git log -1 --format=%cI -- <file>`); the line
+is for reading a file outside a clone. Commit with `--no-verify` to skip it once.
 
 Git and GitHub flow is in [`docs/Git_GitHub_Workflow_Guide.md`](docs/Git_GitHub_Workflow_Guide.md). Feature branches open against `development`,
 then `development` promotes to `testing`, then `main`. Remote:

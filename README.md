@@ -1,5 +1,7 @@
 # CloudDesk
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 > An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
 > investigates it and proposes a resolution, and a human approves anything that costs money or
 > touches an account.

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Stamp each staged project document with the time it last changed.
+#
+# Installed by `make setup`, which runs: git config core.hooksPath .githooks
+# This folder is committed, so every contributor gets the hook; .git/hooks is not shared.
+#
+# Only the files listed in scripts/stamp_docs.py STAMPED are touched, and only when already
+# staged, so the stamp always belongs to the commit that caused it. To skip it once, commit
+# with --no-verify.
+set -e
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "pre-commit: uv not found, skipping the document stamp" >&2
+    exit 0
+fi
+
+uv run --quiet python scripts/stamp_docs.py

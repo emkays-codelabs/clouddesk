@@ -10,6 +10,8 @@ description: >-
 
 # CloudDesk support platform
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 ## The files, and which one to trust
 
 | File | Holds |

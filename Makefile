@@ -6,6 +6,7 @@
 # Recipes only call `uv`, so they work in cmd.exe, PowerShell and sh alike (no `test`/`cp`/`&&`).
 setup:
 	uv sync
+	git config core.hooksPath .githooks
 	@uv run python -c "import pathlib, shutil; p = pathlib.Path('.env'); p.exists() or shutil.copyfile('.env.example', p)"
 
 backend:

@@ -18,6 +18,8 @@ This guide is how code moves for CloudDesk. Feature work branches from developme
 
 # Contents
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 - 1. Branch model at a glance
 - 2. Before you start
 - 3. First-time setup

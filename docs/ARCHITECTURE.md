@@ -1,5 +1,7 @@
 # CloudDesk architecture
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
 These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. The upstream
