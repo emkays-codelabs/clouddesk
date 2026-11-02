@@ -270,3 +270,31 @@ class TestCompletion:
         ]
 
         assert problems == []
+
+
+class TestInternalFolderVisibility:
+    """The repository is public: the Q&A is private and the other three folders are committed."""
+
+    def _ignored(self, path: str) -> bool:
+        return subprocess.run(["git", "check-ignore", "-q", path], cwd=ROOT).returncode == 0
+
+    def test_the_interview_qna_folder_is_git_ignored(self):
+        assert self._ignored("internal/QnA/Phase1_Interview_QnA.md")
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "internal/explain_codebase/Phase1_explained.md",
+            "internal/design_evolution/Phase1_Project_System_Design_Evolution.md",
+            "internal/Infra_design_evolution/Phase1_Infra_design_evolution.md",
+        ],
+    )
+    def test_the_other_three_folders_are_not_ignored_so_they_can_be_committed(self, path: str):
+        assert not self._ignored(path)
+
+    def test_nothing_under_the_qna_folder_is_already_tracked(self):
+        tracked = subprocess.run(
+            ["git", "ls-files", "internal/QnA"], cwd=ROOT, capture_output=True, text=True
+        ).stdout.split()
+
+        assert tracked == []
