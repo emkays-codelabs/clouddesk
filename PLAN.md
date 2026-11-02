@@ -211,6 +211,8 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
 
+**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/claude-setup-suggestions.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its two-turn cache test is still pending.
+
 ### Phase 2 — Persistence and demo data
 
 Tasks: `TASKS.md`, Phase 2.
