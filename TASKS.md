@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 22:32 +0530_
+_Last updated: 2026-11-02 23:11 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -69,8 +69,9 @@ The longest dependency chain is 16 tasks long.
 | P1-6 · Claude Code cost governance | — | `feature/cost-governance` | Completed ✅ |
 | P1-7 · Numbered document names | — | `feature/docs-file-names` | Completed ✅ |
 | P1-8 · Phase documentation workflow | — | `docs/phase-documentation-spec` | Completed ✅ |
-| P1-9 · Phase 1 documents | — | `docs/phase-1-documents` | Pending ❌ |
+| P1-9 · Phase 1 documents | — | `docs/phase-1-documents` | Completed ✅ |
 | P1-10 · Mid-phase documentation trigger | — | `docs/mid-phase-doc-trigger` | Completed ✅ |
+| P1-11 · Per-phase documentation layout | — | `docs/phase-1-documents` | Completed ✅ |
 
 #### Task definitions
 
@@ -168,19 +169,20 @@ The longest dependency chain is 16 tasks long.
   the delegation rule and `PLAN.md` reference it; no rule exceeds 30 lines; every finished phase has its documents
   or is in the explicit `OWED` set, and `OWED` may name only a phase that is still owed; cited paths that do not
   exist are rejected, with external paths, local-only files and lines marked planned or historical handled
-  explicitly; Mermaid blocks are checked for structure only; `CLAUDE.md` lists the `.claude/` setup, the slash commands and the requirement, and a test keeps its command list matched to the skills that exist; `internal/QnA/` is git-ignored and the other three folders are not. The four Phase 1 documents themselves are not part
+  explicitly; Mermaid blocks are checked for structure only; `CLAUDE.md` lists the `.claude/` setup, the slash commands and the requirement, and a test keeps its command list matched to the skills that exist; the interview Q&A file in each phase folder is git-ignored and the other three documents are not. The four Phase 1 documents themselves are not part
   of this task.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes. The checks cannot prove a
   document is accurate or that a diagram renders; that needs review.
 
 **P1-9 · Phase 1 documents**
 - **Needs:** `P1-8`
-- **Build:** Run `/phase-docs 1` to write Phase 1's four documents, then review them against the code. Reviewed
-  separately from the workflow in P1-8.
-- **Files:** `internal/explain_codebase/Phase1_explained.md`,
-  `internal/design_evolution/Phase1_Project_System_Design_Evolution.md`,
-  `internal/Infra_design_evolution/Phase1_Infra_design_evolution.md`,
-  `internal/QnA/Phase1_Interview_QnA.md` (git-ignored, so local only),
+- **Build:** Write Phase 1's four documents following `docs/09_PHASE_DOCUMENTATION.md`, from the code, the merge history
+  and a live run of the service, then review them against the code. Reviewed separately from the workflow in P1-8. They were
+  written in a normal session, not by the `/phase-docs` skill, which has still not been run.
+- **Files:** `internal/Phase1/01_CODEBASE_EXPLAINED.md`,
+  `internal/Phase1/02_DESIGN_EVOLUTION.md`,
+  `internal/Phase1/03_INFRA_EVOLUTION.md`,
+  `internal/Phase1/04_INTERVIEW_QNA.md` (git-ignored, so local only),
   `tests/unit/test_phase_doc_checks.py` (remove phase 1 from `OWED`)
 - **Done when:** The documents exist and are not empty; every cited path exists; Mermaid blocks pass the structural
   check; test results are quoted from a real run; a human has compared each against the code; and phase 1 is gone
@@ -202,6 +204,21 @@ The longest dependency chain is 16 tasks long.
   validated phases, so a phase in progress or not started is not required to have all four documents.
 - **Note:** an instruction, not an enforcement: nothing checks that a given task updated the right document. The
   end-of-phase completion test is the backstop. No application code changes.
+
+**P1-11 · Per-phase documentation layout**
+- **Needs:** `P1-8`
+- **Build:** At the owner's instruction the four documents for a phase live together in `internal/PhaseN/`, as
+  `01_CODEBASE_EXPLAINED.md`, `02_DESIGN_EVOLUTION.md`, `03_INFRA_EVOLUTION.md` and `04_INTERVIEW_QNA.md`, instead of one folder per
+  category. The specification (section 2 and each file-naming convention), the `/phase-docs` skill, the completion helper
+  and its tests, `.gitignore` (now `internal/Phase*/04_INTERVIEW_QNA.md`) and the `CLAUDE.md` layout line follow it. The
+  numbers keep reading order, which alphabetical names would lose.
+- **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`, `scripts/check_phase_docs.py`,
+  `.gitignore`, `CLAUDE.md`, `MEMORY.md`, `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`
+- **Done when:** The spec defines exactly the four per-phase file names; the skill names the phase folder and each file;
+  `required_documents` returns the new paths; the Q&A file is ignored for every phase and the other three are not; and
+  `OWED` is empty because Phase 1's documents exist.
+- **Note:** the earlier layout is superseded, not kept. No document in the earlier layout had been committed. The spec
+  carries a dated revision note under its title. No application code changes.
 
 ---
 
@@ -812,7 +829,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 73 tasks are Completed ✅ and the Progress summary reads 73 of 73.
+- All 74 tasks are Completed ✅ and the Progress summary reads 74 of 74.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -842,7 +859,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 10 | 9 |
+| 1 | Runtime skeleton | 11 | 11 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -856,4 +873,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **73** | **9** |
+| **Total** | | **74** | **11** |

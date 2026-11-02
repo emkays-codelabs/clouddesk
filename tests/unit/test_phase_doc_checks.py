@@ -27,14 +27,15 @@ MIN_BYTES = 200
 
 # Phases whose four documents are still to be written. Remove a phase from this set when they land:
 # test_the_owed_list_names_only_phases_that_are_still_owed fails if you forget.
-OWED = {1}
+OWED: set[int] = set()
 
 
 def _qna_is_git_ignored() -> bool:
-    """A git-ignored Q&A folder is absent from a clean clone, so it cannot be required there."""
+    """A git-ignored Q&A file is absent from a clean clone, so it cannot be required there."""
     try:
         run = subprocess.run(
-            ["git", "check-ignore", "-q", "internal/QnA/Phase1_Interview_QnA.md"], cwd=ROOT
+            ["git", "check-ignore", "-q", "--no-index", "internal/Phase1/04_INTERVIEW_QNA.md"],
+            cwd=ROOT,
         )
     except OSError:
         return False
@@ -229,17 +230,17 @@ class TestFinishedPhases:
 class TestRequiredDocuments:
     def test_a_phase_has_the_four_documents_the_spec_defines(self):
         assert required_documents(3) == [
-            "internal/explain_codebase/Phase3_explained.md",
-            "internal/design_evolution/Phase3_Project_System_Design_Evolution.md",
-            "internal/Infra_design_evolution/Phase3_Infra_design_evolution.md",
-            "internal/QnA/Phase3_Interview_QnA.md",
+            "internal/Phase3/01_CODEBASE_EXPLAINED.md",
+            "internal/Phase3/02_DESIGN_EVOLUTION.md",
+            "internal/Phase3/03_INFRA_EVOLUTION.md",
+            "internal/Phase3/04_INTERVIEW_QNA.md",
         ]
 
     def test_the_qna_document_can_be_left_out_when_it_is_private(self):
         names = required_documents(3, qna_required=False)
 
         assert len(names) == 3
-        assert not any("QnA" in n for n in names)
+        assert not any("interview_qna" in n for n in names)
 
 
 class TestCompletion:
@@ -288,28 +289,34 @@ class TestCompletion:
 
 
 class TestInternalFolderVisibility:
-    """The repository is public: the Q&A is private and the other three folders are committed."""
+    """The repository is public: the Q&A file is private; the other three documents are not."""
 
     def _ignored(self, path: str) -> bool:
-        return subprocess.run(["git", "check-ignore", "-q", path], cwd=ROOT).returncode == 0
+        return (
+            subprocess.run(["git", "check-ignore", "-q", "--no-index", path], cwd=ROOT).returncode
+            == 0
+        )
 
-    def test_the_interview_qna_folder_is_git_ignored(self):
-        assert self._ignored("internal/QnA/Phase1_Interview_QnA.md")
+    def test_the_interview_qna_file_is_git_ignored(self):
+        assert self._ignored("internal/Phase1/04_INTERVIEW_QNA.md")
+        assert self._ignored(
+            "internal/Phase12/04_INTERVIEW_QNA.md"
+        )  # every phase, not just the first
 
     @pytest.mark.parametrize(
         "path",
         [
-            "internal/explain_codebase/Phase1_explained.md",
-            "internal/design_evolution/Phase1_Project_System_Design_Evolution.md",
-            "internal/Infra_design_evolution/Phase1_Infra_design_evolution.md",
+            "internal/Phase1/01_CODEBASE_EXPLAINED.md",
+            "internal/Phase1/02_DESIGN_EVOLUTION.md",
+            "internal/Phase1/03_INFRA_EVOLUTION.md",
         ],
     )
-    def test_the_other_three_folders_are_not_ignored_so_they_can_be_committed(self, path: str):
+    def test_the_other_three_documents_are_not_ignored_so_they_can_be_committed(self, path: str):
         assert not self._ignored(path)
 
-    def test_nothing_under_the_qna_folder_is_already_tracked(self):
+    def test_no_interview_qna_file_is_already_tracked(self):
         tracked = subprocess.run(
-            ["git", "ls-files", "internal/QnA"], cwd=ROOT, capture_output=True, text=True
+            ["git", "ls-files", "internal"], cwd=ROOT, capture_output=True, text=True
         ).stdout.split()
 
-        assert tracked == []
+        assert [p for p in tracked if p.endswith("04_INTERVIEW_QNA.md")] == []

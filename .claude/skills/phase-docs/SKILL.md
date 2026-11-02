@@ -21,10 +21,10 @@ Write the four documents for phase $ARGUMENTS.
    names a planned, removed or historical file, use that word.
 4. Write these files, creating the folders if missing. If one exists, update it in place and keep what is
    still true:
-   - `internal/explain_codebase/Phase<N>_explained.md`
-   - `internal/design_evolution/Phase<N>_Project_System_Design_Evolution.md`
-   - `internal/Infra_design_evolution/Phase<N>_Infra_design_evolution.md`
-   - `internal/QnA/Phase<N>_Interview_QnA.md`
+   - `internal/Phase<N>/01_CODEBASE_EXPLAINED.md`
+   - `internal/Phase<N>/02_DESIGN_EVOLUTION.md`
+   - `internal/Phase<N>/03_INFRA_EVOLUTION.md`
+   - `internal/Phase<N>/04_INTERVIEW_QNA.md`
 5. Claim a test passed only if you ran it now: run `uv run pytest -q` and `uv run ruff check .` and quote
    the result. If there is no Docker setup yet, say the infrastructure document covers a local setup.
 6. Draw Mermaid from the actual code. Run `uv run pytest tests/unit/test_phase_doc_checks.py -q`, and say

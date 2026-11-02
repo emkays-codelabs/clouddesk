@@ -76,5 +76,5 @@ terraform.tfvars
 backend.hcl
 
 # --- Private interview preparation (see docs/09_PHASE_DOCUMENTATION.md) ---
-# The repository is public. The other internal/ folders hold project documentation and are committed.
-internal/QnA/
+# The repository is public. The other documents in each internal/PhaseN/ folder hold project documentation and are committed.
+internal/Phase*/04_INTERVIEW_QNA.md

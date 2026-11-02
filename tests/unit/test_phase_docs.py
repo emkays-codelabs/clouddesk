@@ -21,10 +21,10 @@ def _frontmatter(path: pathlib.Path) -> dict[str, str]:
     }
 
 
-def _spec_outputs() -> list[tuple[str, str]]:
-    """(folder, file stem after 'PhaseN_') for each of the four documents the spec defines."""
+def _spec_outputs() -> list[str]:
+    """The four file names the spec defines inside each phase folder, internal/PhaseN/."""
     spec = SPEC.read_text(encoding="utf-8")
-    return sorted(set(re.findall(r"`internal/([A-Za-z_]+)/PhaseN_([A-Za-z_]+\.md)`", spec)))
+    return sorted(set(re.findall(r"`internal/PhaseN/(\d{2}_[A-Z_]+\.md)`", spec)))
 
 
 class TestTheSpec:
@@ -36,11 +36,11 @@ class TestTheSpec:
         assert "### Category M" in spec  # the last question category
 
     def test_it_defines_exactly_four_documents(self):
-        assert [folder for folder, _ in _spec_outputs()] == [
-            "Infra_design_evolution",
-            "QnA",
-            "design_evolution",
-            "explain_codebase",
+        assert _spec_outputs() == [
+            "01_CODEBASE_EXPLAINED.md",
+            "02_DESIGN_EVOLUTION.md",
+            "03_INFRA_EVOLUTION.md",
+            "04_INTERVIEW_QNA.md",
         ]
 
 
@@ -58,15 +58,12 @@ class TestTheSkill:
         assert "docs/09_PHASE_DOCUMENTATION.md" in SKILL.read_text(encoding="utf-8")
         assert SPEC.exists()
 
-    def test_it_names_every_output_folder_and_file_the_spec_defines(self):
+    def test_it_names_the_phase_folder_and_every_file_the_spec_defines(self):
         skill = SKILL.read_text(encoding="utf-8")
 
-        missing = [
-            f"internal/{folder}/ ... {stem}"
-            for folder, stem in _spec_outputs()
-            if f"internal/{folder}/" not in skill or stem not in skill
-        ]
+        missing = [name for name in _spec_outputs() if f"internal/Phase<N>/{name}" not in skill]
 
+        assert "internal/Phase<N>/" in skill
         assert missing == []
 
     def test_it_covers_every_question_category_the_spec_defines(self):
