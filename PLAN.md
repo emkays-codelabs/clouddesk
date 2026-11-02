@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk Project 1
 
-_Last updated: 2026-11-02 20:14 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -111,7 +111,7 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | Upstream | Requirement | Where it stands |
 |---|---|---|
 | FR-05 | Ask clarifying questions, at most 2 turns, then hand off | No node and no requirement. The upstream graph has a `clarify` node; CloudDesk's does not. |
-| FR-21 | An approver may **edit** the arguments before approving | `docs/API_CONTRACT.md` offers approve and reject only. |
+| FR-21 | An approver may **edit** the arguments before approving | `docs/06_API_CONTRACT.md` offers approve and reject only. |
 | FR-29, FR-07 | Distil resolutions into reviewed **resolution cards** and index them | The learning loop (upstream journey J5). F6 retrieves past tickets but nothing distils them. |
 | FR-30 | Capture CSAT and agent feedback, linked to traces | No `feedback` table, route or requirement. The eval suite has no outcome signal without it. |
 | FR-35 | Analytics: autonomous rate, first response time, MTTR, CSAT, cost, escalation reasons | `GET /dashboard/summary` returns counts only. These are the PRD's business objectives BO-1 to BO-7. |
@@ -211,7 +211,7 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
 
-**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/claude-setup-suggestions.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its two-turn cache test is still pending.
+**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its two-turn cache test is still pending.
 
 ### Phase 2 — Persistence and demo data
 
@@ -253,7 +253,7 @@ Tasks: `TASKS.md`, Phase 4.
 
 **Requirements.** F1, F4 (read side), contract rule in §12.
 
-**Files.** `backend/app/api/` ticket, customer, ticket-action, dashboard, audit, and settings routers, `backend/app/schemas/`, `backend/app/services/`, `docs/API_CONTRACT.md`, `tests/api/`.
+**Files.** `backend/app/api/` ticket, customer, ticket-action, dashboard, audit, and settings routers, `backend/app/schemas/`, `backend/app/services/`, `docs/06_API_CONTRACT.md`, `tests/api/`.
 
 **Tests.** `POST /api/v1/tickets` accepts email, chat, web, and API channels. List, get, and 404 behave as the contract says. Customer, subscription, workspace, and previous tickets load for a known demo customer. Ticket actions (`reply`, `request-info`, `escalate`, `PATCH`) follow the contract and return 403 for a viewer. `GET /dashboard/summary`, `GET /audit`, and `GET /settings` match the contract, and `/settings` never returns a key. Duplicate run-while-waiting is specified now and enforced in Phase 11.
 

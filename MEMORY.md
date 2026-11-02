@@ -1,6 +1,6 @@
 # MEMORY.md — CloudDesk
 
-_Last updated: 2026-11-02 20:14 +0530_
+_Last updated: 2026-11-02 20:35 +0530_
 
 Durable facts for this repository: what is really done, what has been decided, and what is still open. `CLAUDE.md` wins if this file drifts. Update it in place when a decision or the status changes. Do not store secrets, customer payloads, or raw ticket bodies here.
 
@@ -11,7 +11,7 @@ Durable facts for this repository: what is really done, what has been decided, a
 - Planning files: `CLAUDE.md` (spec, wins any disagreement), `PLAN.md` (requirements and phase exit criteria), `TASKS.md` (tasks and order), and this file (status and decisions).
 - One phase numbering: the 14 phases in `TASKS.md`. `PLAN_PHASE.md` was merged into `PLAN.md` and removed on 2026-10-31.
 - The project runs as a service with uvicorn (`[tool.uv] package = false`); there is no installable package and no CLI entry point.
-- Git flow: `feature/<name>` → `development` → `testing` → `main`, by pull request, with no direct pushes (`docs/Git_GitHub_Workflow_Guide.md`).
+- Git flow: `feature/<name>` → `development` → `testing` → `main`, by pull request, with no direct pushes (`docs/07_GIT_WORKFLOW.md`).
 - Nothing is pushed to GitHub, and no pull request is opened or closed, until the owner says so (2026-10-31).
 - Updating `TASKS.md` is part of finishing every task (owner's rule, 2026-10-31): the task's pull request sets its row to Completed ✅ and updates the Progress summary, and adds a line to the Honest status below.
 
@@ -29,6 +29,7 @@ Update each row in place. Do not mark a row done from intention.
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
 | Phase plan | Phase 1 (runtime skeleton) is complete and validated locally: all four tasks are merged (4 of 67). Phases 2–14 are not started. |
 | Claude Code setup | Written 2026-11-02 from the cost-governance prompt, with every key checked against the official docs. Validated: `settings.json` parses and no existing permission was dropped; `bash -n` passes on the hook. **Not verified:** that prompt caching works (the two-turn test needs a fresh session), that the hook fires in a live session, `omitClaudeMd` (needs Claude Code 2.1.271 or later; the CLI on this PATH is 2.1.104), and that skills named `plan`, `review` and `test` do not collide with built-in commands. The cache TTL is left at the default. |
+| Docs folder | `docs/` uses numbered short names: `01_BRD`, `02_PRD`, `03_HLD`, `04_LLD` (the upstream design, in dependency order), then `05_ARCHITECTURE`, `06_API_CONTRACT`, `07_GIT_WORKFLOW`, `08_CLAUDE_SETUP`. `09_PROMPT_COST` is a local prompt note that is not tracked. References were updated by path only, and `tests/unit/test_docs_folder.py` fails on any old name. The HLD and LLD still name the author's original files inside their own text, by design. |
 | GitHub | `main`, `development` and `testing` exist, and there are no other branches. `development` holds the planning documents and all of Phase 1. Pull requests #3 to #7 are merged; #1 and #2 are closed. |
 
 ## Locked decisions
@@ -47,7 +48,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
   repositories own the filter, so SQLite's lack of RLS still leaves one enforcement point. Settled by
   Claude on the owner's instruction, not by a separate review — overrule it here if that is wrong.
 - 2026-11-02, scope: the upstream documents (`docs/01`–`03`) describe ACSRP, the full multi-tenant product; this repo builds CloudDesk, a single-tenant v1 of the same architecture. The differences are tabled in `CLAUDE.md` §1.1. CloudDesk's own vocabulary (severity `low`/`medium`/`high`/`critical`, `waiting_on_*` statuses, the `web` channel, unprefixed environment variables) is built and under test, and is not renamed to match upstream without changing `CLAUDE.md` §5 or §10.1, the model, the schema and the tests together.
-- 2026-11-02, Claude Code cost governance: the default session model is Sonnet. Opus runs only in `planner` and `opus-consultant`; Haiku runs `Explore` and `log-triage`. At most 3 agents run in parallel, one worktree each, and never on the same file. Model ids are pinned in `.claude/settings.json` for the first-party API (`claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`). `CLAUDE.md` is a protected file in this setup: proposed edits go to `docs/claude-setup-suggestions.md`. The source prompt departs from the official docs in several places, listed in that file, and the docs won.
+- 2026-11-02, Claude Code cost governance: the default session model is Sonnet. Opus runs only in `planner` and `opus-consultant`; Haiku runs `Explore` and `log-triage`. At most 3 agents run in parallel, one worktree each, and never on the same file. Model ids are pinned in `.claude/settings.json` for the first-party API (`claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`). `CLAUDE.md` is a protected file in this setup: proposed edits go to `docs/08_CLAUDE_SETUP.md`. The source prompt departs from the official docs in several places, listed in that file, and the docs won.
 
 ## Open questions
 
@@ -56,7 +57,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). `database/schema.sql` becomes the authority once it is written.
 - Course documents 00 and 04–17 are not in this repo.
 - D1 (multi-tenancy) is settled; see Locked decisions above and `CLAUDE.md` §6. **D2–D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, model tiering, Kubernetes, and the harder eval bar. None blocks Phase 2.
-- The prompt-cache TTL is left at the default and unmeasured. Decide it from real idle gaps (section "Caching" in `docs/claude-setup-suggestions.md`), and run the two-turn cache test in a fresh session.
+- The prompt-cache TTL is left at the default and unmeasured. Decide it from real idle gaps (section "Caching" in `docs/08_CLAUDE_SETUP.md`), and run the two-turn cache test in a fresh session.
 
 ## Update protocol
 

@@ -4,7 +4,7 @@ Git already knows this exactly (`git log -1 --format=%cI -- <file>`), so the sta
 for anyone reading the file on its own, outside a clone. The hook stamps only the files staged
 in the commit, so a document's line always matches the commit that last touched it.
 
-The upstream author's documents in `docs/01a`, `01b`, `02` and `03` are deliberately absent from
+The upstream author's documents in `docs/01` to `04` are deliberately absent from
 STAMPED: they carry their own version date, and overwriting it would misreport their author.
 """
 
@@ -28,9 +28,9 @@ STAMPED = [
     "TASKS.md",
     "MEMORY.md",
     "README.md",
-    "docs/API_CONTRACT.md",
-    "docs/ARCHITECTURE.md",
-    "docs/Git_GitHub_Workflow_Guide.md",
+    "docs/06_API_CONTRACT.md",
+    "docs/05_ARCHITECTURE.md",
+    "docs/07_GIT_WORKFLOW.md",
     ".claude/skills/clouddesk-support/SKILL.md",
 ]
 
@@ -97,7 +97,7 @@ def main(argv: list[str]) -> int:
     paths = argv or [
         p
         for p in subprocess.run(
-            ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
+            ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
             cwd=root,
             capture_output=True,
             text=True,

@@ -18,7 +18,7 @@ This guide is how code moves for CloudDesk. Feature work branches from developme
 
 # Contents
 
-_Last updated: 2026-11-02 15:33 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 - 1. Branch model at a glance
 - 2. Before you start
@@ -92,7 +92,7 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 | TASKS.md | The sub-task you are doing, its feature/\<name\> branch, and Pending ❌ or Completed ✅. |
 | PLAN.md | Requirement catalog F1–F14 and N1–N8, and each phase's exit criteria and demo checkpoint. |
 | MEMORY.md | Honest status, locked decisions, and open questions. Update it when the status changes. |
-| docs/ARCHITECTURE.md | Component and infrastructure diagrams. |
+| docs/05_ARCHITECTURE.md | Component and infrastructure diagrams. |
 | .claude/skills/clouddesk-support/SKILL.md | How to implement a change in this repo. |
 | docs/API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
 
@@ -423,7 +423,7 @@ main is the production candidate. Deploy is a separate, reviewed apply. Nothing 
 - Branch and release policy: this guide and the repository admin.
 - Which sub-task to pick: TASKS.md. Respect the task's Needs line.
 - Spec, layers, and safety rules: CLAUDE.md.
-- Diagrams: docs/ARCHITECTURE.md.
+- Diagrams: docs/05_ARCHITECTURE.md.
 
 If the shape of a change is unclear, open a draft pull request into development early.
 

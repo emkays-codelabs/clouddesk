@@ -1,6 +1,6 @@
 # CloudDesk
 
-_Last updated: 2026-11-02 20:14 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 > An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
 > investigates it and proposes a resolution, and a human approves anything that costs money or
@@ -82,7 +82,7 @@ Sub-tasks, branches, and dependencies are in `TASKS.md`; the requirements and ea
 criteria are in `PLAN.md`; the implementation spec is in `CLAUDE.md`.
 
 The upstream design documents this is built from are in `docs/`: a BRD and PRD
-(`01a`, `01b`), a high-level design (`02`) and a low-level design (`03`), written by the course
+(`01`, `02`), a high-level design (`03`) and a low-level design (`04`), written by the course
 author. They specify the full multi-tenant product; this repo is a single-tenant v1 of the same
 architecture, and `CLAUDE.md` §1.1 tables the differences.
 
@@ -140,7 +140,7 @@ routine work cheap.
 
 A hook runs `ruff` and `pytest` before Claude runs `git commit` and blocks the commit if either fails. It
 does not run when you commit by hand. Setup notes, the open checks, and proposed `CLAUDE.md` edits are in
-[`docs/claude-setup-suggestions.md`](docs/claude-setup-suggestions.md). Prompt caching has not been
+[`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md). Prompt caching has not been
 measured yet, and the cache TTL is left at the default.
 
 ## Author

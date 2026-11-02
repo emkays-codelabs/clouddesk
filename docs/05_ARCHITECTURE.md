@@ -1,11 +1,11 @@
 # CloudDesk architecture
 
-_Last updated: 2026-11-02 15:33 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
 These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. The upstream
-high-level and low-level designs for the full product are `02_HLD_…` and `03_LLD_…` in this folder;
+high-level and low-level designs for the full product are `03_HLD.md` and `04_LLD.md` in this folder;
 `CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
 
 This is the design to build. Application code is not in the repo yet. No cloud account has been applied, and nothing in these diagrams is deployed.

@@ -1,6 +1,6 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-02 15:33 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -33,10 +33,10 @@ The product and architecture documents for this project sit in `docs/`, written 
 
 | Document | Holds |
 |---|---|
-| [`docs/01a_BRD_…`](docs/01a_BRD_Autonomous_Customer_Support_Platform.md) | Why: problem statement, business objectives BO-1–7, stakeholders, scope, risks, compliance (§§1, 2, 10, 11, 13) |
-| [`docs/01b_PRD_…`](docs/01b_PRD_Autonomous_Customer_Support_Platform.md) | What: personas, journeys, FR-01–42, NFR-01–16, AI requirements, success metrics, release plan, acceptance (§§3–9, 12, 13) |
-| [`docs/02_HLD_…`](docs/02_HLD_Autonomous_Customer_Support_Platform_md_GI9Q.md) | Component architecture, agent graph, retrieval design, security, multi-cloud mapping, ADR-01–08 |
-| [`docs/03_LLD_…`](docs/03_LLD_Autonomous_Customer_Support_Platform_md_5meL.md) | Postgres DDL, API endpoints, LangGraph state and nodes, policy YAML, MCP servers, Terraform, CI |
+| [`docs/01_BRD.md`](docs/01_BRD.md) | Why: problem statement, business objectives BO-1–7, stakeholders, scope, risks, compliance (§§1, 2, 10, 11, 13) |
+| [`docs/02_PRD.md`](docs/02_PRD.md) | What: personas, journeys, FR-01–42, NFR-01–16, AI requirements, success metrics, release plan, acceptance (§§3–9, 12, 13) |
+| [`docs/03_HLD.md`](docs/03_HLD.md) | Component architecture, agent graph, retrieval design, security, multi-cloud mapping, ADR-01–08 |
+| [`docs/04_LLD.md`](docs/04_LLD.md) | Postgres DDL, API endpoints, LangGraph state and nodes, policy YAML, MCP servers, Terraform, CI |
 
 They describe **ACSRP**, the full multi-tenant product. This repo builds **CloudDesk**, a single-tenant
 v1 of the same architecture, scoped so it runs offline on one machine. For anything under `backend/`,
@@ -110,7 +110,7 @@ Three-tier: **Next.js 15 frontend → FastAPI backend → data stores**. The bus
 **LangGraph workflow** that orchestrates six specialist agents, a RAG pipeline, permissioned tools and
 memory. Agents are one component inside a normal web app; auth, DB, cache, observability and deploy
 are the same as any SaaS product. Component and infrastructure diagrams are in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+[`docs/05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md).
 
 ```text
 Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID)─▶ FastAPI (:8000)
@@ -164,9 +164,9 @@ sample_data/   tickets.json · customers.json · subscriptions.json · workspace
 tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · deployment/
 deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
 data/          (git-ignored) support.db · checkpoints.db
-docs/          API_CONTRACT.md (the API contract – source of truth for routes and types)
-               ARCHITECTURE.md · Git_GitHub_Workflow_Guide.md
-               01a_BRD_… · 01b_PRD_… · 02_HLD_… · 03_LLD_… (upstream design, §1.1)
+docs/          06_API_CONTRACT.md (the API contract – source of truth for routes and types)
+               05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md
+               01_BRD · 02_PRD · 03_HLD · 04_LLD (upstream design, §1.1)
 datasets/      eval_cases.json
 scripts/       demo.py · stamp_docs.py
 .githooks/     pre-commit (committed, installed by `make setup`)
@@ -455,7 +455,7 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 
 - Next.js 15 App Router, TypeScript, Tailwind. No UI library, no gradients (hand-written kit in `components/ui/`).
 - Backend is reached **only** through `frontend/lib/api.ts` (typed client, bearer token in `localStorage`,
-  401 → `/login?reason=expired`, `NetworkError` banner with auto-retry). `types.ts` mirrors `API_CONTRACT.md`.
+  401 → `/login?reason=expired`, `NetworkError` banner with auto-retry). `types.ts` mirrors `06_API_CONTRACT.md`.
 - Polling via `usePolling` (2 s on the ticket screen) for workflow progress.
 - Pages: `/login`, `/dashboard`, `/tickets`, `/tickets/[id]`, `/customers`, `/customers/[id]`, `/knowledge`,
   `/escalations`, `/agents`, `/audit`, `/settings`, `/api/health`. Nav declared once in `components/layout/nav.ts`.
@@ -469,12 +469,12 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 
 ## 12. API contract
 
-`docs/API_CONTRACT.md` is the source of truth for every route and type. Summary of groups:
+`docs/06_API_CONTRACT.md` is the source of truth for every route and type. Summary of groups:
 `/auth` · `/dashboard/summary` · `/tickets` (+ `/run`, `/workflow`, `/events`, `/reply`, `/request-info`,
 `/escalate`) · `/approvals` (+ approve/reject) · `/customers` · `/knowledge` (+ search, reindex) ·
 `/escalations` · `/agents` · `/audit` · `/settings` · `/mcp/tools`.
 
-Rule: if an endpoint changes, update `API_CONTRACT.md`, `backend/app/schemas/`, and `frontend/lib/types.ts`
+Rule: if an endpoint changes, update `06_API_CONTRACT.md`, `backend/app/schemas/`, and `frontend/lib/types.ts`
 in the same change.
 
 ---
@@ -549,7 +549,7 @@ belongs to the commit that caused it. The upstream author's documents are never 
 their own version date. Git remains the real record (`git log -1 --format=%cI -- <file>`); the line
 is for reading a file outside a clone. Commit with `--no-verify` to skip it once.
 
-Git and GitHub flow is in [`docs/Git_GitHub_Workflow_Guide.md`](docs/Git_GitHub_Workflow_Guide.md). Feature branches open against `development`,
+Git and GitHub flow is in [`docs/07_GIT_WORKFLOW.md`](docs/07_GIT_WORKFLOW.md). Feature branches open against `development`,
 then `development` promotes to `testing`, then `main`. Remote:
 `https://github.com/emkays-codelabs/clouddesk.git`.
 
@@ -614,7 +614,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 
 ## 18. Coding rules for this project
 
-1. **Read before you write.** Check `API_CONTRACT.md`, the relevant requirement row in `PLAN.md`, and the existing test before changing behaviour.
+1. **Read before you write.** Check `06_API_CONTRACT.md`, the relevant requirement row in `PLAN.md`, and the existing test before changing behaviour.
 2. **Keep the layers clean** (section 4.2). If you need a shortcut across layers, stop and refactor.
 3. **Rules first, LLM second.** Any policy decision must be deterministic and tested.
 4. **No LLM call without** `call_structured` (for telemetry, usage and retry), and no tool call without `ToolRegistry`.
