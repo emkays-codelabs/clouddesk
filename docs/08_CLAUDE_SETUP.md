@@ -38,7 +38,8 @@ Apply these between sessions: `CLAUDE.md` is read once at session start, so an e
 4. **Move path-specific detail out.** At 694 lines the file loads in full every session. Sections 8 (RAG),
    9 (guardrails) and 11 (frontend) apply only when working in `rag/`, `agents/` or `frontend/`, so they
    would fit as `paths:` rules and load on demand. This is a suggestion, not a request: `CLAUDE.md` is the
-   single source of truth and splitting it is the owner's call.
+   single source of truth and splitting it is the owner's call. Measured later (section 7), `CLAUDE.md` is about
+   11,000 tokens: roughly $0.04 at a session start and $0.001 a turn, so splitting it is for tidiness, not cost.
 
 5. **No conflict with the cost plan.** `CLAUDE.md` does not ask for an auto-commit after every change. Its
    rule that no one pushes without the owner saying so is repeated in the agents and the cost rule.
@@ -114,19 +115,51 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
   | Call 2 | 31,204 | 14,619 | 4 |
 
   **Caching works:** call 2 read 14,619 tokens from the cache. **But only about a third of the starting
-  context was reused.** Call 2 rewrote 31,204 of roughly 45,800 tokens even though nothing changed between the
-  calls, so most of the prefix is not cache-stable between sessions. Which part varies was not measured.
-  Candidates, unverified: `CLAUDE.md` and the rules (project context), the plugin and MCP listings, and a
-  session-start hook's output. A cache hit within one long conversation is a different, easier case and was
-  not measured here.
+  context was reused between sessions.** Call 2 rewrote 31,204 of roughly 45,800 tokens even though nothing
+  changed between the calls. The follow-up below found why.
 - **Cost of starting a session:** about 45,800 tokens of context before the first message, which cost $0.29
-  on the first call and $0.20 on the second. This is the figure to bring down, and splitting `CLAUDE.md`
-  (section 2, item 4) is the largest lever that is within this repository.
+  on the first call and $0.20 on the second. The follow-up below says what that is made of.
 - **TTL observed:** every cache write was a one-hour write (`ephemeral_1h`), and none was five-minute. Per the
   docs that is the default on a Claude subscription within plan usage, so on this login the TTL decision
   above is already answered in practice. It would matter again on an API key, or once usage credits apply.
 - **Not covered:** this ran on the terminal CLI, not on the editor session that applied this setup. Run
   `/usage` in that session after its first response to read its `Prompt cache (main)` line.
+- **Follow-up: why reuse is partial (2026-11-02, about 40 headless calls, about $3).** The first-pass guesses
+  were wrong, so this replaces them.
+  - **Inside one conversation caching is complete.** Three turns of one resumed session: turn 1 read 14,619 of
+    45,838 tokens ($0.203); turns 2 and 3 read 45,834 and 45,896 of about 45,900 (100%), wrote 62 each, and
+    cost $0.023. Only the first request of a new session, or of a new subagent, pays the partial price.
+  - **It is not this repository.** In an empty directory with no `CLAUDE.md`, no rules and no git, a new
+    session still rewrote 14.2k tokens. The repository's own context adds about 17,000 tokens (45,838 against
+    28,777) and is stable.
+  - **It is not the per-machine details.** `--exclude-dynamic-system-prompt-sections`, which moves the cwd,
+    environment, memory paths and git status out of the system prompt, changed nothing (32% before and after).
+  - **It is not MCP size.** `--strict-mcp-config` removed only 124 tokens. Reuse with MCP off was not measured.
+  - **It is user-level.** With no user-level settings, the second session reused 100% (20,965 of 20,969 tokens)
+    and cost $0.011. Adding settings back one at a time to that clean run, in an empty directory:
+
+    | Added back | Size added | Reuse on the second session |
+    |---|---|---|
+    | nothing (control) | 0 (20,975 total) | 100% |
+    | `effortLevel: medium` | about 0 | 100% |
+    | `outputStyle: Explanatory` | 354 | 68% |
+    | `superpowers` plugin | 3,073 | 61% |
+    | `vercel` plugin | 4,842 | 57% |
+    | `slack` and `supabase` plugins | 257 | 69% |
+    | all 11 plugins | 7,469 | 51% |
+
+    Any one of the output style or a plugin is enough to cut reuse off at the same point, about 14,600 tokens
+    in, even though their text is static. Why was not determined. It looks like Claude Code stops reusing the
+    later part of the prefix once the system prompt is customised, but that is a guess. The numbers are worth
+    reporting upstream.
+  - **Nothing in this repository fixes it.** Restoring full reuse needs the output style and every plugin off,
+    which is not a reasonable setup. Options, all yours to choose: accept it (about $0.18 extra per new session
+    or subagent start); or disable plugins this project does not need in `.claude/settings.local.json`, which
+    is git-ignored, to shrink the start (`vercel` is the largest at 4,842 tokens, `superpowers` next at 3,073).
+    That shrinks the cost but does not restore reuse while anything else stays on. `vercel` and `supabase`
+    will be useful again around Phases 12 and 13, so it is not obvious they should go.
+  - **`CLAUDE.md` is a small lever.** About 11,000 tokens, so roughly $0.04 at a session start and $0.001 a
+    turn. Splitting it is worth doing for tidiness, not for cache cost.
 
 ## 8. Items to verify on the pinned version
 

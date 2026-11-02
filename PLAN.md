@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk Project 1
 
-_Last updated: 2026-11-02 20:41 +0530_
+_Last updated: 2026-11-02 20:52 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -211,7 +211,7 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
 
-**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its cache was measured once: it works, but only about a third of a fresh session's context is reused (`docs/08_CLAUDE_SETUP.md`, section 7).
+**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its cache was measured: it is complete inside a conversation, and partial between sessions because of user-level settings, not this repository (`docs/08_CLAUDE_SETUP.md`, section 7).
 
 ### Phase 2 — Persistence and demo data
 
