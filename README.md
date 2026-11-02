@@ -1,6 +1,6 @@
 # CloudDesk
 
-_Last updated: 2026-11-02 20:41 +0530_
+_Last updated: 2026-11-02 20:52 +0530_
 
 > An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
 > investigates it and proposes a resolution, and a human approves anything that costs money or
@@ -140,8 +140,8 @@ routine work cheap.
 
 A hook runs `ruff` and `pytest` before Claude runs `git commit` and blocks the commit if either fails. It
 does not run when you commit by hand. Setup notes, the open checks, and proposed `CLAUDE.md` edits are in
-[`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md). Prompt caching works, but
-only about a third of a fresh session's starting context is reused, and the cache TTL is left at the default.
+[`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md). Prompt caching works: inside
+one conversation it is complete, and only a new session's first request pays full price. The cache TTL is left at the default.
 
 ## Author
 

@@ -1,6 +1,6 @@
 # MEMORY.md — CloudDesk
 
-_Last updated: 2026-11-02 20:41 +0530_
+_Last updated: 2026-11-02 20:52 +0530_
 
 Durable facts for this repository: what is really done, what has been decided, and what is still open. `CLAUDE.md` wins if this file drifts. Update it in place when a decision or the status changes. Do not store secrets, customer payloads, or raw ticket bodies here.
 
@@ -28,7 +28,7 @@ Update each row in place. Do not mark a row done from intention.
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
 | Phase plan | Phase 1 (runtime skeleton) is complete and validated locally: all four tasks are merged (4 of 67). Phases 2–14 are not started. |
-| Claude Code setup | Written 2026-11-02 from the cost-governance prompt, with every key checked against the official docs. Validated: `settings.json` parses and no existing permission was dropped; `bash -n` passes on the hook. Prompt caching was measured on 2026-11-02 with two headless sessions: the second read 14,619 tokens from the cache, but it rewrote 31,204 of about 45,800, so roughly a third of the starting context is reused between sessions, and a fresh session starts at about 45,800 tokens. **Not verified:** why the rest varies, that the hook fires in a live session, `omitClaudeMd` (needs Claude Code 2.1.271 or later; the CLI on this PATH is 2.1.104), and that skills named `plan`, `review` and `test` do not collide with built-in commands. The cache TTL is left at the default. |
+| Claude Code setup | Written 2026-11-02 from the cost-governance prompt, with every key checked against the official docs. Validated: `settings.json` parses and no existing permission was dropped; `bash -n` passes on the hook. Prompt caching was measured on 2026-11-02 with two headless sessions: the second read 14,619 tokens from the cache, but it rewrote 31,204 of about 45,800, so roughly a third of the starting context is reused between sessions, and a fresh session starts at about 45,800 tokens. A follow-up of about 40 calls found the cause is user-level, not this repository: any one of the output style or a plugin cuts cross-session reuse to 51–69%, while inside one conversation reuse is 100% and later turns cost about a tenth of the first. **Not verified:** the mechanism, that the hook fires in a live session, `omitClaudeMd` (needs Claude Code 2.1.271 or later; the CLI on this PATH is 2.1.104), and that skills named `plan`, `review` and `test` do not collide with built-in commands. The cache TTL is left at the default. |
 | Docs folder | `docs/` uses numbered short names: `01_BRD`, `02_PRD`, `03_HLD`, `04_LLD` (the upstream design, in dependency order), then `05_ARCHITECTURE`, `06_API_CONTRACT`, `07_GIT_WORKFLOW`, `08_CLAUDE_SETUP`. `09_PROMPT_COST` is a local prompt note that is not tracked. References were updated by path only, and `tests/unit/test_docs_folder.py` fails on any old name. The HLD and LLD still name the author's original files inside their own text, by design. |
 | GitHub | `main`, `development` and `testing` exist, and there are no other branches. `development` holds the planning documents and all of Phase 1. Pull requests #3 to #7 are merged; #1 and #2 are closed. |
 
@@ -57,7 +57,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). `database/schema.sql` becomes the authority once it is written.
 - Course documents 00 and 04–17 are not in this repo.
 - D1 (multi-tenancy) is settled; see Locked decisions above and `CLAUDE.md` §6. **D2–D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, model tiering, Kubernetes, and the harder eval bar. None blocks Phase 2.
-- Only about a third of a fresh session's starting context is reused from the cache. Find which part varies between sessions (section "Caching" in `docs/08_CLAUDE_SETUP.md` lists the candidates). The TTL is left at the default; every write observed was a one-hour write, which is the subscription default.
+- Cross-session cache reuse is partial because of user-level settings (the output style and plugins), not this repository; inside one conversation it is complete. Decide whether to disable plugins this project does not need (section "Caching" in `docs/08_CLAUDE_SETUP.md` has the measured sizes). The TTL is left at the default; every write observed was a one-hour write, which is the subscription default.
 
 ## Update protocol
 
