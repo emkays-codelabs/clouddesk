@@ -72,12 +72,16 @@ def test_setup_syncs_dependencies_and_creates_env_without_overwriting_an_existin
     assert ".exists()" in recipe  # only copies when .env is missing
 
 
-def test_every_recipe_goes_through_uv_so_it_runs_in_cmd_powershell_and_sh_alike():
-    # `test`, `cp`, `rm` and `&&` are POSIX-shell features; PowerShell has none of them.
+def test_every_recipe_runs_in_cmd_powershell_and_sh_alike():
+    # The rule is portability, not any one program: `test`, `cp`, `rm` and `&&` are POSIX-shell
+    # features that PowerShell does not have, while `uv` and `git` are programs that run anywhere.
+    portable = ("uv ", "git ")
     for target, recipe in _targets().items():
         for line in recipe:
             command = line.lstrip("@-")
-            assert command.startswith("uv "), f"{target}: {line!r} does not start with 'uv'"
+            assert command.startswith(portable), (
+                f"{target}: {line!r} does not start with one of {portable}"
+            )
             assert not any(token in command for token in ("&&", "||", "$(", "`", " rm ", " cp ")), (
                 f"{target}: {line!r} uses shell-only syntax"
             )

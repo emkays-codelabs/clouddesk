@@ -1,5 +1,7 @@
 # CloudDesk Support — Task tracker
 
+_Last updated: 2026-11-02 15:33 +0530_
+
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
 
@@ -63,6 +65,7 @@ The longest dependency chain is 16 tasks long.
 | P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Completed ✅ |
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Completed ✅ |
+| P1-5 · Document timestamps (pre-commit hook) | — | `feature/doc-timestamps` | Completed ✅ |
 
 #### Task definitions
 
@@ -88,7 +91,23 @@ The longest dependency chain is 16 tasks long.
 - **Needs:** `P1-1`
 - **Build:** `.env.example` listing every §10.1 variable with placeholders only, and a `Makefile` with `setup`, `backend`, `test`, `lint` and `format` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`). Every recipe calls only `uv`, so the targets run in cmd.exe, PowerShell and sh alike (`setup` copies `.env.example` to `.env` through Python, never overwriting an existing `.env`).
 - **Files:** `.env.example`, `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py`, `tests/unit/test_makefile.py`
-- **Done when:** A test proves `.env.example` covers every variable in the spec and every `Settings` field, declares nothing the app does not read, and holds no real key; tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only `uv` commands; `make test` and `make lint` run (checked with GNU Make 4.4.1).
+- **Done when:** A test proves `.env.example` covers every variable in the spec and every `Settings` field, declares nothing the app does not read, and holds no real key; tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only portable commands (`uv` or `git`, never POSIX-shell syntax); `make test` and `make lint` run (checked with GNU Make 4.4.1).
+
+**P1-5 · Document timestamps (pre-commit hook)**
+- **Needs:** `P1-4`
+- **Build:** `scripts/stamp_docs.py` writes a `_Last updated: <date> <time> <offset>_` line into each of
+  the project's nine markdown documents, just after its first heading, collapsing any duplicate or moved
+  stamp to exactly one. A committed `.githooks/pre-commit` runs it over the staged files and re-stages
+  them, and `make setup` installs it with `git config core.hooksPath .githooks`. The upstream author's
+  documents are never stamped (they carry their own version date), nor is anything outside the list.
+- **Files:** `scripts/stamp_docs.py`, `.githooks/pre-commit`, `Makefile`, `.gitattributes`,
+  `tests/unit/test_stamp_docs.py`
+- **Done when:** Each of the nine documents carries exactly one stamp and the four upstream documents
+  carry none; running the stamper twice changes nothing the second time; a file keeps its own line
+  endings; a `#` inside a code fence is not mistaken for the heading; `stamp_files` leaves an unlisted
+  path byte-identical; and a real commit is observed to update the stamp of a staged document.
+- **Note:** additive tooling, not a Phase 1 exit criterion — the phase's exit (health tests offline,
+  `.env.example` coverage) was already met and is unaffected.
 
 ---
 
@@ -699,7 +718,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 67 tasks are Completed ✅ and the Progress summary reads 67 of 67.
+- All 68 tasks are Completed ✅ and the Progress summary reads 68 of 68.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -729,7 +748,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 4 | 4 |
+| 1 | Runtime skeleton | 5 | 5 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -743,4 +762,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **67** | **4** |
+| **Total** | | **68** | **5** |
