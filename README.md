@@ -1,6 +1,6 @@
 # CloudDesk
 
-_Last updated: 2026-11-02 20:52 +0530_
+_Last updated: 2026-11-02 21:18 +0530_
 
 > An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
 > investigates it and proposes a resolution, and a human approves anything that costs money or
@@ -54,7 +54,7 @@ Phase 1 (the runtime skeleton) is complete and validated locally. The service bo
 - cached settings for every variable in `.env.example`, with secrets and URL passwords redacted
 - JSON logging with `request_id` and `workflow_id`
 - an offline test suite (97 tests: no network, no API key), lint (Ruff), and a `Makefile`
-- a Claude Code setup in `.claude/`: seven agents, seven skills, three rules, and a hook that runs lint and tests before Claude commits (see [Working with Claude Code](#working-with-claude-code); not yet exercised in a live session)
+- a Claude Code setup in `.claude/`: seven agents, eight skills, three rules, and a hook that runs lint and tests before Claude commits (see [Working with Claude Code](#working-with-claude-code); not yet exercised in a live session)
 - the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` (status and decisions), and `docs/`
 
 Not yet built: the database and demo data, authentication, the support API, the knowledge pipeline, tools, agents, the workflow, approvals, memory, and the console. No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
@@ -136,6 +136,7 @@ routine work cheap.
 | `/plan P2-1` | Writes a plan for a `TASKS.md` task to `docs/plans/` |
 | `/implement docs/plans/p2-1.md` | Executes an approved plan, test first |
 | `/test`, `/review` | Targeted tests with a digest; a ranked review of the diff |
+| `/phase-docs 1` | Writes a finished phase's four documents from `docs/09_PHASE_DOCUMENTATION.md` |
 | `/pr-review 10`, `/consult-opus`, `/cost-report` | Review a pull request; ask one design question; show cost and cache health |
 
 A hook runs `ruff` and `pytest` before Claude runs `git commit` and blocks the commit if either fails. It
