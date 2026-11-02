@@ -267,9 +267,9 @@ Tasks: `TASKS.md`, Phase 5.
 
 **Requirements.** F5, F6 (retrieval half).
 
-**Files.** `rag/chunking.py`, `rag/vector_store.py`, `rag/retriever.py`, `rag/ingest.py`, `make ingest`, knowledge search and admin reindex routes.
+**Files.** `rag/__init__.py`, `rag/chunking.py`, `rag/embeddings.py`, `rag/vector_store.py`, `rag/retriever.py`, `rag/ingest.py`, `.claude/rules/rag.md`, `make ingest`, knowledge search and admin reindex routes. Dependencies (`pyyaml`, `qdrant-client`, `rank_bm25`) arrive with the task that needs each.
 
-**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, RRF, rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection.
+**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, RRF, rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection. Ingest is idempotent: a second run leaves the chunk count unchanged. Each `rag/` module says what it must not do, and `rag/` imports nothing about tickets.
 
 **Demo checkpoint.** `make ingest` reports the article and chunk counts. A query for the MFA recovery article returns `CD-1012`’s expected article in the top 3.
 

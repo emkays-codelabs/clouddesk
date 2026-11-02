@@ -21,13 +21,14 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-31 |
 |---|---|
-| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill and shared permissions in `.claude/`, and `pyproject.toml` with `uv.lock`. Application code so far is Phase 1: `backend/app/` (settings, JSON logging, health routes, request-id middleware, readiness checks, the app factory) with its tests under `tests/`, plus `Makefile`, `.env.example` and `.gitattributes`. The `uv init` stubs were removed. |
+| Repository contents | Specification and planning documents (`CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/`), the `clouddesk-support` skill and shared permissions in `.claude/`, plus the cost-governance setup there (8 agents, 7 skills, 3 rules, a pre-commit hook and pinned model ids), and `pyproject.toml` with `uv.lock`. Application code so far is Phase 1: `backend/app/` (settings, JSON logging, health routes, request-id middleware, readiness checks, the app factory) with its tests under `tests/`, plus `Makefile`, `.env.example` and `.gitattributes`. The `uv init` stubs were removed. |
 | Implemented | Phase 1 (runtime skeleton), all four tasks, is on `development` (PRs #3 to #7): P1-1 settings and JSON logging, P1-3 offline test harness, P1-2 health routes and request-id middleware, P1-4 Makefile and `.env.example`. Nothing from Phase 2 onward. A first Phase 1 attempt (commits `6b5a53f`, `ffa6a46`, `4066c11`) was rolled back on 2026-10-31; its branch was deleted and the commits remain reachable through the ref of closed PR #1 (`refs/pull/1/head`). |
 | Validated locally | Phase 1: 97 tests pass offline and `ruff check` is clean, re-run through `make lint` and `make test` on the merged `development`. Deliberate breaks of the code under test are each caught (P1-1: 6, P1-3: 10, P1-2: 12). With GNU Make 4.4.1 on Windows PowerShell, `make lint`, `make test` and `make setup` (run twice) exit 0, and `make backend` served `/health/live` and `/health/ready` with HTTP 200 and an `X-Request-ID`. `uvicorn` was also probed with `curl`: echoed and replaced ids, 404, CORS, and JSON access logs carrying the id. Not run on GitHub Actions. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
 | Phase plan | Phase 1 (runtime skeleton) is complete and validated locally: all four tasks are merged (4 of 67). Phases 2–14 are not started. |
+| Claude Code setup | Written 2026-11-02 from the cost-governance prompt, with every key checked against the official docs. Validated: `settings.json` parses and no existing permission was dropped; `bash -n` passes on the hook. **Not verified:** that prompt caching works (the two-turn test needs a fresh session), that the hook fires in a live session, `omitClaudeMd` (needs Claude Code 2.1.271 or later; the CLI on this PATH is 2.1.104), and that skills named `plan`, `review` and `test` do not collide with built-in commands. The cache TTL is left at the default. |
 | GitHub | `main`, `development` and `testing` exist, and there are no other branches. `development` holds the planning documents and all of Phase 1. Pull requests #3 to #7 are merged; #1 and #2 are closed. |
 
 ## Locked decisions
@@ -46,6 +47,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
   repositories own the filter, so SQLite's lack of RLS still leaves one enforcement point. Settled by
   Claude on the owner's instruction, not by a separate review — overrule it here if that is wrong.
 - 2026-11-02, scope: the upstream documents (`docs/01`–`03`) describe ACSRP, the full multi-tenant product; this repo builds CloudDesk, a single-tenant v1 of the same architecture. The differences are tabled in `CLAUDE.md` §1.1. CloudDesk's own vocabulary (severity `low`/`medium`/`high`/`critical`, `waiting_on_*` statuses, the `web` channel, unprefixed environment variables) is built and under test, and is not renamed to match upstream without changing `CLAUDE.md` §5 or §10.1, the model, the schema and the tests together.
+- 2026-11-02, Claude Code cost governance: the default session model is Sonnet. Opus runs only in `planner` and `opus-consultant`; Haiku runs `Explore` and `log-triage`. At most 3 agents run in parallel, one worktree each, and never on the same file. Model ids are pinned in `.claude/settings.json` for the first-party API (`claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`). `CLAUDE.md` is a protected file in this setup: proposed edits go to `docs/claude-setup-suggestions.md`. The source prompt departs from the official docs in several places, listed in that file, and the docs won.
 
 ## Open questions
 
@@ -54,6 +56,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). `database/schema.sql` becomes the authority once it is written.
 - Course documents 00 and 04–17 are not in this repo.
 - D1 (multi-tenancy) is settled; see Locked decisions above and `CLAUDE.md` §6. **D2–D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, model tiering, Kubernetes, and the harder eval bar. None blocks Phase 2.
+- The prompt-cache TTL is left at the default and unmeasured. Decide it from real idle gaps (section "Caching" in `docs/claude-setup-suggestions.md`), and run the two-turn cache test in a fresh session.
 
 ## Update protocol
 

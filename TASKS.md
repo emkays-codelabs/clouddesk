@@ -66,6 +66,7 @@ The longest dependency chain is 16 tasks long.
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Completed ✅ |
 | P1-5 · Document timestamps (pre-commit hook) | — | `feature/doc-timestamps` | Completed ✅ |
+| P1-6 · Claude Code cost governance | — | `feature/cost-governance` | Completed ✅ |
 
 #### Task definitions
 
@@ -108,6 +109,26 @@ The longest dependency chain is 16 tasks long.
   path byte-identical; and a real commit is observed to update the stamp of a staged document.
 - **Note:** additive tooling, not a Phase 1 exit criterion — the phase's exit (health tests offline,
   `.env.example` coverage) was already met and is unaffected.
+
+**P1-6 · Claude Code cost governance**
+- **Needs:** `P1-4`
+- **Build:** The `.claude/` setup that keeps routine work on cheaper models and heavy reasoning on Opus:
+  eight agents (`planner` and `opus-consultant` on Opus; `implementer`, `code-reviewer`, `test-engineer` on
+  Sonnet; `log-triage` and `Explore` on Haiku) plus `_TEMPLATE.md`, seven skills (`plan`, `implement`,
+  `review`, `consult-opus`, `cost-report`, `test`, `pr-review`), three rules (cost and delegation, Python,
+  tests), a `PreToolUse` hook that runs `ruff` and `pytest` before a `git commit`, pinned model ids in
+  `settings.json`, and `docs/claude-setup-suggestions.md`. `CLAUDE.md` is protected here: proposed edits go
+  in the suggestions file, not into it. Every setting key was checked against the official docs first.
+- **Files:** `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/hooks/pre-commit.sh`,
+  `.claude/settings.json`, `.gitignore`, `docs/plans/`, `docs/claude-setup-suggestions.md`,
+  `scripts/claude_usage/README.md`
+- **Done when:** `settings.json` parses and drops no existing permission; `opus` appears only on `planner`
+  and `opus-consultant`; every agent has `name`, `description` containing "Delegate here", `model`, `tools`,
+  `maxTurns`, and ends with a return limit; every skill's target agent exists; the hook exits 0 on a clean
+  tree, exits 2 on a failing lint or test, and ignores a command that is not a commit; `bash -n` passes;
+  `git status --ignored` shows only the intended tracked set. The two-turn cache test needs a fresh session
+  and is recorded as pending, not passed.
+- **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
 
 ---
 
@@ -256,26 +277,26 @@ The longest dependency chain is 16 tasks long.
 **P5-1 · Knowledge articles and chunking**
 - **Needs:** `P2-4`
 - **Build:** Fifteen knowledge articles with YAML front-matter (`title`, `category`, `tags`, `summary`) and the chunker: split on headings, then 900-character windows with 150 overlap, each chunk prefixed `"{title} - {heading}"`.
-- **Files:** `sample_data/knowledge_base/*.md`, `rag/chunking.py`, `tests/rag/test_chunking.py`
-- **Done when:** Loading yields 15 articles; every chunk carries the title–heading prefix and respects the window and overlap sizes.
+- **Files:** `sample_data/knowledge_base/*.md`, `rag/__init__.py`, `rag/chunking.py`, `pyproject.toml` (adds `pyyaml`), `.claude/rules/rag.md`, `tests/rag/test_chunking.py`
+- **Done when:** Loading yields 15 articles; every chunk carries the title–heading prefix and respects the window and overlap sizes; each `rag/` module's docstring says what it does and what it must not do (`rag/` knows nothing about tickets), and `.claude/rules/rag.md` (`paths: rag/**`) says the same to the agents that edit it.
 
 **P5-2 · Vector store and fake embeddings**
 - **Needs:** `P5-1`
 - **Build:** Vector store behind a protocol (`add_documents`, `search`, `delete`, `count`, `health`) with `InMemoryVectorStore` and `QdrantVectorStore` chosen by `VECTOR_STORE`, plus 384-dimension hashed bag-of-words fake embeddings.
-- **Files:** `rag/vector_store.py`, `rag/embeddings.py`, `tests/rag/test_vector_store.py`
+- **Files:** `rag/vector_store.py`, `rag/embeddings.py`, `pyproject.toml` (adds `qdrant-client`, imported only when `VECTOR_STORE=qdrant` so offline runs never need it), `tests/rag/test_vector_store.py`
 - **Done when:** The in-memory store passes add, search, delete, and count; the selector returns the right class; nothing outside `rag/` knows which store is live.
 
 **P5-3 · Hybrid retriever**
 - **Needs:** `P5-2`, `P3-3`
 - **Build:** Hybrid retriever: query rewrite into 1–3 sub-queries → semantic ∪ BM25 → reciprocal rank fusion (k=60) → heuristic rerank → optional LLM rerank → one hit per article → a sufficiency check that may retrieve once more against the gaps it names (upstream FR-09). Modes `hybrid`, `semantic`, `keyword`; results cached 300 s under `rag:{mode}:{category}:{top_k}:{query}`.
-- **Files:** `rag/retriever.py`, `tests/rag/test_retriever.py`
+- **Files:** `rag/retriever.py`, `pyproject.toml` (adds `rank_bm25`), `tests/rag/test_retriever.py`
 - **Done when:** Key queries return the expected article in the top 3 (hit-rate@3 is measured); each mode, the cache, RRF, rerank, and the category filter have tests; a query whose evidence is insufficient triggers exactly one extra retrieval and then stops.
 
 **P5-4 · Ingest command and knowledge API**
 - **Needs:** `P5-3`, `P3-1`
 - **Build:** Ingest and the knowledge API: `make ingest`, `GET /knowledge/articles`, `GET /knowledge/articles/{id}`, `POST /knowledge/search`, and admin-only `POST /knowledge/reindex` that recreates the collection.
-- **Files:** `rag/ingest.py`, `backend/app/api/knowledge.py`, `Makefile`, `tests/api/test_knowledge.py`
-- **Done when:** `make ingest` reports article and chunk counts; the MFA lockout query returns its article in the top 3; non-admins get 403 on reindex.
+- **Files:** `rag/ingest.py`, `backend/app/api/knowledge.py`, `Makefile`, `tests/rag/test_ingest.py`, `tests/api/test_knowledge.py`
+- **Done when:** `make ingest` reports article and chunk counts; the MFA lockout query returns its article in the top 3; non-admins get 403 on reindex; a second ingest leaves the chunk count unchanged (`tests/rag/test_ingest.py`, the ingest-count test `CLAUDE.md` §13 assigns to `tests/rag/`).
 
 ---
 
@@ -718,7 +739,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 68 tasks are Completed ✅ and the Progress summary reads 68 of 68.
+- All 69 tasks are Completed ✅ and the Progress summary reads 69 of 69.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -748,7 +769,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 5 | 5 |
+| 1 | Runtime skeleton | 6 | 6 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -762,4 +783,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **68** | **5** |
+| **Total** | | **69** | **6** |
