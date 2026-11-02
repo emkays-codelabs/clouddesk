@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 21:18 +0530_
+_Last updated: 2026-11-02 22:16 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -161,13 +161,13 @@ The longest dependency chain is 16 tasks long.
   incomplete, ending partway through Category E of its section 6.2, so it is saved as supplied with a marker and
   the skill does not invent the rest.
 - **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`,
-  `.claude/rules/cost-and-delegation.md`, `PLAN.md`, `README.md`, `scripts/check_phase_docs.py`,
+  `.claude/rules/cost-and-delegation.md`, `PLAN.md`, `README.md`, `CLAUDE.md`, `scripts/check_phase_docs.py`,
   `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`
 - **Done when:** Tests assert the skill is forked, on demand, and names every folder and file the spec defines;
   the delegation rule and `PLAN.md` reference it; no rule exceeds 30 lines; every started phase has its documents
   or is in the explicit `OWED` set, and `OWED` may name only a phase that is still owed; cited paths that do not
   exist are rejected, with external paths, local-only files and lines marked planned or historical handled
-  explicitly; Mermaid blocks are checked for structure only. The four Phase 1 documents themselves are not part
+  explicitly; Mermaid blocks are checked for structure only; `CLAUDE.md` lists the `.claude/` setup, the slash commands and the requirement, and a test keeps its command list matched to the skills that exist. The four Phase 1 documents themselves are not part
   of this task.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes. The checks cannot prove a
   document is accurate or that a diagram renders; that needs review.

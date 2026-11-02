@@ -1,6 +1,6 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-02 22:16 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -55,6 +55,7 @@ change that contradicts them belongs in §20 before it reaches the code.
 | Workers | arq or Celery on Redis, separate processes | FastAPI `BackgroundTasks`, in process (§10) |
 | Runtime | Kubernetes and Helm on EKS/AKS/GKE | Containers on ECS Fargate / Container Apps / Cloud Run (§15) |
 | Config | `pydantic-settings`, env prefix `ACSRP_` | `pydantic-settings`, no prefix (§10.1) |
+| Chunking | Heading-aware, about 600 tokens with an 80-token overlap, tables kept whole | Heading-aware, 900 characters with a 150-character overlap (§8) |
 
 Every scoped-down choice above is deliberate, and the vocabulary ones are already built and under test.
 Do not rename a status, severity, channel or environment variable to match the upstream document on its
@@ -165,13 +166,14 @@ tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · d
 deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
 data/          (git-ignored) support.db · checkpoints.db
 docs/          06_API_CONTRACT.md (the API contract – source of truth for routes and types)
-               05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md
+               05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
                01_BRD · 02_PRD · 03_HLD · 04_LLD (upstream design, §1.1)
 datasets/      eval_cases.json
 scripts/       demo.py · stamp_docs.py
 .githooks/     pre-commit (committed, installed by `make setup`)
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
-.claude/       skills/clouddesk-support/SKILL.md
+.claude/       settings.json · agents/ · skills/ · rules/ · hooks/pre-commit.sh
+internal/      four documents per finished phase, written by `/phase-docs N` (§18, rule 19)
 (root)         CLAUDE.md · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
                .env.example · pyproject.toml · uv.lock
 ```
@@ -537,6 +539,8 @@ make terraform-validate
 BASE_URL=http://localhost:8000 make smoke
 ```
 
+In Claude Code: `/plan N` plans a task, `/implement path` runs the plan, `/test`, `/review`, `/consult-opus`, `/pr-review N`, `/cost-report`, and `/phase-docs N`, which writes a finished phase's four documents.
+
 Windows: prefer `uv run`, which finds `.venv` and (through pytest's `pythonpath` setting) `backend`. Otherwise use
 `.venv/Scripts/python.exe` with `backend` on `PYTHONPATH` (`;` separator). Set `PYTHONIOENCODING=utf-8` for CLI
 output with symbols.
@@ -632,6 +636,8 @@ the same principles: policy outside the model, approval gates, audit trail.
 16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges.
 17. **Actions are idempotent and verified.** Every write carries an idempotency key and is read back (§7.4). A retried or resumed run must never act twice.
 18. **Tool arguments need provenance.** An id or an amount in a tool call comes from customer context or a tool result, never from ticket text (§7.4, §9).
+19. **A phase is not done until its four documents exist.** Run `/phase-docs N`. The specification is `docs/09_PHASE_DOCUMENTATION.md`, and `tests/unit/test_phase_doc_checks.py` checks that a started phase has them, with phases still owed listed in its `OWED` set. Document only what exists, and say planned, partial or future where it is not. The checks do not prove a document is accurate or that a diagram renders.
+20. **Cost.** Sonnet is the default model. Opus runs only in `planner` and `opus-consultant`, and Haiku in `Explore` and `log-triage`. Finish one task before starting another and do not switch models mid-task. The full rules are in `.claude/rules/cost-and-delegation.md`.
 
 ### 18.1 Things that must never happen
 

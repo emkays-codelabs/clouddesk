@@ -90,3 +90,55 @@ class TestTheTrigger:
         }
 
         assert too_long == {}
+
+
+CLAUDE_MD = ROOT / "CLAUDE.md"
+SKILLS_DIR = ROOT / ".claude" / "skills"
+
+
+def _documented_commands() -> set[str]:
+    """The slash commands CLAUDE.md section 14 lists on its 'In Claude Code' line."""
+    line = next(
+        ln
+        for ln in CLAUDE_MD.read_text(encoding="utf-8").splitlines()
+        if ln.startswith("In Claude Code")
+    )
+    return set(re.findall(r"`/([a-z][a-z-]*)", line))
+
+
+class TestClaudeMd:
+    """CLAUDE.md is the source of truth, so it must describe the setup that actually exists."""
+
+    def test_every_command_it_lists_is_a_real_skill(self):
+        skills = {d.name for d in SKILLS_DIR.iterdir() if d.is_dir()}
+
+        assert _documented_commands() - skills == set()
+
+    def test_every_project_skill_is_listed(self):
+        # clouddesk-support is loaded by Claude itself, not typed as a command.
+        skills = {d.name for d in SKILLS_DIR.iterdir() if d.is_dir()} - {"clouddesk-support"}
+
+        assert skills - _documented_commands() == set()
+
+    def test_the_layout_names_what_is_in_the_claude_folder_and_the_documents_folder(self):
+        text = CLAUDE_MD.read_text(encoding="utf-8")
+
+        assert "agents/ · skills/ · rules/ · hooks/pre-commit.sh" in text
+        assert "internal/" in text
+        assert "08_CLAUDE_SETUP.md" in text
+        assert "09_PHASE_DOCUMENTATION.md" in text
+
+    def test_a_phase_is_not_done_until_its_documents_exist(self):
+        text = CLAUDE_MD.read_text(encoding="utf-8")
+
+        assert "A phase is not done until its four documents exist" in text
+        assert "docs/09_PHASE_DOCUMENTATION.md" in text
+
+    def test_the_cost_rule_points_at_a_file_that_exists(self):
+        text = CLAUDE_MD.read_text(encoding="utf-8")
+
+        assert ".claude/rules/cost-and-delegation.md" in text
+        assert DELEGATION.exists()
+
+    def test_the_design_comparison_table_lists_chunking(self):
+        assert "| Chunking |" in CLAUDE_MD.read_text(encoding="utf-8")
