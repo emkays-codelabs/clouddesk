@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk Project 1
 
-_Last updated: 2026-11-02 20:52 +0530_
+_Last updated: 2026-11-02 21:18 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -193,7 +193,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 
 ## Phase exit criteria
 
-Each phase states its goal, requirements, files, tests, demo checkpoint, and exit criteria. Do not start a phase until the phases it depends on (see `TASKS.md`) have passed their exit criteria. After `make demo` exists, every later phase keeps that checkpoint working. Status values: `not started`, `in progress`, `implemented`, `validated locally`. “Validated locally” means the phase’s tests passed on this machine; it does not mean deployed.
+Each phase states its goal, requirements, files, tests, demo checkpoint, and exit criteria. Do not start a phase until the phases it depends on (see `TASKS.md`) have passed their exit criteria. After `make demo` exists, every later phase keeps that checkpoint working. Status values: `not started`, `in progress`, `implemented`, `validated locally`. “Validated locally” means the phase’s tests passed on this machine; it does not mean deployed. A phase is also not done until its four documents exist: run `/phase-docs N`, which follows `docs/09_PHASE_DOCUMENTATION.md`, and `tests/unit/test_phase_doc_checks.py` fails if a started phase lacks them. Phase 1 predates this requirement and is owed its documents, listed in that test's `OWED` set.
 
 ### Phase 1 — Runtime skeleton
 

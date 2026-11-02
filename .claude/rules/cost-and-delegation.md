@@ -17,6 +17,7 @@
   | Tests | `/test` |
   | Review a diff or a pull request | `/review`, `/pr-review` |
   | One narrow design question | `/consult-opus` |
+  | Document a finished phase | `/phase-docs N` |
 
 - Run agents in parallel only for independent file scopes: at most 3, one worktree each. Anything touching
   the same file, migration, lock file or schema runs in sequence. `TASKS.md`, `PLAN.md` and `MEMORY.md` are

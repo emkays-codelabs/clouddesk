@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 20:41 +0530_
+_Last updated: 2026-11-02 22:23 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -68,6 +68,8 @@ The longest dependency chain is 16 tasks long.
 | P1-5 · Document timestamps (pre-commit hook) | — | `feature/doc-timestamps` | Completed ✅ |
 | P1-6 · Claude Code cost governance | — | `feature/cost-governance` | Completed ✅ |
 | P1-7 · Numbered document names | — | `feature/docs-file-names` | Completed ✅ |
+| P1-8 · Phase documentation workflow | — | `docs/phase-documentation-spec` | Completed ✅ |
+| P1-9 · Phase 1 documents | — | `docs/phase-1-documents` | Pending ❌ |
 
 #### Task definitions
 
@@ -146,6 +148,44 @@ The longest dependency chain is 16 tasks long.
   an old name or on a relative link that no longer resolves; the stamper's list names only files that exist.
   The author's HLD and LLD, which name their own original files, are the one exception.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
+
+**P1-8 · Phase documentation workflow**
+- **Needs:** `P1-7`
+- **Build:** `docs/09_PHASE_DOCUMENTATION.md`, the owner's specification of four mandatory documents per phase
+  (codebase explanation, system design evolution, infrastructure evolution, interview Q&A, written to
+  `internal/`); a `/phase-docs N` skill that writes them from the spec, mapping the phase to its `TASKS.md`
+  rows and merge commits; one row in the delegation rule; a line in `PLAN.md` making the documents a requirement
+  of every phase; and completion checks in `scripts/check_phase_docs.py` that a started phase has its documents,
+  that cited file paths exist, and that Mermaid blocks are structurally sound. The spec stays out of the
+  always-loaded rules (about 6,200 tokens) and is read only when the skill runs. The spec was first supplied
+  cut off partway through Category E of its section 6.2; the owner then sent the full text, which is saved complete
+  and which the skill covers in full (Categories A to M).
+- **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`,
+  `.claude/rules/cost-and-delegation.md`, `PLAN.md`, `README.md`, `CLAUDE.md`, `.gitignore`, `scripts/check_phase_docs.py`,
+  `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`
+- **Done when:** Tests assert the skill is forked, on demand, and names every folder and file the spec defines;
+  the delegation rule and `PLAN.md` reference it; no rule exceeds 30 lines; every started phase has its documents
+  or is in the explicit `OWED` set, and `OWED` may name only a phase that is still owed; cited paths that do not
+  exist are rejected, with external paths, local-only files and lines marked planned or historical handled
+  explicitly; Mermaid blocks are checked for structure only; `CLAUDE.md` lists the `.claude/` setup, the slash commands and the requirement, and a test keeps its command list matched to the skills that exist; `internal/QnA/` is git-ignored and the other three folders are not. The four Phase 1 documents themselves are not part
+  of this task.
+- **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes. The checks cannot prove a
+  document is accurate or that a diagram renders; that needs review.
+
+**P1-9 · Phase 1 documents**
+- **Needs:** `P1-8`
+- **Build:** Run `/phase-docs 1` to write Phase 1's four documents, then review them against the code. Reviewed
+  separately from the workflow in P1-8.
+- **Files:** `internal/explain_codebase/Phase1_explained.md`,
+  `internal/design_evolution/Phase1_Project_System_Design_Evolution.md`,
+  `internal/Infra_design_evolution/Phase1_Infra_design_evolution.md`,
+  `internal/QnA/Phase1_Interview_QnA.md` (git-ignored, so local only),
+  `tests/unit/test_phase_doc_checks.py` (remove phase 1 from `OWED`)
+- **Done when:** The documents exist and are not empty; every cited path exists; Mermaid blocks pass the structural
+  check; test results are quoted from a real run; a human has compared each against the code; and phase 1 is gone
+  from `OWED`.
+- **Note:** not a Phase 1 exit criterion in the original plan; it became one when the documentation requirement
+  was added.
 
 ---
 
@@ -756,7 +796,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 70 tasks are Completed ✅ and the Progress summary reads 70 of 70.
+- All 72 tasks are Completed ✅ and the Progress summary reads 72 of 72.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -786,7 +826,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 7 | 7 |
+| 1 | Runtime skeleton | 9 | 8 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -800,4 +840,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **70** | **7** |
+| **Total** | | **72** | **8** |

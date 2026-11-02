@@ -1,7 +1,7 @@
 # Claude Code setup: suggestions and open checks
 
 Written 2026-11-02 while applying the cost-governance prompt (local, not committed) to this repository.
-This is the only place that proposes changes to a protected file. `CLAUDE.md` was read and not edited.
+This is the only place that proposes changes to a protected file. `CLAUDE.md` was read and not edited while the setup was applied; the owner later had items 1 to 3 of section 2 applied.
 
 ## 1. Protected files
 
@@ -17,6 +17,8 @@ That is reported, not changed.
 
 Apply these between sessions: `CLAUDE.md` is read once at session start, so an edit applies after
 `/clear`, `/compact` or a restart.
+
+**Status, 2026-11-02:** items 1, 2 and 3 were applied to `CLAUDE.md` on the owner's instruction (section 1.1, section 4.3, section 14 and section 18 rules 19 and 20), and tests in `tests/unit/test_phase_docs.py` keep its command list matched to the skills that exist. Item 4 was not applied: the measured gain is small and it is the owner's call. Item 5 is a finding, not a change.
 
 1. **Point to the setup.** Add to section 4.3 (folder layout) and section 14 (commands):
 
