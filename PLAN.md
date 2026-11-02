@@ -119,9 +119,10 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | NFR-01–04 | Latency and scale targets | No performance requirement or test. |
 | NFR-15, NFR-16 | ≥ 80% coverage on core services; WCAG 2.1 AA | Neither is measured. |
 
-Already answered elsewhere, not repeated here: multi-tenancy, a `prohibited` risk tier, MCP write
-servers, model tiering, Kubernetes and the harder eval bar are decisions D1–D6 in `CLAUDE.md` §20. The
-chat widget (FR-37) and multi-language support are non-goals in `CLAUDE.md` §1.
+Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a
+`prohibited` risk tier, MCP write servers, model tiering, Kubernetes and the harder eval bar remain
+decisions D2–D6 in `CLAUDE.md` §20. The chat widget (FR-37) and multi-language support are non-goals in
+`CLAUDE.md` §1.
 
 
 ## Build phases
@@ -218,11 +219,11 @@ Tasks: `TASKS.md`, Phase 2.
 
 **Files.** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `backend/app/services/seed_service.py`, `backend/app/repositories/`, `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/`, `sample_data/*.json`, `sample_data/knowledge_base/*.md`, seed bootstrap in the lifespan.
 
-**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows.
+**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows. Every data table has a not-null `tenant_id` and an RLS policy keyed on it, and a cross-tenant read returns nothing (D1).
 
 **Demo checkpoint.** `make seed` loads sample data. Ticket `CD-1002` and customer records are readable from the database.
 
-**Exit.** `database/schema.sql` is the authority for table count. The table-count question under Open questions is closed there.
+**Exit.** `database/schema.sql` is the authority for table count. The table-count question under Open questions is closed there. D1 holds in the schema: `tenant_id` is present from the first migration, never added by a later one, and the repository filter is the single enforcement point.
 
 ### Phase 3 — Identity and request guards
 

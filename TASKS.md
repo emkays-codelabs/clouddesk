@@ -108,21 +108,21 @@ The longest dependency chain is 16 tasks long.
 
 **P2-1 · SQLAlchemy entities and category enum**
 - **Needs:** `P1-1`
-- **Build:** Async SQLAlchemy 2 models for the 16 tables, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
+- **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
 - **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`
-- **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels.
+- **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels; and a test asserts every data table has a not-null `tenant_id`, so a table added later cannot quietly omit it.
 
 **P2-2 · Postgres schema, RLS, and migrations**
 - **Needs:** `P2-1`
-- **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table), and an additive migration folder.
+- **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table, keyed `USING (tenant_id = current_setting('app.tenant_id')::uuid)`), and an additive migration folder. The first migration already contains `tenant_id`, so there is never a migration that adds it (D1).
 - **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_*.sql`
-- **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count.
+- **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count; a test asserts every data table in `schema.sql` has RLS enabled and a policy keyed on `tenant_id`.
 
 **P2-3 · Repository layer**
 - **Needs:** `P2-1`
-- **Build:** The repository layer: all SQL goes through repositories for tickets, messages, customers, subscriptions, workspaces, memory, workflow runs and events, approvals, escalations, and audit logs.
+- **Build:** The repository layer: all SQL goes through repositories for tickets, messages, customers, subscriptions, workspaces, memory, workflow runs and events, approvals, escalations, and audit logs. **Repositories are the only place the `tenant_id` filter lives** (D1, `CLAUDE.md` §6); SQLite has no RLS, so on the demo database this filter is the boundary.
 - **Files:** `backend/app/repositories/`, `tests/unit/` repository tests
-- **Done when:** Repository tests pass on SQLite; nothing under `repositories/` imports a model client or `agents/`.
+- **Done when:** Repository tests pass on SQLite; nothing under `repositories/` imports a model client or `agents/`; and a cross-tenant isolation test proves a second tenant's rows are invisible to every read, which is what makes the column more than decoration (upstream security checklist, LLD §20).
 
 **P2-4 · Sample data and demo bootstrap**
 - **Needs:** `P2-3`

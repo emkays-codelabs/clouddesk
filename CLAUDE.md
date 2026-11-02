@@ -43,7 +43,7 @@ change that contradicts them belongs in §20 before it reaches the code.
 
 | Topic | ACSRP (upstream) | CloudDesk (this repo, v1) |
 |---|---|---|
-| Tenancy | Multi-tenant: `tenant_id` and RLS on every table | Single tenant; RLS written, one tenant in use |
+| Tenancy | Multi-tenant: `tenant_id` and RLS on every table | Same column and policies, one tenant in use, no tenant features (D1, settled 2026-11-02) |
 | Severity | `P1`–`P4` | `low`/`medium`/`high`/`critical` (§5) |
 | Statuses | `awaiting_customer`, `awaiting_approval` | `waiting_on_customer`, `waiting_on_approval` (§5) |
 | Channels | chat, email, api, ticketing | email, chat, web, api (§5) |
@@ -219,8 +219,20 @@ Key rules:
 - The workflow itself is data: `workflow_runs.state` (JSON = `WorkflowState`), `workflow_events`,
   `approval_requests`, `resolution_actions`.
 - Every table has an `updated_at` trigger in Postgres (`set_updated_at()`).
-- RLS is enabled on all data tables. The backend uses the **service-role key server-side only**; the
-  browser only gets the anon key.
+- **Every data table carries `tenant_id` (`String(36)`, not null), indexed, and it is the first column
+  of every composite index** (D1). One `tenants` row is seeded for the demo; v1 never creates a second
+  at runtime. The column exists from the first migration because adding it later means migrating all
+  16 tables, every query and every test at once.
+- RLS is enabled on all data tables, keyed on that column:
+  `USING (tenant_id = current_setting('app.tenant_id')::uuid)`, with the API issuing
+  `SET LOCAL app.tenant_id` per transaction. The backend uses the **service-role key server-side
+  only**; the browser only gets the anon key.
+- **Repositories are the only place the tenant filter lives.** No router, service, agent or tool
+  writes `tenant_id` into a query, so it cannot be forgotten in one of them. SQLite has no RLS, so on
+  the demo database the repository filter *is* the boundary — which is why one test proves a second
+  tenant's rows stay invisible.
+- **Not in v1:** tenant CRUD or an admin screen, per-tenant routing, origins, autonomy mode or token
+  budgets, and tenant switching in the console. The column and the policies are the whole of D1.
 - Migrations: add `database/migrations/000N_<name>.sql` and update the model + `schema.sql`. Never
   edit an applied migration.
 - SQLite demo: `create_tables()` runs at startup; `seed_service.bootstrap_demo_data()` loads
@@ -665,12 +677,16 @@ optional and is not a core exit criterion.
   tables in RLS). Treat `database/schema.sql` as the authority once written.
 - Stage 17 (Agentic DevOps) depends on Stages 13–16; treat it as optional for the core Project 1 completion.
 
-**Decisions the upstream documents force. None is taken, and none may be built without a `TASKS.md`
-row first.** Each one changes the plan, not just the code:
+**D1 is settled (2026-11-02).** Every data table carries `tenant_id` and the RLS policies are keyed on
+it from P2-1, with one seeded tenant and no tenant-management features (§6). The trigger was that §6
+already promised RLS on all data tables while the table list had no column to key a policy on, so the
+spec contradicted itself; and the column is nearly free now and ruinous to retrofit across 16 tables.
+
+**D2–D6 are not taken, and none may be built without a `TASKS.md` row first.** Each changes the plan,
+not just the code:
 
 | # | Decision | Why it cannot wait |
 |---|---|---|
-| D1 | **Multi-tenancy:** `tenant_id` and RLS on every table | Adding it after Phase 2 means migrating every table. Decide before P2-1 writes the models. |
 | D2 | **A fourth risk tier, `prohibited`** | The upstream policy engine can forbid an action outright (`crm.close_account`). §7.4 can only *require approval*, so today there is no way to express "never". |
 | D3 | **Write-capable MCP servers** | Upstream reaches back-office systems over MCP with scoped service tokens. §7.4 keeps MCP read-only and writes in process. Changes P6-5 and the deployment surface. |
 | D4 | **Model tiering and a gateway** | Upstream routes small/medium/large with failover and a circuit breaker; `get_llm()` returns one model. Affects P9-1 and the cost target. |

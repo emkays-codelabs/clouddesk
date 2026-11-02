@@ -34,10 +34,13 @@ built and under test: severity is `low`/`medium`/`high`/`critical` (not `P1`–`
 carry no `ACSRP_` prefix. Renaming any of these to match a document breaks the schema, the API
 contract and the tests at once. Change `CLAUDE.md` §5 or §10.1 first if it is genuinely wanted.
 
-Six larger differences are open decisions **D1–D6** in `CLAUDE.md` §20: multi-tenancy, a `prohibited`
-risk tier, write-capable MCP servers, model tiering, Kubernetes, and the harder eval bar. None is
-decided. Do not build any of them, and do not assume one — D1 (multi-tenancy) has to be settled
-before P2-1 writes the models.
+Of the six larger differences, **D1 (multi-tenancy) is settled**: every data table carries a not-null,
+indexed `tenant_id`, the RLS policies are keyed on it from P2-1, one tenant is seeded, and no tenant
+features are built. Repositories are the only place the filter lives, so SQLite's lack of RLS still
+leaves one enforcement point. See `CLAUDE.md` §6.
+
+**D2–D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, model
+tiering, Kubernetes, and the harder eval bar. Do not build any of them and do not assume one.
 
 ## Before coding
 
@@ -133,7 +136,8 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 - Memory notes containing card numbers, keys, passwords, or raw ticket bodies.
 - Deploying production from the dev var-file, or applying an unreviewed plan.
 - Writing "deployed", "passes in CI", or "validated" before it is true.
-- Building any of decisions D1–D6, or renaming a status, severity, channel or environment variable to
-  match an upstream document, without that decision being taken in `CLAUDE.md` first.
+- Building any of decisions D2–D6, or renaming a status, severity, channel or environment variable to
+  match an upstream document, without that decision being taken in `CLAUDE.md` first. (D1 is settled
+  and P2-1 onward **does** build it.)
 - Pushing to GitHub, or opening, closing, or merging a pull request, without the owner saying so.
   Commit locally by default. Never push directly to `development`, `testing`, or `main`.
