@@ -123,6 +123,25 @@ def _documented_commands() -> set[str]:
     return set(re.findall(r"`/([a-z][a-z-]*)", line))
 
 
+class TestMidPhaseTrigger:
+    """Documents are updated as a phase goes (spec section 7, Step 4), not only when it ends."""
+
+    PHRASE = "an architectural boundary, networking or an important flow"
+
+    def test_the_task_completion_rule_in_claude_md_requires_it(self):
+        text = CLAUDE_MD.read_text(encoding="utf-8")
+        rule = next(ln for ln in text.splitlines() if ln.startswith("16. "))
+
+        assert self.PHRASE in rule
+        assert "internal/" in rule
+
+    def test_the_done_when_checklist_in_the_skill_requires_it(self):
+        skill = (SKILLS_DIR / "clouddesk-support" / "SKILL.md").read_text(encoding="utf-8")
+
+        assert self.PHRASE in skill
+        assert "internal/" in skill
+
+
 class TestClaudeMd:
     """CLAUDE.md is the source of truth, so it must describe the setup that actually exists."""
 

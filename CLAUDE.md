@@ -1,6 +1,6 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-02 22:19 +0530_
+_Last updated: 2026-11-02 22:32 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -633,10 +633,10 @@ the same principles: policy outside the model, approval gates, audit trail.
 13. **One change, one commit, one test.** Each feature maps to a requirement ID in `PLAN.md` and a test.
 14. **Demo before production.** Every stage must still run with `make demo` at the end.
 15. **Say what is not done.** Keep the honest status (section 15.1) current.
-16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges.
+16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges. If the task adds a significant component, or changes an architectural boundary, networking or an important flow, the same pull request also updates that phase's design-evolution or infrastructure document under `internal/` (`docs/09_PHASE_DOCUMENTATION.md` §7, Step 4); `/phase-docs N` consolidates them when the phase ends.
 17. **Actions are idempotent and verified.** Every write carries an idempotency key and is read back (§7.4). A retried or resumed run must never act twice.
 18. **Tool arguments need provenance.** An id or an amount in a tool call comes from customer context or a tool result, never from ticket text (§7.4, §9).
-19. **A phase is not done until its four documents exist.** Run `/phase-docs N`. The specification is `docs/09_PHASE_DOCUMENTATION.md`, and `tests/unit/test_phase_doc_checks.py` checks that a started phase has them, with phases still owed listed in its `OWED` set. Document only what exists, and say planned, partial or future where it is not. The checks do not prove a document is accurate or that a diagram renders.
+19. **A phase is not done until its four documents exist.** Run `/phase-docs N`. The specification is `docs/09_PHASE_DOCUMENTATION.md`, and `tests/unit/test_phase_doc_checks.py` checks that a finished phase has them, with phases still owed listed in its `OWED` set. Document only what exists, and say planned, partial or future where it is not. The checks do not prove a document is accurate or that a diagram renders.
 20. **Cost.** Sonnet is the default model. Opus runs only in `planner` and `opus-consultant`, and Haiku in `Explore` and `log-triage`. Finish one task before starting another and do not switch models mid-task. The full rules are in `.claude/rules/cost-and-delegation.md`.
 
 ### 18.1 Things that must never happen
