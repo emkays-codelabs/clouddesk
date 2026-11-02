@@ -74,7 +74,7 @@ class TestNames:
 
     @pytest.mark.parametrize(
         "name",
-        ["01_BRD.md", "07_GIT_WORKFLOW.md", "10_PROMPT_COST.md", "11_PROMPT_SETUP.txt"],
+        ["01_BRD.md", "07_GIT_WORKFLOW.md", "09_PROMPT_COST.md", "12_NOTES.txt"],
     )
     def test_accepts(self, name: str):
         assert DOC_NAME.match(name)

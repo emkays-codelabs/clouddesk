@@ -1,6 +1,6 @@
 # MEMORY.md — CloudDesk
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-02 20:35 +0530_
 
 Durable facts for this repository: what is really done, what has been decided, and what is still open. `CLAUDE.md` wins if this file drifts. Update it in place when a decision or the status changes. Do not store secrets, customer payloads, or raw ticket bodies here.
 
@@ -29,7 +29,7 @@ Update each row in place. Do not mark a row done from intention.
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |
 | Phase plan | Phase 1 (runtime skeleton) is complete and validated locally: all four tasks are merged (4 of 67). Phases 2–14 are not started. |
 | Claude Code setup | Written 2026-11-02 from the cost-governance prompt, with every key checked against the official docs. Validated: `settings.json` parses and no existing permission was dropped; `bash -n` passes on the hook. **Not verified:** that prompt caching works (the two-turn test needs a fresh session), that the hook fires in a live session, `omitClaudeMd` (needs Claude Code 2.1.271 or later; the CLI on this PATH is 2.1.104), and that skills named `plan`, `review` and `test` do not collide with built-in commands. The cache TTL is left at the default. |
-| Docs folder | `docs/` uses numbered short names: `01_BRD`, `02_PRD`, `03_HLD`, `04_LLD` (the upstream design, in dependency order), then `05_ARCHITECTURE`, `06_API_CONTRACT`, `07_GIT_WORKFLOW`, `08_CLAUDE_SETUP`. `09` to `11` are local prompt notes that are not tracked. References were updated by path only, and `tests/unit/test_docs_folder.py` fails on any old name. The HLD and LLD still name the author's original files inside their own text, by design. |
+| Docs folder | `docs/` uses numbered short names: `01_BRD`, `02_PRD`, `03_HLD`, `04_LLD` (the upstream design, in dependency order), then `05_ARCHITECTURE`, `06_API_CONTRACT`, `07_GIT_WORKFLOW`, `08_CLAUDE_SETUP`. `09_PROMPT_COST` is a local prompt note that is not tracked. References were updated by path only, and `tests/unit/test_docs_folder.py` fails on any old name. The HLD and LLD still name the author's original files inside their own text, by design. |
 | GitHub | `main`, `development` and `testing` exist, and there are no other branches. `development` holds the planning documents and all of Phase 1. Pull requests #3 to #7 are merged; #1 and #2 are closed. |
 
 ## Locked decisions
