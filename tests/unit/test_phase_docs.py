@@ -28,6 +28,13 @@ def _spec_outputs() -> list[tuple[str, str]]:
 
 
 class TestTheSpec:
+    def test_it_is_complete_and_carries_no_cut_off_marker(self):
+        spec = SPEC.read_text(encoding="utf-8")
+
+        assert "This copy ends here" not in spec
+        assert "FINAL INSTRUCTION TO THE CODING AGENT" in spec  # its last section
+        assert "### Category M" in spec  # the last question category
+
     def test_it_defines_exactly_four_documents(self):
         assert [folder for folder, _ in _spec_outputs()] == [
             "Infra_design_evolution",
@@ -62,8 +69,18 @@ class TestTheSkill:
 
         assert missing == []
 
-    def test_it_admits_the_spec_is_incomplete_instead_of_inventing_the_rest(self):
-        assert "incomplete" in SKILL.read_text(encoding="utf-8").lower()
+    def test_it_covers_every_question_category_the_spec_defines(self):
+        categories = re.findall(r"^### Category ([A-Z]):", SPEC.read_text(encoding="utf-8"), re.M)
+        skill = SKILL.read_text(encoding="utf-8")
+
+        assert categories, "the spec defines no question categories"
+        assert categories == [
+            chr(ord("A") + i) for i in range(len(categories))
+        ]  # A, B, C ... no gap
+        assert f"A to {categories[-1]}" in skill
+
+    def test_it_does_not_tell_the_agent_the_spec_is_unfinished_once_it_is_complete(self):
+        assert "incomplete" not in SKILL.read_text(encoding="utf-8").lower()
 
     def test_it_stays_small_because_the_spec_is_read_only_when_it_runs(self):
         assert len(SKILL.read_text(encoding="utf-8").splitlines()) <= 40

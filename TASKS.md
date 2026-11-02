@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 22:19 +0530_
+_Last updated: 2026-11-02 22:23 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -157,9 +157,9 @@ The longest dependency chain is 16 tasks long.
   rows and merge commits; one row in the delegation rule; a line in `PLAN.md` making the documents a requirement
   of every phase; and completion checks in `scripts/check_phase_docs.py` that a started phase has its documents,
   that cited file paths exist, and that Mermaid blocks are structurally sound. The spec stays out of the
-  always-loaded rules (about 6,200 tokens) and is read only when the skill runs. The spec as supplied is
-  incomplete, ending partway through Category E of its section 6.2, so it is saved as supplied with a marker and
-  the skill does not invent the rest.
+  always-loaded rules (about 6,200 tokens) and is read only when the skill runs. The spec was first supplied
+  cut off partway through Category E of its section 6.2; the owner then sent the full text, which is saved complete
+  and which the skill covers in full (Categories A to M).
 - **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`,
   `.claude/rules/cost-and-delegation.md`, `PLAN.md`, `README.md`, `CLAUDE.md`, `.gitignore`, `scripts/check_phase_docs.py`,
   `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`

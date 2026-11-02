@@ -10,7 +10,8 @@ argument-hint: "[phase number, e.g. 1]"
 
 Write the four documents for phase $ARGUMENTS.
 
-1. Read `docs/09_PHASE_DOCUMENTATION.md` in full. It is the specification: follow its structure and rules.
+1. Read `docs/09_PHASE_DOCUMENTATION.md` in full. It is the specification: follow its structure, its
+   quality standards (section 8) and its definition of done (section 9).
 2. Find what the phase changed. Take its rows from `TASKS.md`; each names a branch. For each branch find
    its merge commit with `git log --merges --first-parent --grep "<branch>" --format="%h %s"` and read
    what it changed with `git diff <hash>^1 <hash> --stat`. Then read the code. Never credit this phase
@@ -28,10 +29,12 @@ Write the four documents for phase $ARGUMENTS.
    the result. If there is no Docker setup yet, say the infrastructure document covers a local setup.
 6. Draw Mermaid from the actual code. Run `uv run pytest tests/unit/test_phase_doc_checks.py -q`, and say
    the diagrams were checked for structure only. Never say they were rendered or validated.
-7. Section 6.2 of the spec is incomplete: it stops partway through Category E. Cover Categories A to E,
-   and state in the Q&A file that later categories were never specified. Do not invent them.
+7. In the Q&A file cover Categories A to M of section 6.2, in the format of section 6.3 and at the four
+   difficulty levels of section 6.5. Skip a category that does not apply and say so. In Category M never
+   invent a personal experience: leave a placeholder for the owner.
 8. Never write a secret. Never edit `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` or any test: report
    what should change instead.
 
-Return the four paths, the check results, and one line each on anything you could not document. Say that
-phase N must be removed from `OWED` in `tests/unit/test_phase_doc_checks.py`.
+Return the completion report of section 7, step 6 (a status for each deliverable, diagrams, links, test
+results, known gaps) and the four paths. Say that phase N must be removed from `OWED` in
+`tests/unit/test_phase_doc_checks.py`.

@@ -801,6 +801,404 @@ Cover relevant topics such as:
 - Schema design.
 - Data relationships.
 - Indexing.
-- Query performance
+- Query performance.
+- Transactions.
+- Connection management.
+- Data validation.
+- Migrations.
+- Data consistency.
+- Caching.
+- Vector databases and embeddings, if applicable.
 
-<!-- This copy ends here. The document as supplied was cut off mid-list in Category E of section 6.2; the remainder has not been added. -->
+### Category F: Docker and infrastructure
+
+Include questions about:
+
+- Containers versus virtual machines.
+- Dockerfiles.
+- Docker Compose.
+- Container networking.
+- Port mapping.
+- Volumes.
+- Environment variables.
+- Service discovery.
+- Health checks.
+- Startup dependencies.
+- Logs.
+- Troubleshooting.
+- Development versus production environments.
+
+### Category G: Security
+
+Cover applicable topics such as:
+
+- Authentication.
+- Authorization.
+- Secret management.
+- Input validation.
+- Injection risks.
+- Network exposure.
+- Dependency vulnerabilities.
+- Data protection.
+- Logging sensitive information.
+- Secure deployment practices.
+
+### Category H: Testing and quality assurance
+
+Cover:
+
+- Unit testing.
+- Integration testing.
+- End-to-end testing.
+- Mocking.
+- Test data.
+- Failure scenarios.
+- Regression testing.
+- Coverage limitations.
+- CI/CD checks.
+
+### Category I: Performance, reliability, and scalability
+
+Cover:
+
+- Latency.
+- Throughput.
+- Resource consumption.
+- Database bottlenecks.
+- Concurrency.
+- Caching.
+- Retry strategies.
+- Failure isolation.
+- Horizontal scaling.
+- Monitoring.
+- Service-level objectives, where applicable.
+
+### Category J: AI and agentic engineering
+
+Include these topics only where they apply to the actual implementation.
+
+Potential topics include:
+
+- LLM integration.
+- Prompt design.
+- Retrieval-Augmented Generation.
+- Embedding models.
+- Vector search.
+- Hybrid retrieval.
+- Reranking.
+- Hallucination mitigation.
+- Agent orchestration.
+- Tool calling.
+- State management.
+- Human-in-the-loop workflows.
+- Evaluation metrics.
+- Model latency and cost.
+- Guardrails and output validation.
+
+Questions must reflect the specific AI architecture actually implemented.
+
+### Category K: Scenario-based questions
+
+Include realistic engineering scenarios, such as:
+
+- What happens if the database becomes unavailable?
+- How would you investigate a slow API?
+- How would you prevent duplicate processing?
+- What happens if an external service times out?
+- How would you add a new capability without changing unrelated components?
+- How would you diagnose a Docker networking issue?
+- How would you handle invalid or unexpected input?
+- How would you scale the application to support more users?
+
+Answers must explain both the current implementation and any proposed improvements.
+
+### Category L: Design challenges and trade-offs
+
+Include questions about:
+
+- Why a particular library or framework was selected.
+- Why an alternative was not used.
+- What limitations exist.
+- What assumptions were made.
+- How the design could be improved.
+- How the architecture would change under increased load.
+- What technical debt remains.
+
+### Category M: Behavioral and project ownership questions
+
+Prepare answers for questions such as:
+
+- What was your contribution to the project?
+- What was the most difficult decision?
+- What did you learn during this phase?
+- What would you do differently?
+- How did you verify the implementation?
+- How would you explain the business value of the work?
+
+Do not invent personal experiences, achievements, performance results, or decisions. Build answers from documented project evidence and leave placeholders where personal input is required.
+
+## 6.3 Required answer format
+
+Use the following format for each question.
+
+### Q1. What problem does this component solve?
+
+**Short answer:**
+
+Provide a direct answer suitable for a quick interview response.
+
+**Detailed explanation:**
+
+Explain the technical reasoning and relevant implementation details.
+
+**Simple analogy:**
+
+Use an analogy when it genuinely improves understanding.
+
+**Implementation reference:**
+
+Identify the relevant source files, functions, classes, configuration, or tests.
+
+**Follow-up questions:**
+
+Include likely questions an interviewer may ask next.
+
+**Common mistake to avoid:**
+
+Explain any misleading or technically incorrect answer that should be avoided.
+
+Not every question needs an elaborate analogy. Keep answers proportional to the complexity of the subject.
+
+## 6.4 Answer quality requirements
+
+- Answers must be technically accurate.
+- Explain the implementation before discussing hypothetical improvements.
+- Include concrete references to the codebase.
+- Explain why a decision was made, not merely what was done.
+- Clearly identify limitations and unresolved issues.
+- Avoid generic answers that could apply to any project.
+- Provide both concise interview responses and deeper technical explanations.
+- Include follow-up questions for important architectural decisions.
+- Never fabricate implementation details or claim unverified performance improvements.
+
+## 6.5 Suggested difficulty levels
+
+Organize the questions into:
+
+1. Beginner: Fundamentals and basic project understanding.
+2. Intermediate: Implementation details and engineering decisions.
+3. Advanced: System design, failure handling, security, performance, and scalability.
+4. Expert: Deep architectural trade-offs, alternatives, and production-readiness challenges.
+
+Include questions relevant to the actual phase at each level.
+
+The objective is comprehensive preparation, not an arbitrary question count.
+
+---
+
+# 7. MANDATORY DOCUMENTATION WORKFLOW
+
+Documentation must be part of the development workflow itself.
+
+It must not be postponed until all development phases are completed.
+
+## Step 1: Inspect the current implementation
+
+Before documenting a phase, inspect:
+
+- Repository structure.
+- Source files.
+- Existing documentation.
+- Configuration files.
+- Dockerfiles and Docker Compose files.
+- Environment variable definitions.
+- Database schemas and migrations.
+- API routes.
+- Tests.
+- Build and deployment scripts.
+- Relevant changes introduced during the phase.
+
+Use Git history and diffs when available to identify what changed during the phase.
+
+If historical information is unavailable, clearly distinguish the inferred starting state from verified historical facts.
+
+## Step 2: Identify the phase scope
+
+Establish:
+
+- The phase's objectives.
+- The implementation completed.
+- The components added or modified.
+- The significant architectural decisions.
+- The infrastructure changes.
+- The tests and verification performed.
+- The remaining limitations.
+
+Do not assume that every file in the repository was created during the current phase.
+
+## Step 3: Update all four documentation categories
+
+Create or update the following files:
+
+1. `internal/explain_codebase/PhaseN_explained.md`
+2. `internal/design_evolution/PhaseN_Project_System_Design_Evolution.md`
+3. `internal/Infra_design_evolution/PhaseN_Infra_design_evolution.md`
+4. `internal/QnA/PhaseN_Interview_QnA.md`
+
+Each document must cover its own purpose without simply duplicating the other three.
+
+Use consistent component names, architecture terminology, and file references across all documents.
+
+## Step 4: Update documentation during subtasks
+
+When a subtask introduces a significant new component, modifies an architectural boundary, changes networking, or alters an important execution flow, update the relevant documentation.
+
+Do not wait until the entire phase is finished if doing so would lose important implementation details.
+
+For substantial changes, include the intermediate design in the relevant system design or infrastructure evolution document.
+
+At the end of the phase, consolidate these updates into a coherent phase-level explanation.
+
+## Step 5: Validate the documentation
+
+Verify that:
+
+- Referenced files exist.
+- Function and class names are correct.
+- Diagrams match the implementation.
+- API routes and service names are accurate.
+- Docker ports and networks match the configuration.
+- Environment variable names are correct.
+- Commands are appropriate for the repository.
+- Test results are supported by actual execution.
+- Internal document links resolve correctly.
+- No secrets have been included.
+- Implemented features are not confused with planned features.
+- Earlier phase documentation remains historically accurate.
+
+If Mermaid rendering can be checked in the available environment, validate the diagrams. Otherwise, verify the syntax and disclose that rendering was not tested.
+
+## Step 6: Report documentation completion
+
+At the end of each phase, provide a concise completion report.
+
+Include:
+
+| Item | Status |
+|---|---|
+| Phase implementation reviewed | Completed / Partial / Blocked |
+| Codebase explanation | Completed / Partial / Blocked |
+| System design evolution | Completed / Partial / Blocked |
+| Infrastructure evolution | Completed / Partial / Blocked |
+| Interview Q&A | Completed / Partial / Blocked |
+| Mermaid diagrams | Verified / Syntax-checked / Not verified |
+| Documentation links | Verified / Not verified |
+| Tests and validation | Actual results |
+| Known documentation gaps | List outstanding items |
+
+Do not report a deliverable as complete if it has not been created and checked.
+
+---
+
+# 8. DOCUMENTATION QUALITY STANDARDS
+
+All four documentation categories must follow these standards.
+
+## Accuracy
+
+Document the actual implementation.
+
+Do not invent components, historical decisions, architectural changes, test results, or deployment configurations.
+
+## Completeness
+
+Cover every significant component and design decision introduced or modified during the phase.
+
+If a requirement cannot be verified, state that explicitly.
+
+## Accessibility
+
+The codebase explanation must be understandable to a non-technical audience.
+
+The system design and infrastructure documents must remain technically detailed enough for engineering interviews.
+
+## Traceability
+
+Where possible, reference:
+
+- Source file paths.
+- Relevant classes and functions.
+- Configuration files.
+- Tests.
+- API routes.
+- Docker Compose services.
+- Database migrations.
+- Related phase documents.
+
+## Historical integrity
+
+Keep each phase's documentation aligned with the system as it existed at that point in development.
+
+Later improvements must not be presented as if they existed in an earlier phase.
+
+## Maintainability
+
+Use consistent headings, Markdown tables, Mermaid diagrams, and relative links.
+
+Update documents when the implementation changes.
+
+Avoid duplicated explanations that can become inconsistent.
+
+## Confidentiality
+
+Never include secrets, credentials, private keys, access tokens, or sensitive production data.
+
+Use safe placeholders for configuration examples.
+
+---
+
+# 9. DEFINITION OF DONE FOR EVERY PHASE
+
+A phase is not considered fully documented until all of the following conditions are met:
+
+- The implementation has been reviewed.
+- The codebase explanation document exists.
+- The system design evolution document exists.
+- The infrastructure design evolution document exists.
+- The interview preparation document exists.
+- Important components and their interactions are explained.
+- The initial and final system designs are documented.
+- Significant intermediate architectural changes are documented.
+- Infrastructure networking and routing are explained where applicable.
+- Relevant Mermaid diagrams are included.
+- Interview questions and answers reflect the actual implementation.
+- Relevant source files and configuration are referenced.
+- Validation results and known limitations are documented.
+- Documentation is consistent across all four files.
+- Any incomplete deliverable is explicitly reported.
+
+**Development completion and documentation completion are separate requirements. Both must be tracked.**
+
+---
+
+# 10. FINAL INSTRUCTION TO THE CODING AGENT
+
+Apply these requirements to the existing application and all subsequent development phases.
+
+Do not modify application code merely to satisfy a documentation requirement.
+
+Do not create speculative documentation before inspecting the repository.
+
+First understand the actual implementation, then document it accurately.
+
+Preserve existing project conventions unless a change is justified.
+
+After completing each phase, ensure that all four documentation deliverables have been created or updated and validated.
+
+When a subtask introduces a meaningful architectural or infrastructure change, capture that evolution in the relevant document.
+
+At the end of every phase, summarize the implementation, documentation deliverables, verification performed, and outstanding gaps.
+
+The ultimate objective is to maintain a complete, historically accurate, technically reliable, and interview-ready record of the application's evolution.
+
+I must be able to explain not only what the application does, but also how it works, why it was designed that way, how its infrastructure operates, what engineering trade-offs were made, and how the architecture evolved from the beginning of the phase to its final implementation.
