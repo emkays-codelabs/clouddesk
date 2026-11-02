@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 20:14 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -67,6 +67,7 @@ The longest dependency chain is 16 tasks long.
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Completed ✅ |
 | P1-5 · Document timestamps (pre-commit hook) | — | `feature/doc-timestamps` | Completed ✅ |
 | P1-6 · Claude Code cost governance | — | `feature/cost-governance` | Completed ✅ |
+| P1-7 · Numbered document names | — | `feature/docs-file-names` | Completed ✅ |
 
 #### Task definitions
 
@@ -117,10 +118,10 @@ The longest dependency chain is 16 tasks long.
   Sonnet; `log-triage` and `Explore` on Haiku) plus `_TEMPLATE.md`, seven skills (`plan`, `implement`,
   `review`, `consult-opus`, `cost-report`, `test`, `pr-review`), three rules (cost and delegation, Python,
   tests), a `PreToolUse` hook that runs `ruff` and `pytest` before a `git commit`, pinned model ids in
-  `settings.json`, and `docs/claude-setup-suggestions.md`. `CLAUDE.md` is protected here: proposed edits go
+  `settings.json`, and `docs/08_CLAUDE_SETUP.md`. `CLAUDE.md` is protected here: proposed edits go
   in the suggestions file, not into it. Every setting key was checked against the official docs first.
 - **Files:** `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/hooks/pre-commit.sh`,
-  `.claude/settings.json`, `.gitignore`, `docs/plans/`, `docs/claude-setup-suggestions.md`,
+  `.claude/settings.json`, `.gitignore`, `docs/plans/`, `docs/08_CLAUDE_SETUP.md`,
   `scripts/claude_usage/README.md`, `README.md`
 - **Done when:** `settings.json` parses and drops no existing permission; `opus` appears only on `planner`
   and `opus-consultant`; every agent has `name`, `description` containing "Delegate here", `model`, `tools`,
@@ -128,6 +129,22 @@ The longest dependency chain is 16 tasks long.
   tree, exits 2 on a failing lint or test, and ignores a command that is not a commit; `bash -n` passes;
   `git status --ignored` shows only the intended tracked set. The two-turn cache test needs a fresh session
   and is recorded as pending, not passed.
+- **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
+
+**P1-7 · Numbered document names**
+- **Needs:** `P1-6`
+- **Build:** Every file in `docs/` gets a short numbered name, `NN_NAME.ext`, so a plain listing is reading
+  order: the design chain first (`01_BRD`, `02_PRD`, `03_HLD`, `04_LLD`: why, what, how, detail), then the
+  project's own documents (`05_ARCHITECTURE`, `06_API_CONTRACT`, `07_GIT_WORKFLOW`, `08_CLAUDE_SETUP`). Every
+  reference to an old name is updated, which is a path change only: no document's text changes. The stamper
+  now also considers a file git reports as renamed, so a document that is renamed and edited in one commit
+  is still restamped.
+- **Files:** `docs/01_BRD.md` to `docs/08_CLAUDE_SETUP.md`, `scripts/stamp_docs.py`,
+  `tests/unit/test_docs_folder.py`, `tests/unit/test_stamp_docs.py`, and the files that name a document
+- **Done when:** A test asserts every file in `docs/` matches `NN_NAME`, numbers run from 01 without a gap,
+  and the design documents are in dependency order; a second test fails on any tracked file that still uses
+  an old name or on a relative link that no longer resolves; the stamper's list names only files that exist.
+  The author's HLD and LLD, which name their own original files, are the one exception.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
 
 ---
@@ -215,7 +232,7 @@ The longest dependency chain is 16 tasks long.
 ## Phase 4 — Support API
 
 > Depends on: P2-3 and P3-1. Unblocks: Phase 12. Does not block Phases 5, 6, or 7.
-> `docs/API_CONTRACT.md` already describes every route, so P4-1 reviews it against the schemas.
+> `docs/06_API_CONTRACT.md` already describes every route, so P4-1 reviews it against the schemas.
 > Merge order: P4-1 first, so ticket and customer work share a written contract. P4-2 and P4-3 in parallel after it. P4-4 after P4-2. P4-5 after P2-3 and P3-1.
 
 | Task | Covers | Branch | Status |
@@ -230,8 +247,8 @@ The longest dependency chain is 16 tasks long.
 
 **P4-1 · Ticket and customer API contract**
 - **Needs:** `P2-1`
-- **Build:** Review `docs/API_CONTRACT.md` against the Pydantic schemas and write the request and response models for tickets and customers. Contract, schemas, and `frontend/lib/types.ts` change together from here on.
-- **Files:** `backend/app/schemas/` (ticket, customer), `docs/API_CONTRACT.md`
+- **Build:** Review `docs/06_API_CONTRACT.md` against the Pydantic schemas and write the request and response models for tickets and customers. Contract, schemas, and `frontend/lib/types.ts` change together from here on.
+- **Files:** `backend/app/schemas/` (ticket, customer), `docs/06_API_CONTRACT.md`
 - **Done when:** Schemas serialize to the shapes in the contract (`TicketSummary`, `Ticket`, `TicketDetail`, `Customer`, `CustomerDetail`) with tests.
 
 **P4-2 · Ticket API**
@@ -626,7 +643,7 @@ The longest dependency chain is 16 tasks long.
 
 **P12-2 · Typed API client**
 - **Needs:** `P4-1`
-- **Build:** The typed API client: bearer token in `localStorage`, a 401 redirects to `/login?reason=expired`, a `NetworkError` banner with auto-retry, types mirroring `API_CONTRACT.md`, and the `usePolling` hook.
+- **Build:** The typed API client: bearer token in `localStorage`, a 401 redirects to `/login?reason=expired`, a `NetworkError` banner with auto-retry, types mirroring `06_API_CONTRACT.md`, and the `usePolling` hook.
 - **Files:** `frontend/lib/api.ts`, `types.ts`, `hooks.ts`, `format.ts`, `cn.ts`, `frontend/__tests__/`
 - **Done when:** Tests cover the 401 redirect and the retry; the service-role key appears nowhere in the frontend.
 
@@ -739,7 +756,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 69 tasks are Completed ✅ and the Progress summary reads 69 of 69.
+- All 70 tasks are Completed ✅ and the Progress summary reads 70 of 70.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -769,7 +786,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 6 | 6 |
+| 1 | Runtime skeleton | 7 | 7 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -783,4 +800,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **69** | **6** |
+| **Total** | | **70** | **7** |

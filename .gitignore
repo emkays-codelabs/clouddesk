@@ -43,7 +43,7 @@ secrets.json
 !/.claude/rules/
 !/.claude/hooks/
 .claude/transcripts/
-# Backups taken before a .claude/ change (see docs/claude-setup-suggestions.md).
+# Backups taken before a .claude/ change (see docs/08_CLAUDE_SETUP.md).
 .claude.bak-*/
 
 # --- Local Vector Store Data (Qdrant) and Logs ---

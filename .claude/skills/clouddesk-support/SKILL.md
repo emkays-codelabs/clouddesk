@@ -10,7 +10,7 @@ description: >-
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-02 15:33 +0530_
+_Last updated: 2026-11-02 20:33 +0530_
 
 ## The files, and which one to trust
 
@@ -20,16 +20,16 @@ _Last updated: 2026-11-02 15:33 +0530_
 | `TASKS.md` | Every task: what to build, files, **Needs**, **Done when**, branch, and the order. |
 | `PLAN.md` | Requirement IDs (F1-F14, N1-N8) and each phase's exit criteria and demo checkpoint. |
 | `MEMORY.md` | The honest status, locked decisions, open questions, and working agreements. |
-| `docs/ARCHITECTURE.md` | Component and infrastructure diagrams. |
-| `docs/API_CONTRACT.md` | Every route and payload type. |
-| `docs/Git_GitHub_Workflow_Guide.md` | Branches, pull requests, promotion. |
-| `docs/01a_BRD_…`, `01b_PRD_…`, `02_HLD_…`, `03_LLD_…` | The upstream design of **ACSRP**, the full product this repo is a v1 of. Read for intent. |
+| `docs/05_ARCHITECTURE.md` | Component and infrastructure diagrams. |
+| `docs/06_API_CONTRACT.md` | Every route and payload type. |
+| `docs/07_GIT_WORKFLOW.md` | Branches, pull requests, promotion. |
+| `docs/01_BRD.md`, `02_PRD.md`, `03_HLD.md`, `04_LLD.md` | The upstream design of **ACSRP**, the full product this repo is a v1 of. Read for intent. |
 
 If a change would contradict `CLAUDE.md`, update `CLAUDE.md` first, then the plan, then the code.
 
 ### Do not “fix” CloudDesk to match the upstream documents
 
-The documents in `docs/01a`–`03` specify the full multi-tenant product. This repo is a deliberately
+The documents in `docs/01`–`04` specify the full multi-tenant product. This repo is a deliberately
 scoped single-tenant v1, and `CLAUDE.md` §1.1 tables every difference. CloudDesk's own vocabulary is
 built and under test: severity is `low`/`medium`/`high`/`critical` (not `P1`–`P4`), statuses are
 `waiting_on_*` (not `awaiting_*`), the channels are email/chat/web/api, and environment variables
@@ -54,7 +54,7 @@ tiering, Kubernetes, and the harder eval bar. Do not build any of them and do no
 3. Read the task's **Build / Files / Done when**, the phase in `PLAN.md`, the matching section of
    `CLAUDE.md`, and `MEMORY.md` for decisions that already apply.
 4. Name the requirement (F1-F14 or N1-N8) and the test that will prove it.
-5. A route or payload change updates `docs/API_CONTRACT.md`, `backend/app/schemas/`, and
+5. A route or payload change updates `docs/06_API_CONTRACT.md`, `backend/app/schemas/`, and
    `frontend/lib/types.ts` in the same change.
 6. Stay inside one layer (`CLAUDE.md` section 4.2):
    - `backend/app/api/` handles HTTP, validation, auth, RBAC, and background tasks. No business rules.

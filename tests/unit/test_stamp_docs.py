@@ -1,9 +1,12 @@
 """P1-5: the pre-commit stamper that records when each document last changed."""
 
+import re
+import types
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
+from scripts import stamp_docs
 from scripts.stamp_docs import STAMPED, find_stamp, stamp_files, stamp_text
 
 NOW = datetime(2026, 11, 2, 14, 35, tzinfo=timezone(timedelta(hours=5, minutes=30)))
@@ -93,7 +96,8 @@ class TestStampedList:
 
     def test_the_upstream_authors_documents_are_never_stamped(self):
         # They carry their own version date; overwriting it would misreport the author.
-        assert not [p for p in STAMPED if p.startswith("docs/01") or p.startswith("docs/0")]
+        # docs/01 to docs/04 are the BRD, PRD, HLD and LLD. The project's own documents start at 05.
+        assert not [p for p in STAMPED if re.match(r"docs/0[1-4]_", p)]
 
     def test_every_listed_file_exists(self):
         import pathlib
@@ -112,7 +116,7 @@ class TestStampFiles:
         (tmp_path / "docs").mkdir()
         listed = tmp_path / "CLAUDE.md"
         listed.write_text("# T\n\nBody.\n", encoding="utf-8")
-        unlisted = tmp_path / "docs" / "02_HLD_Autonomous_Customer_Support_Platform_md_GI9Q.md"
+        unlisted = tmp_path / "docs" / "03_HLD.md"
         unlisted.write_text("# HLD\n\n| Date | 31 October 2026 |\n", encoding="utf-8")
         return listed, unlisted
 
@@ -124,7 +128,7 @@ class TestStampFiles:
 
     def test_an_unlisted_file_is_left_byte_identical(self, tmp_path):
         _, unlisted = self._tree(tmp_path)
-        rel = "docs/02_HLD_Autonomous_Customer_Support_Platform_md_GI9Q.md"
+        rel = "docs/03_HLD.md"
         before = unlisted.read_bytes()
 
         # The author's own version date must survive, so the guard is load-bearing, not decoration.
@@ -141,3 +145,20 @@ class TestStampFiles:
 
         assert stamp_files(["CLAUDE.md"], tmp_path, NOW) == []
         assert listed.read_bytes() == before
+
+
+class TestWhichStagedFilesAreConsidered:
+    """A document that is renamed and edited in the same commit is Renamed, not Modified, to git."""
+
+    def test_a_renamed_file_is_asked_for_so_its_edit_is_still_stamped(self, monkeypatch):
+        seen = {}
+
+        def fake_run(command, **_):
+            seen["command"] = command
+            return types.SimpleNamespace(stdout="")
+
+        monkeypatch.setattr(stamp_docs.subprocess, "run", fake_run)
+
+        assert stamp_docs.main([]) == 0
+        flag = next(a for a in seen["command"] if a.startswith("--diff-filter="))
+        assert "R" in flag, f"{flag} would skip a renamed file"

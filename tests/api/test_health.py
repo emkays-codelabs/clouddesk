@@ -1,4 +1,4 @@
-"""P1-2: health probes and request ids (N3). See docs/API_CONTRACT.md, Health section."""
+"""P1-2: health probes and request ids (N3). See docs/06_API_CONTRACT.md, Health section."""
 
 import pytest
 from fastapi import FastAPI

@@ -8,14 +8,14 @@
 | Date | 31 October 2026 |
 | Owner | Anu — OrionVexa (Agentic AI Production Engineering, Project 1) |
 | Status | Draft for review |
-| Related docs | `01b_PRD_Autonomous_Customer_Support_Platform.md`, `02_HLD_Autonomous_Customer_Support_Platform.md`, `03_LLD_Autonomous_Customer_Support_Platform.md` |
+| Related docs | `02_PRD.md`, `03_HLD.md`, `04_LLD.md` |
 
 ---
 
 > **Split note.** This document is one half of the combined PRD/BRD v1.0. Its wording is
 > unchanged, and the original section numbers are kept, so references such as “PRD §8”,
 > “FR-01–42” and “NFR-01–16” stay valid. Sections §1, §2, §10, §11, §13 are here;
-> the rest are in `01b_PRD_Autonomous_Customer_Support_Platform.md`. §13 Glossary appears in both.
+> the rest are in `02_PRD.md`. §13 Glossary appears in both.
 
 ---
 
