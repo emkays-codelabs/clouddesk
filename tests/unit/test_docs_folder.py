@@ -127,3 +127,50 @@ class TestNothingPointsAtAnOldName:
                     broken.append(f"{rel} -> {target}")
 
         assert broken == []
+
+
+INTERNAL = ROOT / "internal"
+PHASE_FOLDER = re.compile(r"^Phase\d+$")
+
+
+class TestInternalNames:
+    """internal/PhaseN/NN_NAME.md: the same numbered, capitalised style as docs/."""
+
+    def _phase_folders(self) -> list[pathlib.Path]:
+        return sorted(p for p in INTERNAL.iterdir() if p.is_dir()) if INTERNAL.exists() else []
+
+    def test_nothing_sits_loose_in_internal(self):
+        loose = [p.name for p in INTERNAL.iterdir() if p.is_file()] if INTERNAL.exists() else []
+
+        assert loose == []
+
+    def test_every_folder_is_named_phase_and_a_number(self):
+        assert [p.name for p in self._phase_folders() if not PHASE_FOLDER.match(p.name)] == []
+
+    def test_every_document_is_numbered_and_in_capitals_like_the_docs_folder(self):
+        bad = [
+            f"{folder.name}/{doc.name}"
+            for folder in self._phase_folders()
+            for doc in folder.iterdir()
+            if not DOC_NAME.match(doc.name)
+        ]
+
+        assert bad == []
+
+    def test_every_document_is_one_of_the_four_the_spec_defines(self):
+        from scripts.check_phase_docs import DOCUMENTS
+
+        unknown = [
+            f"{folder.name}/{doc.name}"
+            for folder in self._phase_folders()
+            for doc in folder.iterdir()
+            if doc.name not in DOCUMENTS
+        ]
+
+        assert unknown == []
+
+    def test_the_four_names_are_numbered_in_reading_order_without_a_gap(self):
+        from scripts.check_phase_docs import DOCUMENTS
+
+        assert [int(DOC_NAME.match(name).group(1)) for name in DOCUMENTS] == [1, 2, 3, 4]
+        assert DOCUMENTS == sorted(DOCUMENTS)

@@ -1,5 +1,7 @@
 # MANDATORY PHASE-WISE DOCUMENTATION, SYSTEM DESIGN EVOLUTION, INFRASTRUCTURE DOCUMENTATION, AND INTERVIEW PREPARATION
 
+> **Layout revised 2026-11-02, at the owner's instruction.** The four documents for a phase now sit together in one folder per phase, `internal/PhaseN/`, numbered in reading order. The earlier layout, one folder per category, is superseded. Nothing else in this specification has changed.
+
 ## 1. PRIMARY OBJECTIVE
 
 During the development of this application, every phase and its associated subtasks will introduce, modify, or improve multiple code components, architectural decisions, infrastructure configurations, and system capabilities.
@@ -30,35 +32,28 @@ project-root/
 │
 ├── internal/
 │   │
-│   ├── explain_codebase/
-│   │   ├── Phase1_explained.md
-│   │   ├── Phase2_explained.md
-│   │   ├── Phase3_explained.md
+│   ├── Phase1/
+│   │   ├── 01_CODEBASE_EXPLAINED.md
+│   │   ├── 02_DESIGN_EVOLUTION.md
+│   │   ├── 03_INFRA_EVOLUTION.md
+│   │   └── 04_INTERVIEW_QNA.md
+│   │
+│   ├── Phase2/
+│   │   ├── 01_CODEBASE_EXPLAINED.md
+│   │   ├── 02_DESIGN_EVOLUTION.md
+│   │   ├── 03_INFRA_EVOLUTION.md
+│   │   └── 04_INTERVIEW_QNA.md
+│   │
+│   ├── Phase3/
 │   │   └── ...
 │   │
-│   ├── design_evolution/
-│   │   ├── Phase1_Project_System_Design_Evolution.md
-│   │   ├── Phase2_Project_System_Design_Evolution.md
-│   │   ├── Phase3_Project_System_Design_Evolution.md
-│   │   └── ...
-│   │
-│   ├── Infra_design_evolution/
-│   │   ├── Phase1_Infra_design_evolution.md
-│   │   ├── Phase2_Infra_design_evolution.md
-│   │   ├── Phase3_Infra_design_evolution.md
-│   │   └── ...
-│   │
-│   └── QnA/
-│       ├── Phase1_Interview_QnA.md
-│       ├── Phase2_Interview_QnA.md
-│       ├── Phase3_Interview_QnA.md
-│       └── ...
+│   └── ...
 ```
 
 ### Directory rules
 
 - Use `internal/` as the documentation root, unless the repository already establishes a different naming convention. If an alternative is necessary, document the reason and use it consistently.
-- Create one separate document for every phase in each of the four documentation categories.
+- Create one folder for every phase, holding one separate document for each of the four documentation categories.
 - Preserve all existing documentation.
 - Update an existing phase document when that phase's implementation changes.
 - Do not overwrite earlier phase documentation with information belonging exclusively to a later phase.
@@ -74,11 +69,11 @@ project-root/
 
 For Phase N:
 
-`internal/explain_codebase/PhaseN_explained.md`
+`internal/PhaseN/01_CODEBASE_EXPLAINED.md`
 
 Example:
 
-`internal/explain_codebase/Phase1_explained.md`
+`internal/Phase1/01_CODEBASE_EXPLAINED.md`
 
 ## 3.1 Purpose
 
@@ -288,11 +283,11 @@ Summarize:
 
 For Phase N:
 
-`internal/design_evolution/PhaseN_Project_System_Design_Evolution.md`
+`internal/PhaseN/02_DESIGN_EVOLUTION.md`
 
 Example:
 
-`internal/design_evolution/Phase1_Project_System_Design_Evolution.md`
+`internal/Phase1/02_DESIGN_EVOLUTION.md`
 
 ## 4.1 Purpose
 
@@ -477,11 +472,11 @@ Diagrams must reflect the actual implementation, not an idealized architecture t
 
 For Phase N:
 
-`internal/Infra_design_evolution/PhaseN_Infra_design_evolution.md`
+`internal/PhaseN/03_INFRA_EVOLUTION.md`
 
 Example:
 
-`internal/Infra_design_evolution/Phase1_Infra_design_evolution.md`
+`internal/Phase1/03_INFRA_EVOLUTION.md`
 
 ## 5.1 Purpose
 
@@ -717,11 +712,11 @@ Distinguish verified results from assumptions and untested behavior.
 
 For Phase N:
 
-`internal/QnA/PhaseN_Interview_QnA.md`
+`internal/PhaseN/04_INTERVIEW_QNA.md`
 
 Example:
 
-`internal/QnA/Phase1_Interview_QnA.md`
+`internal/Phase1/04_INTERVIEW_QNA.md`
 
 ## 6.1 Purpose
 
@@ -1040,10 +1035,10 @@ Do not assume that every file in the repository was created during the current p
 
 Create or update the following files:
 
-1. `internal/explain_codebase/PhaseN_explained.md`
-2. `internal/design_evolution/PhaseN_Project_System_Design_Evolution.md`
-3. `internal/Infra_design_evolution/PhaseN_Infra_design_evolution.md`
-4. `internal/QnA/PhaseN_Interview_QnA.md`
+1. `internal/PhaseN/01_CODEBASE_EXPLAINED.md`
+2. `internal/PhaseN/02_DESIGN_EVOLUTION.md`
+3. `internal/PhaseN/03_INFRA_EVOLUTION.md`
+4. `internal/PhaseN/04_INTERVIEW_QNA.md`
 
 Each document must cover its own purpose without simply duplicating the other three.
 
