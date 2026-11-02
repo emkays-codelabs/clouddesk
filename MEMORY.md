@@ -35,12 +35,15 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - 2026-10-25, F14 and observability: process settings come from a cached `get_settings()` in `backend/app/core/config.py`. JSON logs come from `setup_logging()` and `log_context()` in `backend/app/core/logging.py`, and every line carries `request_id` and `workflow_id` (`null` when unset). `model_dump()` redacts secrets and URL passwords; connection code reads the attributes.
 - 2026-10-25, N3: `RequestIdMiddleware` echoes a safe `X-Request-ID` or assigns a UUID, binds `log_context`, and sets the header on application responses, including 404 and 500. CORS sits outside it and exposes the header. `/health` and `/health/live` do no dependency I/O. `/health/ready` returns 200 `ready` or 503 `degraded` from configuration checks until the database, Redis, vector store, and LLM clients exist, and its details never include a URL, password, or API key.
 
+- 2026-11-02, scope: the upstream documents (`docs/01`–`03`) describe ACSRP, the full multi-tenant product; this repo builds CloudDesk, a single-tenant v1 of the same architecture. The differences are tabled in `CLAUDE.md` §1.1. CloudDesk's own vocabulary (severity `low`/`medium`/`high`/`critical`, `waiting_on_*` statuses, the `web` channel, unprefixed environment variables) is built and under test, and is not renamed to match upstream without changing `CLAUDE.md` §5 or §10.1, the model, the schema and the tests together.
+
 ## Open questions
 
 - `CLAUDE.md` §15 says environments are committed var-files (`environments/{dev,staging,prod}/terraform.tfvars`) while §18 says never to commit `terraform.tfvars`. Decide which holds before Phase 14.
-- The course paths `../docs/`, `../deployment-agent/`, and `../shared-infrastructure/` sit outside this repo and are not copied in.
+- The upstream PRD, HLD and LLD are in `docs/` (`CLAUDE.md` §1.1, copied in 2026-11-02). The remaining course documents and the `../deployment-agent/` and `../shared-infrastructure/` paths are still outside this repo.
 - Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). `database/schema.sql` becomes the authority once it is written.
-- Stage documents 00–17 are not in this repo. This plan is derived from `CLAUDE.md`, not from those missing files.
+- Course documents 00 and 04–17 are not in this repo.
+- Six architectural decisions the upstream documents force are listed as D1–D6 in `CLAUDE.md` §20 and none is taken. **D1 (multi-tenancy: `tenant_id` and RLS on every table) has to be decided before P2-1 writes the models**, or it becomes a migration across every table.
 
 ## Update protocol
 

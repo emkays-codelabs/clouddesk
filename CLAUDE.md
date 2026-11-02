@@ -1,6 +1,6 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
-This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code.
+This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
 ---
 
@@ -23,6 +23,39 @@ Non-goals for v1:
 - Sending real emails or issuing real refunds (all integrations are mocks).
 - Multi-language support.
 - A customer-facing chat widget.
+
+### 1.1 Upstream design documents and scope
+
+The product and architecture documents for this project sit in `docs/`, written by the course author
+(Anu — OrionVexa) and copied into the repo on 2 November 2026:
+
+| Document | Holds |
+|---|---|
+| [`docs/01_PRD_BRD_…`](docs/01_PRD_BRD_Autonomous_Customer_Support_Platform_md_94A6.md) | Business objectives, personas, journeys, FR-01–42, NFR-01–16, success metrics, risks |
+| [`docs/02_HLD_…`](docs/02_HLD_Autonomous_Customer_Support_Platform_md_GI9Q.md) | Component architecture, agent graph, retrieval design, security, multi-cloud mapping, ADR-01–08 |
+| [`docs/03_LLD_…`](docs/03_LLD_Autonomous_Customer_Support_Platform_md_5meL.md) | Postgres DDL, API endpoints, LangGraph state and nodes, policy YAML, MCP servers, Terraform, CI |
+
+They describe **ACSRP**, the full multi-tenant product. This repo builds **CloudDesk**, a single-tenant
+v1 of the same architecture, scoped so it runs offline on one machine. For anything under `backend/`,
+`agents/`, `rag/`, `memory/` or `frontend/`, this file wins; the upstream documents win on intent, and a
+change that contradicts them belongs in §20 before it reaches the code.
+
+| Topic | ACSRP (upstream) | CloudDesk (this repo, v1) |
+|---|---|---|
+| Tenancy | Multi-tenant: `tenant_id` and RLS on every table | Single tenant; RLS written, one tenant in use |
+| Severity | `P1`–`P4` | `low`/`medium`/`high`/`critical` (§5) |
+| Statuses | `awaiting_customer`, `awaiting_approval` | `waiting_on_customer`, `waiting_on_approval` (§5) |
+| Channels | chat, email, api, ticketing | email, chat, web, api (§5) |
+| Risk tiers | `low`/`medium`/`high`/`prohibited` from YAML policy per tool | `low`/`medium`/`high` and a per-tool approval bit (§7.4) |
+| Tool access | Six MCP servers, write tools over HTTP | In-process `ToolRegistry`; MCP exposes read-only tools (§7.4) |
+| LLM | LiteLLM gateway, tiers small/medium/large with failover | `get_llm()` with a `fake` provider; no tiering |
+| Workers | arq or Celery on Redis, separate processes | FastAPI `BackgroundTasks`, in process (§10) |
+| Runtime | Kubernetes and Helm on EKS/AKS/GKE | Containers on ECS Fargate / Container Apps / Cloud Run (§15) |
+| Config | `pydantic-settings`, env prefix `ACSRP_` | `pydantic-settings`, no prefix (§10.1) |
+
+Every scoped-down choice above is deliberate, and the vocabulary ones are already built and under test.
+Do not rename a status, severity, channel or environment variable to match the upstream document on its
+own: change §5 or §10.1 here first, then the model, the schema and the tests in the same commit.
 
 ---
 
@@ -130,6 +163,7 @@ deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
 data/          (git-ignored) support.db · checkpoints.db
 docs/          API_CONTRACT.md (the API contract – source of truth for routes and types)
                ARCHITECTURE.md · Git_GitHub_Workflow_Guide.md
+               01_PRD_BRD_… · 02_HLD_… · 03_LLD_… (upstream design, §1.1)
 datasets/      eval_cases.json
 scripts/       demo.py
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
@@ -224,6 +258,11 @@ elif escalation and not (high severity and low confidence):
 
 Severity: rules can **raise** the model's severity, never lower it.
 
+Budgets that end a run (upstream FR-22, LLD §7.3): at most **12 graph steps**, **2** investigation
+cycles and **2** clarifying questions, and escalate below **0.6** confidence. A run that exhausts a
+budget escalates instead of looping, because an unbounded loop is the cost risk the PRD names. Calls
+that decide something run at temperature ≤ 0.2.
+
 ### 7.3 LangGraph (`agents/graph.py`)
 
 ```text
@@ -281,6 +320,13 @@ Rules:
   – tool failures never crash the graph.
 - The same code path runs for auto-resolved and human-approved actions.
 - Planned actions are deterministic (`ResolutionAgent.plan_actions`), not model-invented.
+- **Idempotent** (FR-16): every action carries the key `ticket_id:tool:stable_hash(args)`. A key that
+  already succeeded returns its stored result instead of acting again. This is what stops a second
+  refund when a run is retried or resumed from a checkpoint.
+- **Verified** (FR-17): after a write, read the record back and store that verification with the result.
+- **Provenance** (LLD §9): ids and amounts in tool arguments must come from customer context or an
+  earlier tool result, never from ticket text. An argument that fails the check is rejected and the plan
+  is revised — it is not executed.
 
 ### 7.5 Memory (`memory/`)
 
@@ -293,6 +339,8 @@ Rules:
 - Write: `memory_update` node → `record_resolution()` writes past_issue, first 3 troubleshooting steps,
   resolution note. Every note goes through `scrub()`; exact-duplicate notes are skipped.
 - **Never store:** card numbers, API keys, passwords (`SECRET_PATTERNS`), raw ticket bodies, anything about other customers.
+- Keep a fact only at confidence ≥ **0.7** (LLD §7.11). Discard the rest rather than remember a guess.
+- A customer may demand erasure (FR-27): deleting their memory removes the rows **and** their vectors.
 
 ---
 
@@ -328,6 +376,13 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `r
 - **Rate limit (N2):** fixed window per client in Redis, `RATE_LIMIT_PER_MINUTE` (demo 120).
 - **Audit (N6):** `AuditMiddleware` writes `audit_logs` for every non-GET request.
 - **Request IDs (N3):** `RequestIdMiddleware` reads/creates `X-Request-ID`; exposed through CORS.
+- **Retrieved content is untrusted too** (LLD §9): scan every chunk for instructions before it reaches
+  a prompt, and drop the chunk if it fails. A poisoned knowledge article is the same attack as a
+  poisoned ticket.
+- **Groundedness (N5):** the output judge scores each claim against its cited chunk. Below **0.8** the
+  reply is revised once, then escalated.
+- **Approval timeouts (FR-24):** an approval nobody decides expires and escalates. It never executes
+  by default.
 - Middleware order (outermost last): CORS → RequestId → RateLimit → Audit.
 
 ---
@@ -360,6 +415,22 @@ QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)
 APPROVAL_REQUIRED_FOR_REFUNDS=true, MAX_REFUND_WITHOUT_APPROVAL=0
 TOOL_TIMEOUT_SECONDS, RATE_LIMIT_PER_MINUTE, SAMPLE_DATA_DIR
 LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY, LANGCHAIN_PROJECT (clouddesk-support)
+```
+
+### 10.2 Settings later phases add
+
+These come from the upstream documents and are deliberately **not** in §10.1 yet. Each one arrives with
+the task that needs it, and `.env.example`, `Settings` and `tests/unit/test_env_example.py` change in
+that same commit — so §10.1 always lists exactly what the code reads today.
+
+```text
+MAX_GRAPH_STEPS=12                 budget that forces escalation instead of a loop
+ESCALATE_CONFIDENCE=0.6            escalate below this confidence
+MAX_CLARIFYING_QUESTIONS=2         then hand off to a human
+GROUNDEDNESS_THRESHOLD=0.8         output-judge floor before one revise
+APPROVAL_TIMEOUT_MINUTES           an undecided approval expires and escalates
+AUTONOMY_MODE                      copilot | supervised | autonomous (FR-41)
+COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a decision
 ```
 
 ---
@@ -419,6 +490,10 @@ temp SQLite, `CHECKPOINT_DB_PATH=:memory:`). Auth fixtures: `agent_headers`, `ad
 | citation rate | ≥ 0.90 |
 | grounding rate (steps present in reply) | ≥ 0.90 |
 
+The upstream PRD §8 sets a harder bar for the full product: triage ≥ 0.90, Recall@10 ≥ 0.90,
+faithfulness ≥ 0.92, tool-call correctness ≥ 0.95, escalation recall ≥ 0.98, and zero successful
+red-team injections. The table above is the v1 gate. Raising it, and adding the red-team set, is §20.
+
 Adding an eval case: append to `eval_cases.json` with a valid `expected_category`.
 pytest: `asyncio_mode = "auto"`, `loop_scope = "session"` in `pyproject.toml`. Do not mix in
 `@pytest.mark.asyncio` with a different scope.
@@ -477,6 +552,8 @@ then `development` promotes to `testing`, then `main`. Remote:
   `_deploy.yml` reusable pipeline `bootstrap-registry → build-and-push → plan → [approval] → apply → smoke`.
   Prod uses GitHub Environment `prod-apply` with required reviewers. Cloud auth is OIDC, no long-lived keys.
 - **Image tags = git SHA.** The artifact that was tested is the artifact that ships.
+- The upstream HLD §12 makes **Kubernetes and Helm** the parity target and treats serverless
+  containers as the lighter profile. This repo builds the serverless profile first; a Helm chart is §20.
 
 ### 15.1 Honest status rule
 
@@ -529,6 +606,8 @@ the same principles: policy outside the model, approval gates, audit trail.
 14. **Demo before production.** Every stage must still run with `make demo` at the end.
 15. **Say what is not done.** Keep the honest status (section 15.1) current.
 16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges.
+17. **Actions are idempotent and verified.** Every write carries an idempotency key and is read back (§7.4). A retried or resumed run must never act twice.
+18. **Tool arguments need provenance.** An id or an amount in a tool call comes from customer context or a tool result, never from ticket text (§7.4, §9).
 
 ### 18.1 Things that must never happen
 
@@ -548,8 +627,9 @@ and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and holds each 
 [`MEMORY.md`](MEMORY.md) holds the honest status, locked decisions, and open questions. The agent procedure is
 [`.claude/skills/clouddesk-support/SKILL.md`](.claude/skills/clouddesk-support/SKILL.md).
 
-Course documents 00–17 are not in this repo. Phase boundaries follow the dependency order in
-this file. Stage 17 is optional and is not a core exit criterion.
+The upstream PRD, HLD and LLD are in `docs/` (§1.1); course documents 00 and 04–17 are not. Phase
+boundaries follow the dependency order in this file, not the upstream release plan. Stage 17 is
+optional and is not a core exit criterion.
 
 | Phase | Name | Status |
 |---|---|---|
@@ -577,8 +657,21 @@ this file. Stage 17 is optional and is not a core exit criterion.
   when the task that creates it lands (see `TASKS.md`), and fix this file if one differs.
 - `terraform.tfvars` is contradictory: section 15 describes committed per-environment var-files while
   section 18 says never to commit it. Decide before Phase 14 (also tracked in `MEMORY.md`).
-- The course documents reference `../docs/…`, `../deployment-agent/…` and `../shared-infrastructure/…`
-  that sit outside Project 1. Decide whether they are copied in or referenced.
+- The upstream PRD, HLD and LLD are now in `docs/` (§1.1). The remaining course documents, and the
+  `../deployment-agent/` and `../shared-infrastructure/` paths they reference, are still outside this
+  repo. Decide whether they are copied in or referenced.
 - Document counts differ slightly between files (for example tables: 16 in the database doc, 15 data
   tables in RLS). Treat `database/schema.sql` as the authority once written.
 - Stage 17 (Agentic DevOps) depends on Stages 13–16; treat it as optional for the core Project 1 completion.
+
+**Decisions the upstream documents force. None is taken, and none may be built without a `TASKS.md`
+row first.** Each one changes the plan, not just the code:
+
+| # | Decision | Why it cannot wait |
+|---|---|---|
+| D1 | **Multi-tenancy:** `tenant_id` and RLS on every table | Adding it after Phase 2 means migrating every table. Decide before P2-1 writes the models. |
+| D2 | **A fourth risk tier, `prohibited`** | The upstream policy engine can forbid an action outright (`crm.close_account`). §7.4 can only *require approval*, so today there is no way to express "never". |
+| D3 | **Write-capable MCP servers** | Upstream reaches back-office systems over MCP with scoped service tokens. §7.4 keeps MCP read-only and writes in process. Changes P6-5 and the deployment surface. |
+| D4 | **Model tiering and a gateway** | Upstream routes small/medium/large with failover and a circuit breaker; `get_llm()` returns one model. Affects P9-1 and the cost target. |
+| D5 | **Kubernetes and Helm** | See §15. Changes every file in Phase 14. |
+| D6 | **The harder eval bar and the red-team set** | See §13. Changes the Phase 14 gate and needs new datasets. |
