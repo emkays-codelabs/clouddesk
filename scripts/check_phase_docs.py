@@ -36,7 +36,7 @@ MERMAID_DECLARATIONS = {
     "quadrantChart", "sankey-beta", "xychart-beta", "block-beta", "C4Context",
 }  # fmt: skip
 
-# The four documents docs/09_PHASE_DOCUMENTATION.md defines, in each phase folder internal/PhaseN/.
+# The four documents docs/09_PHASE_DOCUMENTATION.md defines, in each phase folder internal/PhaseNN/.
 # The number keeps them in reading order; the last one is the private interview preparation.
 DOCUMENTS = [
     "01_CODEBASE_EXPLAINED.md",
@@ -50,7 +50,7 @@ PRIVATE_DOCUMENT = "04_INTERVIEW_QNA.md"
 def required_documents(phase: int, qna_required: bool = True) -> list[str]:
     """The paths, relative to the repository root, of the documents a phase owes."""
     return [
-        f"internal/Phase{phase}/{name}"
+        f"internal/Phase{phase:02d}/{name}"
         for name in DOCUMENTS
         if qna_required or name != PRIVATE_DOCUMENT
     ]

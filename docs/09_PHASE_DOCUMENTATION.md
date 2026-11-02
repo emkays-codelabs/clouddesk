@@ -1,6 +1,6 @@
 # MANDATORY PHASE-WISE DOCUMENTATION, SYSTEM DESIGN EVOLUTION, INFRASTRUCTURE DOCUMENTATION, AND INTERVIEW PREPARATION
 
-> **Layout revised 2026-11-02, at the owner's instruction.** The four documents for a phase now sit together in one folder per phase, `internal/PhaseN/`, numbered in reading order. The earlier layout, one folder per category, is superseded. Nothing else in this specification has changed.
+> **Layout revised 2026-11-02, at the owner's instruction.** The four documents for a phase now sit together in one folder per phase, `internal/PhaseNN/`, numbered in reading order. The earlier layout, one folder per category, is superseded. `NN` in `PhaseNN` is the phase number zero-padded to two digits (`Phase01` to `Phase14`), so a listing stays in phase order. Nothing else in this specification has changed.
 
 ## 1. PRIMARY OBJECTIVE
 
@@ -32,19 +32,19 @@ project-root/
 │
 ├── internal/
 │   │
-│   ├── Phase1/
+│   ├── Phase01/
 │   │   ├── 01_CODEBASE_EXPLAINED.md
 │   │   ├── 02_DESIGN_EVOLUTION.md
 │   │   ├── 03_INFRA_EVOLUTION.md
 │   │   └── 04_INTERVIEW_QNA.md
 │   │
-│   ├── Phase2/
+│   ├── Phase02/
 │   │   ├── 01_CODEBASE_EXPLAINED.md
 │   │   ├── 02_DESIGN_EVOLUTION.md
 │   │   ├── 03_INFRA_EVOLUTION.md
 │   │   └── 04_INTERVIEW_QNA.md
 │   │
-│   ├── Phase3/
+│   ├── Phase03/
 │   │   └── ...
 │   │
 │   └── ...
@@ -69,11 +69,11 @@ project-root/
 
 For Phase N:
 
-`internal/PhaseN/01_CODEBASE_EXPLAINED.md`
+`internal/PhaseNN/01_CODEBASE_EXPLAINED.md`
 
 Example:
 
-`internal/Phase1/01_CODEBASE_EXPLAINED.md`
+`internal/Phase01/01_CODEBASE_EXPLAINED.md`
 
 ## 3.1 Purpose
 
@@ -283,11 +283,11 @@ Summarize:
 
 For Phase N:
 
-`internal/PhaseN/02_DESIGN_EVOLUTION.md`
+`internal/PhaseNN/02_DESIGN_EVOLUTION.md`
 
 Example:
 
-`internal/Phase1/02_DESIGN_EVOLUTION.md`
+`internal/Phase01/02_DESIGN_EVOLUTION.md`
 
 ## 4.1 Purpose
 
@@ -472,11 +472,11 @@ Diagrams must reflect the actual implementation, not an idealized architecture t
 
 For Phase N:
 
-`internal/PhaseN/03_INFRA_EVOLUTION.md`
+`internal/PhaseNN/03_INFRA_EVOLUTION.md`
 
 Example:
 
-`internal/Phase1/03_INFRA_EVOLUTION.md`
+`internal/Phase01/03_INFRA_EVOLUTION.md`
 
 ## 5.1 Purpose
 
@@ -712,11 +712,11 @@ Distinguish verified results from assumptions and untested behavior.
 
 For Phase N:
 
-`internal/PhaseN/04_INTERVIEW_QNA.md`
+`internal/PhaseNN/04_INTERVIEW_QNA.md`
 
 Example:
 
-`internal/Phase1/04_INTERVIEW_QNA.md`
+`internal/Phase01/04_INTERVIEW_QNA.md`
 
 ## 6.1 Purpose
 
@@ -1035,10 +1035,10 @@ Do not assume that every file in the repository was created during the current p
 
 Create or update the following files:
 
-1. `internal/PhaseN/01_CODEBASE_EXPLAINED.md`
-2. `internal/PhaseN/02_DESIGN_EVOLUTION.md`
-3. `internal/PhaseN/03_INFRA_EVOLUTION.md`
-4. `internal/PhaseN/04_INTERVIEW_QNA.md`
+1. `internal/PhaseNN/01_CODEBASE_EXPLAINED.md`
+2. `internal/PhaseNN/02_DESIGN_EVOLUTION.md`
+3. `internal/PhaseNN/03_INFRA_EVOLUTION.md`
+4. `internal/PhaseNN/04_INTERVIEW_QNA.md`
 
 Each document must cover its own purpose without simply duplicating the other three.
 

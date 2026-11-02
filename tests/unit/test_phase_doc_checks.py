@@ -34,7 +34,7 @@ def _qna_is_git_ignored() -> bool:
     """A git-ignored Q&A file is absent from a clean clone, so it cannot be required there."""
     try:
         run = subprocess.run(
-            ["git", "check-ignore", "-q", "--no-index", "internal/Phase1/04_INTERVIEW_QNA.md"],
+            ["git", "check-ignore", "-q", "--no-index", "internal/Phase01/04_INTERVIEW_QNA.md"],
             cwd=ROOT,
         )
     except OSError:
@@ -230,10 +230,10 @@ class TestFinishedPhases:
 class TestRequiredDocuments:
     def test_a_phase_has_the_four_documents_the_spec_defines(self):
         assert required_documents(3) == [
-            "internal/Phase3/01_CODEBASE_EXPLAINED.md",
-            "internal/Phase3/02_DESIGN_EVOLUTION.md",
-            "internal/Phase3/03_INFRA_EVOLUTION.md",
-            "internal/Phase3/04_INTERVIEW_QNA.md",
+            "internal/Phase03/01_CODEBASE_EXPLAINED.md",
+            "internal/Phase03/02_DESIGN_EVOLUTION.md",
+            "internal/Phase03/03_INFRA_EVOLUTION.md",
+            "internal/Phase03/04_INTERVIEW_QNA.md",
         ]
 
     def test_the_qna_document_can_be_left_out_when_it_is_private(self):
@@ -298,7 +298,7 @@ class TestInternalFolderVisibility:
         )
 
     def test_the_interview_qna_file_is_git_ignored(self):
-        assert self._ignored("internal/Phase1/04_INTERVIEW_QNA.md")
+        assert self._ignored("internal/Phase01/04_INTERVIEW_QNA.md")
         assert self._ignored(
             "internal/Phase12/04_INTERVIEW_QNA.md"
         )  # every phase, not just the first
@@ -306,9 +306,9 @@ class TestInternalFolderVisibility:
     @pytest.mark.parametrize(
         "path",
         [
-            "internal/Phase1/01_CODEBASE_EXPLAINED.md",
-            "internal/Phase1/02_DESIGN_EVOLUTION.md",
-            "internal/Phase1/03_INFRA_EVOLUTION.md",
+            "internal/Phase01/01_CODEBASE_EXPLAINED.md",
+            "internal/Phase01/02_DESIGN_EVOLUTION.md",
+            "internal/Phase01/03_INFRA_EVOLUTION.md",
         ],
     )
     def test_the_other_three_documents_are_not_ignored_so_they_can_be_committed(self, path: str):

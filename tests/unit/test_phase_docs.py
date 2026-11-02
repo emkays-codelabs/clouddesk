@@ -22,9 +22,9 @@ def _frontmatter(path: pathlib.Path) -> dict[str, str]:
 
 
 def _spec_outputs() -> list[str]:
-    """The four file names the spec defines inside each phase folder, internal/PhaseN/."""
+    """The four file names the spec defines inside each phase folder, internal/PhaseNN/."""
     spec = SPEC.read_text(encoding="utf-8")
-    return sorted(set(re.findall(r"`internal/PhaseN/(\d{2}_[A-Z_]+\.md)`", spec)))
+    return sorted(set(re.findall(r"`internal/PhaseNN/(\d{2}_[A-Z_]+\.md)`", spec)))
 
 
 class TestTheSpec:
@@ -61,9 +61,9 @@ class TestTheSkill:
     def test_it_names_the_phase_folder_and_every_file_the_spec_defines(self):
         skill = SKILL.read_text(encoding="utf-8")
 
-        missing = [name for name in _spec_outputs() if f"internal/Phase<N>/{name}" not in skill]
+        missing = [name for name in _spec_outputs() if f"internal/Phase<NN>/{name}" not in skill]
 
-        assert "internal/Phase<N>/" in skill
+        assert "internal/Phase<NN>/" in skill
         assert missing == []
 
     def test_it_covers_every_question_category_the_spec_defines(self):

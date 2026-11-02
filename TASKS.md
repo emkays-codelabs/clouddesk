@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 23:11 +0530_
+_Last updated: 2026-11-02 23:17 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -72,6 +72,7 @@ The longest dependency chain is 16 tasks long.
 | P1-9 · Phase 1 documents | — | `docs/phase-1-documents` | Completed ✅ |
 | P1-10 · Mid-phase documentation trigger | — | `docs/mid-phase-doc-trigger` | Completed ✅ |
 | P1-11 · Per-phase documentation layout | — | `docs/phase-1-documents` | Completed ✅ |
+| P1-12 · Zero-padded phase folders | — | `docs/zero-pad-phase-folders` | Completed ✅ |
 
 #### Task definitions
 
@@ -179,10 +180,10 @@ The longest dependency chain is 16 tasks long.
 - **Build:** Write Phase 1's four documents following `docs/09_PHASE_DOCUMENTATION.md`, from the code, the merge history
   and a live run of the service, then review them against the code. Reviewed separately from the workflow in P1-8. They were
   written in a normal session, not by the `/phase-docs` skill, which has still not been run.
-- **Files:** `internal/Phase1/01_CODEBASE_EXPLAINED.md`,
-  `internal/Phase1/02_DESIGN_EVOLUTION.md`,
-  `internal/Phase1/03_INFRA_EVOLUTION.md`,
-  `internal/Phase1/04_INTERVIEW_QNA.md` (git-ignored, so local only),
+- **Files:** `internal/Phase01/01_CODEBASE_EXPLAINED.md`,
+  `internal/Phase01/02_DESIGN_EVOLUTION.md`,
+  `internal/Phase01/03_INFRA_EVOLUTION.md`,
+  `internal/Phase01/04_INTERVIEW_QNA.md` (git-ignored, so local only),
   `tests/unit/test_phase_doc_checks.py` (remove phase 1 from `OWED`)
 - **Done when:** The documents exist and are not empty; every cited path exists; Mermaid blocks pass the structural
   check; test results are quoted from a real run; a human has compared each against the code; and phase 1 is gone
@@ -207,7 +208,7 @@ The longest dependency chain is 16 tasks long.
 
 **P1-11 · Per-phase documentation layout**
 - **Needs:** `P1-8`
-- **Build:** At the owner's instruction the four documents for a phase live together in `internal/PhaseN/`, as
+- **Build:** At the owner's instruction the four documents for a phase live together in `internal/PhaseNN/`, as
   `01_CODEBASE_EXPLAINED.md`, `02_DESIGN_EVOLUTION.md`, `03_INFRA_EVOLUTION.md` and `04_INTERVIEW_QNA.md`, instead of one folder per
   category. The specification (section 2 and each file-naming convention), the `/phase-docs` skill, the completion helper
   and its tests, `.gitignore` (now `internal/Phase*/04_INTERVIEW_QNA.md`) and the `CLAUDE.md` layout line follow it. The
@@ -219,6 +220,21 @@ The longest dependency chain is 16 tasks long.
   `OWED` is empty because Phase 1's documents exist.
 - **Note:** the earlier layout is superseded, not kept. No document in the earlier layout had been committed. The spec
   carries a dated revision note under its title. No application code changes.
+
+**P1-12 · Zero-padded phase folders**
+- **Needs:** `P1-11`
+- **Build:** The phase folders under `internal/` are named `Phase01` to `Phase14`, not `Phase1` to `Phase14`, so a plain
+  listing stays in phase order: unpadded, `Phase10` to `Phase14` sort ahead of `Phase2`. `PhaseNN` becomes the placeholder in
+  the specification, the `/phase-docs` skill and the completion helper, and `internal/Phase1` is moved to `internal/Phase01`.
+  The same reasoning gave `docs/` its two-digit numbers.
+- **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`, `scripts/check_phase_docs.py`,
+  `CLAUDE.md`, `MEMORY.md`, `TASKS.md`, `tests/unit/test_docs_folder.py`, `tests/unit/test_phase_docs.py`,
+  `tests/unit/test_phase_doc_checks.py`
+- **Done when:** A test accepts `Phase01` and `Phase14` and rejects `Phase1`, `Phase001` and `phase01`; another shows
+  padding keeps the folders in order; `required_documents` returns two-digit folders; the skill and the spec agree on
+  `PhaseNN`; and the existing Phase 1 documents live under `internal/Phase01/`.
+- **Note:** done at the owner's request, and cheapest while only one phase folder exists. The Q&A ignore rule
+  (`internal/Phase*/04_INTERVIEW_QNA.md`) needed no change because it uses a wildcard. No application code changes.
 
 ---
 
@@ -829,7 +845,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 74 tasks are Completed ✅ and the Progress summary reads 74 of 74.
+- All 75 tasks are Completed ✅ and the Progress summary reads 75 of 75.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -859,7 +875,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 11 | 11 |
+| 1 | Runtime skeleton | 12 | 12 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -873,4 +889,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **74** | **11** |
+| **Total** | | **75** | **12** |

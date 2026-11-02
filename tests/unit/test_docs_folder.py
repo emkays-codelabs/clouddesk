@@ -130,11 +130,11 @@ class TestNothingPointsAtAnOldName:
 
 
 INTERNAL = ROOT / "internal"
-PHASE_FOLDER = re.compile(r"^Phase\d+$")
+PHASE_FOLDER = re.compile(r"^Phase\d{2}$")
 
 
 class TestInternalNames:
-    """internal/PhaseN/NN_NAME.md: the same numbered, capitalised style as docs/."""
+    """internal/PhaseNN/NN_NAME.md: the same numbered, capitalised style as docs/."""
 
     def _phase_folders(self) -> list[pathlib.Path]:
         return sorted(p for p in INTERNAL.iterdir() if p.is_dir()) if INTERNAL.exists() else []
@@ -174,3 +174,21 @@ class TestInternalNames:
 
         assert [int(DOC_NAME.match(name).group(1)) for name in DOCUMENTS] == [1, 2, 3, 4]
         assert DOCUMENTS == sorted(DOCUMENTS)
+
+    @pytest.mark.parametrize("name", ["Phase01", "Phase09", "Phase14"])
+    def test_accepts_a_zero_padded_phase_folder(self, name: str):
+        assert PHASE_FOLDER.match(name)
+
+    @pytest.mark.parametrize(
+        "name", ["Phase1", "Phase9", "Phase001", "phase01", "Phase_01", "Phase01b"]
+    )
+    def test_rejects_an_unpadded_or_malformed_phase_folder(self, name: str):
+        assert not PHASE_FOLDER.match(name)
+
+    def test_zero_padding_keeps_phase_folders_in_phase_order(self):
+        padded = ["Phase10", "Phase02", "Phase01", "Phase14"]
+        unpadded = ["Phase10", "Phase2", "Phase1", "Phase14"]
+
+        assert sorted(padded) == ["Phase01", "Phase02", "Phase10", "Phase14"]
+        # Unpadded, Phase10 and Phase14 sort ahead of Phase2, which is the bug the padding prevents.
+        assert sorted(unpadded) != ["Phase1", "Phase2", "Phase10", "Phase14"]
