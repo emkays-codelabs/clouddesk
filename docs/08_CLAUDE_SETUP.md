@@ -105,9 +105,28 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
   already gets one hour within plan usage; on an API key it gets five minutes. Keys, if you choose it:
   `promptCacheTtl` or `CLAUDE_CODE_PROMPT_CACHE_TTL` for the main conversation, and `subagentPromptCacheTtl`
   or `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL` for subagents, all v2.1.242 or later.
-- **Two-turn test: pending.** In a fresh session: send one short message and note the cache-write tokens in
-  `/usage`; send a second within a minute. The second must show cache-read tokens. If it shows none, caching
-  is not working: stop and record the Claude Code version and platform here.
+- **Two-turn test: run 2026-11-02, with a caveat.** Two headless sessions (`claude -p`, Claude Code 2.1.104,
+  model `sonnet`) in this repository, five seconds apart:
+
+  | | Cache write | Cache read | Fresh input |
+  |---|---|---|---|
+  | Call 1 | 45,760 | 0 | 4 |
+  | Call 2 | 31,204 | 14,619 | 4 |
+
+  **Caching works:** call 2 read 14,619 tokens from the cache. **But only about a third of the starting
+  context was reused.** Call 2 rewrote 31,204 of roughly 45,800 tokens even though nothing changed between the
+  calls, so most of the prefix is not cache-stable between sessions. Which part varies was not measured.
+  Candidates, unverified: `CLAUDE.md` and the rules (project context), the plugin and MCP listings, and a
+  session-start hook's output. A cache hit within one long conversation is a different, easier case and was
+  not measured here.
+- **Cost of starting a session:** about 45,800 tokens of context before the first message, which cost $0.29
+  on the first call and $0.20 on the second. This is the figure to bring down, and splitting `CLAUDE.md`
+  (section 2, item 4) is the largest lever that is within this repository.
+- **TTL observed:** every cache write was a one-hour write (`ephemeral_1h`), and none was five-minute. Per the
+  docs that is the default on a Claude subscription within plan usage, so on this login the TTL decision
+  above is already answered in practice. It would matter again on an API key, or once usage credits apply.
+- **Not covered:** this ran on the terminal CLI, not on the editor session that applied this setup. Run
+  `/usage` in that session after its first response to read its `Prompt cache (main)` line.
 
 ## 8. Items to verify on the pinned version
 

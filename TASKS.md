@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-02 20:41 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -127,8 +127,8 @@ The longest dependency chain is 16 tasks long.
   and `opus-consultant`; every agent has `name`, `description` containing "Delegate here", `model`, `tools`,
   `maxTurns`, and ends with a return limit; every skill's target agent exists; the hook exits 0 on a clean
   tree, exits 2 on a failing lint or test, and ignores a command that is not a commit; `bash -n` passes;
-  `git status --ignored` shows only the intended tracked set. The two-turn cache test needs a fresh session
-  and is recorded as pending, not passed.
+  `git status --ignored` shows only the intended tracked set. The two-turn cache test was run headless on
+  2026-11-02; its result, a partial pass, is in `docs/08_CLAUDE_SETUP.md` section 7.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
 
 **P1-7 · Numbered document names**
