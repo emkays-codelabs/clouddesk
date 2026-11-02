@@ -70,6 +70,60 @@ Ship an agent console where a support agent opens a CloudDesk ticket, runs one w
 
 Pytest uses `asyncio_mode = "auto"` and `loop_scope = "session"`. Do not add `@pytest.mark.asyncio` with a different scope.
 
+## Upstream traceability
+
+`CLAUDE.md` §1.1 explains the relationship: the upstream PRD (`docs/01b_…`) and BRD (`docs/01a_…`) specify **ACSRP**, the full
+multi-tenant product, with requirements FR-01–42 and NFR-01–16. The catalogue above is CloudDesk's v1
+subset. This table is the map, so a reader can tell a deliberate omission from an oversight.
+
+| CloudDesk | Upstream |
+|---|---|
+| F1 | FR-01 |
+| F2 | FR-02 (category and summary only) |
+| F3 | FR-03 (severity only) |
+| F4 | FR-08, FR-26 |
+| F5 | FR-06, FR-09, FR-10 |
+| F6 | FR-07 (resolved tickets only) |
+| F7 | FR-11, FR-12 |
+| F8 | FR-13, FR-14 (English only) |
+| F9 | FR-15, FR-18–21 |
+| F10 | FR-22, FR-23 |
+| F11 | FR-25, FR-28 |
+| F12 | FR-31–34 |
+| F13 | NFR-11 (local tracing, not OpenTelemetry) |
+| F14 | NFR-05 (offline operation) |
+| N1 | NFR-07 |
+| N2 | NFR-10 (request limits, not token budgets) |
+| N3 | — (CloudDesk's own) |
+| N4 | NFR-08 |
+| N5 | FR-10 |
+| N6 | NFR-07, compliance in PRD §11 |
+| N7 | NFR-09 (memory only, not logs) |
+| N8 | NFR-14 |
+
+### Upstream Must requirements with no CloudDesk requirement
+
+Each row needs a decision: write it into this catalogue as a new `F`/`N` row with a task, or record it
+as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built without a `TASKS.md` row.
+
+| Upstream | Requirement | Where it stands |
+|---|---|---|
+| FR-05 | Ask clarifying questions, at most 2 turns, then hand off | No node and no requirement. The upstream graph has a `clarify` node; CloudDesk's does not. |
+| FR-21 | An approver may **edit** the arguments before approving | `docs/API_CONTRACT.md` offers approve and reject only. |
+| FR-29, FR-07 | Distil resolutions into reviewed **resolution cards** and index them | The learning loop (upstream journey J5). F6 retrieves past tickets but nothing distils them. |
+| FR-30 | Capture CSAT and agent feedback, linked to traces | No `feedback` table, route or requirement. The eval suite has no outcome signal without it. |
+| FR-35 | Analytics: autonomous rate, first response time, MTTR, CSAT, cost, escalation reasons | `GET /dashboard/summary` returns counts only. These are the PRD's business objectives BO-1 to BO-7. |
+| FR-39 | Upload or connect knowledge sources, with scheduled re-index | P5-4 reindexes files already on disk; there is no upload path or schedule. |
+| NFR-09 | PII detection and redaction in **logs and traces** | N7 covers memory notes only. JSON logs are not redacted. |
+| NFR-10 | LLM token budgets per tenant | N2 limits requests, not tokens. The PRD names cost runaway as a risk. |
+| NFR-01–04 | Latency and scale targets | No performance requirement or test. |
+| NFR-15, NFR-16 | ≥ 80% coverage on core services; WCAG 2.1 AA | Neither is measured. |
+
+Already answered elsewhere, not repeated here: multi-tenancy, a `prohibited` risk tier, MCP write
+servers, model tiering, Kubernetes and the harder eval bar are decisions D1–D6 in `CLAUDE.md` §20. The
+chat widget (FR-37) and multi-language support are non-goals in `CLAUDE.md` §1.
+
+
 ## Build phases
 
 `TASKS.md` holds the sub-tasks, branches, dependencies, and merge order. Exit criteria for each phase are at the end of this file. Phases 4, 5, 6, and 7 can start together once Phase 2 has merged. Phase 4 also waits for P3-1, Phase 5 for P3-3 (and P3-1 for P5-4), and P6-2 for P5-3.
@@ -216,7 +270,7 @@ Tasks: `TASKS.md`, Phase 5.
 
 **Demo checkpoint.** `make ingest` reports the article and chunk counts. A query for the MFA recovery article returns `CD-1012`’s expected article in the top 3.
 
-**Exit.** Retrieval hit-rate@3 is measured, even if the full eval suite waits for Phase 14. Customer-facing policy claims have an article to cite.
+**Exit.** Retrieval hit-rate@3 is measured, even if the full eval suite waits for Phase 14. Customer-facing policy claims have an article to cite. Query rewrite and the sufficiency check are in place (upstream FR-09), and the retry loop is bounded at one extra retrieval.
 
 ### Phase 6 — Tools and mocks
 
@@ -232,7 +286,7 @@ Tasks: `TASKS.md`, Phase 6.
 
 **Demo checkpoint.** A direct registry call to `create_refund_request` without `approved=True` does not write a refund.
 
-**Exit.** The same execute path is the one Phase 11 will call after a human approval. No tool bypasses the registry.
+**Exit.** The same execute path is the one Phase 11 will call after a human approval. No tool bypasses the registry. Tool arguments carry provenance: an id or amount from untrusted ticket text is rejected (`CLAUDE.md` §7.4).
 
 ### Phase 7 — Rules and guardrails
 
@@ -248,7 +302,7 @@ Tasks: `TASKS.md`, Phase 7.
 
 **Demo checkpoint.** A unit run of the escalation rules on `CD-1005`, `CD-1006`, `CD-1009`, and `CD-1011` returns escalation required without a model call.
 
-**Exit.** Grey-area model judgement is the only path left for Phase 9. Policy cases already have a decision.
+**Exit.** Grey-area model judgement is the only path left for Phase 9. Policy cases already have a decision. Retrieved chunks are scanned like ticket text, and the groundedness floor of 0.8 with one revise is enforced (`CLAUDE.md` §9).
 
 ### Phase 8 — Memory
 
@@ -264,7 +318,7 @@ Tasks: `TASKS.md`, Phase 8.
 
 **Demo checkpoint.** Calling `record_resolution` twice with the same resolution leaves one resolution note. The end-to-end version, running `CD-1002` through approval twice, is the Phase 11 demo checkpoint.
 
-**Exit.** Memory facades are the only writers of `customer_memory`. Notes never include another customer’s data.
+**Exit.** Memory facades are the only writers of `customer_memory`. Notes never include another customer’s data. Facts below 0.7 confidence are discarded, and erasure removes rows and vectors together (upstream FR-27).
 
 ### Phase 9 — Specialist agents
 
@@ -296,7 +350,7 @@ Tasks: `TASKS.md`, Phase 10.
 
 **Demo checkpoint.** `POST /tickets/{id}/run` on a low-risk ticket returns 202, and polling `/workflow` reaches the end.
 
-**Exit.** Telemetry failures do not fail the run. Raw prompts are not present in `workflow_events`.
+**Exit.** Telemetry failures do not fail the run. Raw prompts are not present in `workflow_events`. The run budgets in `CLAUDE.md` §7.2 hold: 12 steps, 2 investigation cycles, and escalation below 0.6 confidence, so no run can loop.
 
 ### Phase 11 — Approval and escalation
 
@@ -312,7 +366,7 @@ Tasks: `TASKS.md`, Phase 11.
 
 **Demo checkpoint.** `make demo` pauses on `CD-1002`. `make demo TICKET=CD-1005` escalates. Running `CD-1002` through approval twice does not duplicate the resolution note.
 
-**Exit.** Code before `interrupt()` is idempotent. The approved path and the automatic path share `ToolRegistry.execute`. A viewer token receives 403 on run, approve, and reject.
+**Exit.** Code before `interrupt()` is idempotent, and so is every action: each carries an idempotency key and is verified by a read-back, so a retried or resumed run cannot act twice (upstream FR-16, FR-17). The approved path and the automatic path share `ToolRegistry.execute`. A viewer token receives 403 on run, approve, and reject.
 
 ### Phase 12 — Console shell
 

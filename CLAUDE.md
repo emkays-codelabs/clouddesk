@@ -31,7 +31,8 @@ The product and architecture documents for this project sit in `docs/`, written 
 
 | Document | Holds |
 |---|---|
-| [`docs/01_PRD_BRD_…`](docs/01_PRD_BRD_Autonomous_Customer_Support_Platform_md_94A6.md) | Business objectives, personas, journeys, FR-01–42, NFR-01–16, success metrics, risks |
+| [`docs/01a_BRD_…`](docs/01a_BRD_Autonomous_Customer_Support_Platform.md) | Why: problem statement, business objectives BO-1–7, stakeholders, scope, risks, compliance (§§1, 2, 10, 11, 13) |
+| [`docs/01b_PRD_…`](docs/01b_PRD_Autonomous_Customer_Support_Platform.md) | What: personas, journeys, FR-01–42, NFR-01–16, AI requirements, success metrics, release plan, acceptance (§§3–9, 12, 13) |
 | [`docs/02_HLD_…`](docs/02_HLD_Autonomous_Customer_Support_Platform_md_GI9Q.md) | Component architecture, agent graph, retrieval design, security, multi-cloud mapping, ADR-01–08 |
 | [`docs/03_LLD_…`](docs/03_LLD_Autonomous_Customer_Support_Platform_md_5meL.md) | Postgres DDL, API endpoints, LangGraph state and nodes, policy YAML, MCP servers, Terraform, CI |
 
@@ -163,7 +164,7 @@ deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
 data/          (git-ignored) support.db · checkpoints.db
 docs/          API_CONTRACT.md (the API contract – source of truth for routes and types)
                ARCHITECTURE.md · Git_GitHub_Workflow_Guide.md
-               01_PRD_BRD_… · 02_HLD_… · 03_LLD_… (upstream design, §1.1)
+               01a_BRD_… · 01b_PRD_… · 02_HLD_… · 03_LLD_… (upstream design, §1.1)
 datasets/      eval_cases.json
 scripts/       demo.py
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
