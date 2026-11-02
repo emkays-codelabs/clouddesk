@@ -113,7 +113,7 @@ The longest dependency chain is 16 tasks long.
 **P1-6 · Claude Code cost governance**
 - **Needs:** `P1-4`
 - **Build:** The `.claude/` setup that keeps routine work on cheaper models and heavy reasoning on Opus:
-  eight agents (`planner` and `opus-consultant` on Opus; `implementer`, `code-reviewer`, `test-engineer` on
+  seven agents (`planner` and `opus-consultant` on Opus; `implementer`, `code-reviewer`, `test-engineer` on
   Sonnet; `log-triage` and `Explore` on Haiku) plus `_TEMPLATE.md`, seven skills (`plan`, `implement`,
   `review`, `consult-opus`, `cost-report`, `test`, `pr-review`), three rules (cost and delegation, Python,
   tests), a `PreToolUse` hook that runs `ruff` and `pytest` before a `git commit`, pinned model ids in
@@ -121,7 +121,7 @@ The longest dependency chain is 16 tasks long.
   in the suggestions file, not into it. Every setting key was checked against the official docs first.
 - **Files:** `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/hooks/pre-commit.sh`,
   `.claude/settings.json`, `.gitignore`, `docs/plans/`, `docs/claude-setup-suggestions.md`,
-  `scripts/claude_usage/README.md`
+  `scripts/claude_usage/README.md`, `README.md`
 - **Done when:** `settings.json` parses and drops no existing permission; `opus` appears only on `planner`
   and `opus-consultant`; every agent has `name`, `description` containing "Delegate here", `model`, `tools`,
   `maxTurns`, and ends with a return limit; every skill's target agent exists; the hook exits 0 on a clean
