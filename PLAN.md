@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk Project 1
 
-_Last updated: 2026-11-02 15:33 +0530_
+_Last updated: 2026-11-02 20:14 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -211,6 +211,8 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
 
+**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/claude-setup-suggestions.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its two-turn cache test is still pending.
+
 ### Phase 2 — Persistence and demo data
 
 Tasks: `TASKS.md`, Phase 2.
@@ -267,9 +269,9 @@ Tasks: `TASKS.md`, Phase 5.
 
 **Requirements.** F5, F6 (retrieval half).
 
-**Files.** `rag/chunking.py`, `rag/vector_store.py`, `rag/retriever.py`, `rag/ingest.py`, `make ingest`, knowledge search and admin reindex routes.
+**Files.** `rag/__init__.py`, `rag/chunking.py`, `rag/embeddings.py`, `rag/vector_store.py`, `rag/retriever.py`, `rag/ingest.py`, `.claude/rules/rag.md`, `make ingest`, knowledge search and admin reindex routes. Dependencies (`pyyaml`, `qdrant-client`, `rank_bm25`) arrive with the task that needs each.
 
-**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, RRF, rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection.
+**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, RRF, rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection. Ingest is idempotent: a second run leaves the chunk count unchanged. Each `rag/` module says what it must not do, and `rag/` imports nothing about tickets.
 
 **Demo checkpoint.** `make ingest` reports the article and chunk counts. A query for the MFA recovery article returns `CD-1012`’s expected article in the top 3.
 
