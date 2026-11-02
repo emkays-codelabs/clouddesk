@@ -108,21 +108,21 @@ The longest dependency chain is 16 tasks long.
 
 **P2-1 · SQLAlchemy entities and category enum**
 - **Needs:** `P1-1`
-- **Build:** Async SQLAlchemy 2 models for the 16 tables, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
+- **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
 - **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`
-- **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels.
+- **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels; and a test asserts every data table has a not-null `tenant_id`, so a table added later cannot quietly omit it.
 
 **P2-2 · Postgres schema, RLS, and migrations**
 - **Needs:** `P2-1`
-- **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table), and an additive migration folder.
+- **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table, keyed `USING (tenant_id = current_setting('app.tenant_id')::uuid)`), and an additive migration folder. The first migration already contains `tenant_id`, so there is never a migration that adds it (D1).
 - **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_*.sql`
-- **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count.
+- **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count; a test asserts every data table in `schema.sql` has RLS enabled and a policy keyed on `tenant_id`.
 
 **P2-3 · Repository layer**
 - **Needs:** `P2-1`
-- **Build:** The repository layer: all SQL goes through repositories for tickets, messages, customers, subscriptions, workspaces, memory, workflow runs and events, approvals, escalations, and audit logs.
+- **Build:** The repository layer: all SQL goes through repositories for tickets, messages, customers, subscriptions, workspaces, memory, workflow runs and events, approvals, escalations, and audit logs. **Repositories are the only place the `tenant_id` filter lives** (D1, `CLAUDE.md` §6); SQLite has no RLS, so on the demo database this filter is the boundary.
 - **Files:** `backend/app/repositories/`, `tests/unit/` repository tests
-- **Done when:** Repository tests pass on SQLite; nothing under `repositories/` imports a model client or `agents/`.
+- **Done when:** Repository tests pass on SQLite; nothing under `repositories/` imports a model client or `agents/`; and a cross-tenant isolation test proves a second tenant's rows are invisible to every read, which is what makes the column more than decoration (upstream security checklist, LLD §20).
 
 **P2-4 · Sample data and demo bootstrap**
 - **Needs:** `P2-3`
@@ -248,9 +248,9 @@ The longest dependency chain is 16 tasks long.
 
 **P5-3 · Hybrid retriever**
 - **Needs:** `P5-2`, `P3-3`
-- **Build:** Hybrid retriever: semantic ∪ BM25 → reciprocal rank fusion (k=60) → heuristic rerank → optional LLM rerank → one hit per article. Modes `hybrid`, `semantic`, `keyword`; results cached 300 s under `rag:{mode}:{category}:{top_k}:{query}`.
+- **Build:** Hybrid retriever: query rewrite into 1–3 sub-queries → semantic ∪ BM25 → reciprocal rank fusion (k=60) → heuristic rerank → optional LLM rerank → one hit per article → a sufficiency check that may retrieve once more against the gaps it names (upstream FR-09). Modes `hybrid`, `semantic`, `keyword`; results cached 300 s under `rag:{mode}:{category}:{top_k}:{query}`.
 - **Files:** `rag/retriever.py`, `tests/rag/test_retriever.py`
-- **Done when:** Key queries return the expected article in the top 3 (hit-rate@3 is measured); each mode, the cache, RRF, rerank, and the category filter have tests.
+- **Done when:** Key queries return the expected article in the top 3 (hit-rate@3 is measured); each mode, the cache, RRF, rerank, and the category filter have tests; a query whose evidence is insufficient triggers exactly one extra retrieval and then stops.
 
 **P5-4 · Ingest command and knowledge API**
 - **Needs:** `P5-3`, `P3-1`
@@ -277,9 +277,9 @@ The longest dependency chain is 16 tasks long.
 
 **P6-1 · Tool registry and policy**
 - **Needs:** `P2-3`
-- **Build:** The tool registry and policy: `ToolPolicy` with an explicit approval bit per tool, `ToolRegistry.execute(name, args, approved=…)`, unknown tools requiring approval, `TOOL_TIMEOUT_SECONDS`, and exceptions turned into `ToolResult(ok=False)`.
+- **Build:** The tool registry and policy: `ToolPolicy` with an explicit approval bit per tool, `ToolRegistry.execute(name, args, approved=…)`, unknown tools requiring approval, `TOOL_TIMEOUT_SECONDS`, exceptions turned into `ToolResult(ok=False)`, and a provenance check that rejects an argument id or amount which did not come from customer context or an earlier tool result (`CLAUDE.md` §7.4).
 - **Files:** `backend/app/tools/policy.py`, `backend/app/tools/registry.py`, `tests/unit/test_tool_policy.py`
-- **Done when:** Reads and `update_ticket` need no approval; `reset_demo_setting` and `create_refund_request` do; unknown tools do; a raising tool returns `ok=False`; a slow tool times out.
+- **Done when:** Reads and `update_ticket` need no approval; `reset_demo_setting` and `create_refund_request` do; unknown tools do; a raising tool returns `ok=False`; a slow tool times out; an amount lifted from ticket text is rejected while the same amount taken from a subscription record is accepted.
 
 **P6-2 · Read-only support tools**
 - **Needs:** `P6-1`, `P6-4`, `P5-3`, `P2-4`
@@ -329,15 +329,15 @@ The longest dependency chain is 16 tasks long.
 
 **P7-2 · Injection wrapping and security preamble**
 - **Needs:** `P2-1`
-- **Build:** Prompt-injection defence: `SECURITY_PREAMBLE`, `wrap_untrusted`, and `scan_for_injection`.
+- **Build:** Prompt-injection defence: `SECURITY_PREAMBLE`, `wrap_untrusted`, and `scan_for_injection`, applied to retrieved chunks as well as ticket text so a poisoned knowledge article is dropped before it reaches a prompt (`CLAUDE.md` §9).
 - **Files:** `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`), `tests/unit/test_injection.py`
-- **Done when:** `CD-1013` is flagged and its text is wrapped as data, never as instruction (N4).
+- **Done when:** `CD-1013` is flagged and its text is wrapped as data, never as instruction, and a chunk carrying an instruction is dropped from the evidence it would otherwise join (N4).
 
 **P7-3 · Customer output validation**
 - **Needs:** `P2-1`
-- **Build:** `validate_customer_output`, which blocks internal URLs, secrets, and another customer's data; a failure raises risk to `high`.
+- **Build:** `validate_customer_output`, which blocks internal URLs, secrets, and another customer's data, and scores each claim against its cited chunk; a failure raises risk to `high`, and a groundedness score below 0.8 earns one revise before escalation (`CLAUDE.md` §9).
 - **Files:** `backend/app/core/output_validation.py`, `tests/unit/test_output_validation.py`
-- **Done when:** Each blocked pattern is rejected and the failure is reported as high risk (N5).
+- **Done when:** Each blocked pattern is rejected and the failure is reported as high risk; a reply whose claim has no supporting chunk scores below 0.8 and is revised once, then escalates (N5).
 
 **P7-4 · Secret scrub**
 - **Needs:** `P2-1`
@@ -368,9 +368,9 @@ The longest dependency chain is 16 tasks long.
 
 **P8-2 · Long-term customer memory**
 - **Needs:** `P2-3`, `P7-4`
-- **Build:** Long-term memory in `customer_memory`: types `preference`, `past_issue`, `troubleshooting`, `note`; permanent and de-duplicated.
+- **Build:** Long-term memory in `customer_memory`: types `preference`, `past_issue`, `troubleshooting`, `note`; permanent and de-duplicated; a fact is kept only at confidence ≥ 0.7, and erasing a customer's memory removes the rows and their vectors together (upstream FR-27).
 - **Files:** `memory/long_term.py`, `tests/unit/test_long_term.py`
-- **Done when:** Recall returns at most 10 notes; an exact duplicate is skipped.
+- **Done when:** Recall returns at most 10 notes; an exact duplicate is skipped; a fact below 0.7 confidence is discarded rather than stored; erasure leaves no row and no vector behind.
 
 **P8-3 · Recall and record service**
 - **Needs:** `P8-1`, `P8-2`
@@ -467,7 +467,7 @@ The longest dependency chain is 16 tasks long.
 
 **P10-1 · Support state and checkpointer**
 - **Needs:** `P9-1`
-- **Build:** `SupportState` with reducers (`errors` and `completed_nodes` append, `token_usage` sums via `merge_usage`) and the checkpointer (`InMemorySaver` for `:memory:`, `AsyncSqliteSaver` for a file).
+- **Build:** `SupportState` with reducers (`errors` and `completed_nodes` append, `token_usage` sums via `merge_usage`), the `step_count` and `route_history` fields the run budgets in `CLAUDE.md` §7.2 are counted from, and the checkpointer (`InMemorySaver` for `:memory:`, `AsyncSqliteSaver` for a file).
 - **Files:** `agents/state.py`, `agents/checkpointer.py`, `tests/workflow/test_state.py`
 - **Done when:** Reducers never overwrite; the right saver is chosen from `CHECKPOINT_DB_PATH`.
 
@@ -493,7 +493,7 @@ The longest dependency chain is 16 tasks long.
 - **Needs:** `P10-2`, `P10-3`, `P10-4`
 - **Build:** Wire the graph and the run API: `agents/graph.py` (with `GRAPH_NODES` and `GRAPH_EDGES`), `workflow_service`, `POST /tickets/{id}/run` (202) and `GET /tickets/{id}/workflow`. State is saved after every node. The approval and escalation branches are named edges to nodes that P11-1 and P11-3 add; until then a ticket that is not low risk ends the run as `failed` with an error and executes nothing.
 - **Files:** `agents/graph.py`, `backend/app/services/workflow_service.py`, `backend/app/api/workflow.py`, `tests/workflow/test_graph.py`
-- **Done when:** A low-risk ticket runs to END; polling `/workflow` reaches `completed`; a ticket that is not low risk executes no action; graph shape and routing are tested.
+- **Done when:** A low-risk ticket runs to END; polling `/workflow` reaches `completed`; a ticket that is not low risk executes no action; graph shape and routing are tested; the run budgets in `CLAUDE.md` §7.2 hold — a run that reaches 12 steps, a second investigation cycle, or confidence below 0.6 escalates instead of looping.
 
 **P10-6 · Workflow tracer and events API**
 - **Needs:** `P10-1`
@@ -545,9 +545,9 @@ The longest dependency chain is 16 tasks long.
 
 **P11-4 · Execute resolution on the shared tool path**
 - **Needs:** `P11-1`, `P11-3`
-- **Build:** Extend `execute_resolution` (built for low-risk plans in P10-4) so that after a human approval the approved actions run through the same `ToolRegistry.execute` with `approved=True`. The automatic and approved paths stay one code path.
+- **Build:** Extend `execute_resolution` (built for low-risk plans in P10-4) so that after a human approval the approved actions run through the same `ToolRegistry.execute` with `approved=True`. The automatic and approved paths stay one code path. Each action carries the idempotency key `ticket_id:tool:stable_hash(args)` and is verified by reading the record back (upstream FR-16, FR-17).
 - **Files:** `agents/nodes/decision.py`, `tests/workflow/test_execute_resolution.py`
-- **Done when:** The refund tool runs exactly once after approval; nothing runs unapproved.
+- **Done when:** The refund tool runs exactly once after approval; nothing runs unapproved; replaying the same action returns the stored result without acting again, and a resumed run does not double-execute; the stored result carries its read-back verification.
 
 **P11-5 · Demo script for CD-1002 and CD-1005**
 - **Needs:** `P11-2`, `P11-4`

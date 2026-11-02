@@ -2,6 +2,10 @@
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
+These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. The upstream
+high-level and low-level designs for the full product are `02_HLD_…` and `03_LLD_…` in this folder;
+`CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
+
 This is the design to build. Application code is not in the repo yet. No cloud account has been applied, and nothing in these diagrams is deployed.
 
 The product is used by support agents of the fictional SaaS **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
@@ -348,6 +352,11 @@ understand_ticket → classify_severity → customer_context → knowledge_retri
 
 A second `POST /run` while the ticket is `waiting_on_approval` returns 409. Resuming a run that is not paused returns 409.
 
+Runs are bounded so none can loop: at most 12 graph steps, 2 investigation cycles and 2 clarifying
+questions, and escalation below 0.6 confidence. A run that exhausts a budget escalates. Retrieved
+chunks are scanned for instructions like ticket text, and a reply scoring below 0.8 groundedness is
+revised once and then escalated (`CLAUDE.md` §7.2, §9).
+
 Rejection of an approval routes to escalation. `create_escalation` does not need a second approval.
 
 ```eraser
@@ -537,7 +546,14 @@ erDiagram
   support_articles ||--o{ workflow_events : "cited as evidence"
 ```
 
-Relationships are logical. Foreign keys are fixed when `database/schema.sql` is written. Postgres enables RLS on the data tables. The backend uses the service-role key on the server. The browser receives only the anon key.
+Every data table also carries `tenant_id` (`String(36)`, not null, indexed, and first in every
+composite index), and RLS is keyed on it: `USING (tenant_id = current_setting('app.tenant_id')::uuid)`,
+with the API issuing `SET LOCAL app.tenant_id` per transaction. One tenant is seeded and v1 builds no
+tenant features (decision D1, `CLAUDE.md` §6). Repositories are the only place the filter lives, so
+on SQLite — which has no RLS — that filter is the boundary.
+
+Relationships are logical. Foreign keys are fixed when `database/schema.sql` is written. The backend
+uses the service-role key on the server. The browser receives only the anon key.
 
 ---
 
@@ -549,7 +565,8 @@ Relationships are logical. Foreign keys are fixed when `database/schema.sql` is 
 | Ticket text | Untrusted data. `wrap_untrusted` and `SECURITY_PREAMBLE`. CD-1013 must not export records |
 | Model | Adds judgement in grey areas. Escalation, severity floor, refunds, deletions, disputes, security, and data loss are code |
 | Severity | Rules may raise the model score. They never lower it |
-| Tools | Registry only. Refunds and setting resets require a recorded approval |
+| Tenant | Every data table carries `tenant_id`; RLS in Postgres and the repository filter on SQLite. One enforcement point, never a per-query `WHERE` in a router or agent (D1) |
+| Tools | Registry only. Refunds and setting resets require a recorded approval. Arguments need provenance: an id or amount comes from customer context or a tool result, never from ticket text. Every action carries an idempotency key and is read back |
 | Customer reply | `validate_customer_output` blocks internal URLs, secrets, and another customer's data before the reply is shown |
 | Memory | `scrub()` removes card numbers, API keys, and passwords |
 | Logs and events | Decisions, tool results, evidence scores, timings, tokens, errors. No raw prompts, hidden chain-of-thought, other customers, or secrets |
