@@ -10,7 +10,7 @@ description: >-
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-02 22:32 +0530_
 
 ## The files, and which one to trust
 
@@ -128,6 +128,9 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
   the Progress summary (phase count and total). A task is not done until its PR includes this.
   Add a line to the Honest status in `MEMORY.md`, saying only what was actually run, and when a
   whole phase is finished also update the Build phases table in `PLAN.md`.
+- If the task adds a significant component, or changes an architectural boundary, networking or an important flow,
+  update that phase's design-evolution or infrastructure document under `internal/` in the same pull request
+  (`docs/09_PHASE_DOCUMENTATION.md`, section 7, Step 4). `/phase-docs N` consolidates them when the phase ends.
 
 ## Hard stops
 

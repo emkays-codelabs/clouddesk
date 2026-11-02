@@ -13,6 +13,7 @@ import pytest
 
 from scripts.check_phase_docs import (
     cited_paths,
+    finished_phases,
     mermaid_problems,
     missing_paths,
     phase_statuses,
@@ -44,9 +45,8 @@ def _required(phase: int) -> list[pathlib.Path]:
     return [ROOT / p for p in required_documents(phase, qna_required=not _qna_is_git_ignored())]
 
 
-def _started_phases() -> set[int]:
-    statuses = phase_statuses(PLAN.read_text(encoding="utf-8"))
-    return {n for n, status in statuses.items() if status != "not started"}
+def _finished_phases() -> set[int]:
+    return finished_phases(phase_statuses(PLAN.read_text(encoding="utf-8")))
 
 
 def _phase_documents() -> list[pathlib.Path]:
@@ -211,6 +211,21 @@ class TestPhaseStatuses:
         assert sorted(statuses) == list(range(1, 15))
 
 
+class TestFinishedPhases:
+    """Documents grow during a phase, so they are demanded only once a phase is finished."""
+
+    def test_only_implemented_and_validated_phases_are_finished(self):
+        statuses = {1: "validated locally", 2: "in progress", 3: "not started", 4: "implemented"}
+
+        assert finished_phases(statuses) == {1, 4}
+
+    def test_a_phase_in_progress_is_not_required_to_have_all_four_documents_yet(self):
+        assert 2 not in finished_phases({2: "in progress"})
+
+    def test_a_phase_not_started_is_never_finished(self):
+        assert finished_phases({5: "not started"}) == set()
+
+
 class TestRequiredDocuments:
     def test_a_phase_has_the_four_documents_the_spec_defines(self):
         assert required_documents(3) == [
@@ -228,9 +243,9 @@ class TestRequiredDocuments:
 
 
 class TestCompletion:
-    def test_every_started_phase_has_its_documents_or_is_owed(self):
+    def test_every_finished_phase_has_its_documents_or_is_owed(self):
         problems = []
-        for phase in sorted(_started_phases() - OWED):
+        for phase in sorted(_finished_phases() - OWED):
             for path in _required(phase):
                 if not path.exists():
                     problems.append(f"phase {phase}: missing {path.relative_to(ROOT).as_posix()}")
@@ -250,8 +265,8 @@ class TestCompletion:
             f"phase(s) {finished} now have their documents: remove them from OWED"
         )
 
-    def test_only_a_started_phase_can_be_owed(self):
-        assert OWED <= _started_phases()
+    def test_only_a_finished_phase_can_be_owed(self):
+        assert OWED <= _finished_phases()
 
     def test_every_phase_document_cites_only_paths_that_exist(self):
         problems = [

@@ -59,6 +59,18 @@ def phase_statuses(plan_text: str) -> dict[int, str]:
     return {int(n): status for n, status in PHASE_ROW_RE.findall(plan_text)}
 
 
+FINISHED = {"implemented", "validated locally"}
+
+
+def finished_phases(statuses: dict[int, str]) -> set[int]:
+    """The phases whose four documents are due: finished ones, not those still in progress.
+
+    Documents grow during a phase (the spec's section 7, Step 4), so a phase in progress may have
+    only some of them. They are required once the phase is implemented.
+    """
+    return {n for n, status in statuses.items() if status in FINISHED}
+
+
 def _as_path(token: str) -> str | None:
     """The repository path a backticked token names, or None if it is not one."""
     t = token.strip()
