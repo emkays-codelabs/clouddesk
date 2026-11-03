@@ -1,6 +1,6 @@
 # CloudDesk Support — Task tracker
 
-_Last updated: 2026-11-02 23:17 +0530_
+_Last updated: 2026-11-03 08:02 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -73,6 +73,7 @@ The longest dependency chain is 16 tasks long.
 | P1-10 · Mid-phase documentation trigger | — | `docs/mid-phase-doc-trigger` | Completed ✅ |
 | P1-11 · Per-phase documentation layout | — | `docs/phase-1-documents` | Completed ✅ |
 | P1-12 · Zero-padded phase folders | — | `docs/zero-pad-phase-folders` | Completed ✅ |
+| P1-13 · Professional README | — | `docs/professional-readme` | Completed ✅ |
 
 #### Task definitions
 
@@ -235,6 +236,19 @@ The longest dependency chain is 16 tasks long.
   `PhaseNN`; and the existing Phase 1 documents live under `internal/Phase01/`.
 - **Note:** done at the owner's request, and cheapest while only one phase folder exists. The Q&A ignore rule
   (`internal/Phase*/04_INTERVIEW_QNA.md`) needed no change because it uses a wildcard. No application code changes.
+
+**P1-13 · Professional README**
+- **Needs:** `P1-8`
+- **Build:** The README takes the product identity the owner chose: title CloudDesk AI, category AI-Powered Customer Support
+  & Ticket Investigation Platform, tagline "Intelligent Resolution. Human-Controlled Decisions." It gains a numbered table of
+  contents, numbered sections and subsections in sequence, a back-to-top link ending every section, and plainer wording. The
+  repository, package and code keep the name `clouddesk`, and the README says so.
+- **Files:** `README.md`, `tests/unit/test_readme.py`, `TASKS.md`, `MEMORY.md`
+- **Done when:** A test fails on any gap in the numbering, a contents entry that is missing or points nowhere, a section
+  without a back-to-top link, a roadmap that differs from `PLAN.md`, a `make` command that is not a Makefile target, a broken
+  diagram, or a missing "not deployed" statement.
+- **Note:** only the README changes; the product name is not yet propagated to `pyproject.toml`, the API title or `CLAUDE.md`.
+  No application code changes.
 
 ---
 
@@ -845,7 +859,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 75 tasks are Completed ✅ and the Progress summary reads 75 of 75.
+- All 76 tasks are Completed ✅ and the Progress summary reads 76 of 76.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -875,7 +889,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 12 | 12 |
+| 1 | Runtime skeleton | 13 | 13 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -889,4 +903,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **75** | **12** |
+| **Total** | | **76** | **13** |

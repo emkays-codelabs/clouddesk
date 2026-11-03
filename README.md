@@ -1,65 +1,122 @@
-# CloudDesk
+# CloudDesk AI
 
-_Last updated: 2026-11-02 21:18 +0530_
+_Last updated: 2026-11-03 08:02 +0530_
 
-> An autonomous customer-support and resolution platform. A ticket arrives, a team of AI agents
-> investigates it and proposes a resolution, and a human approves anything that costs money or
-> touches an account.
+> **Intelligent Resolution. Human-Controlled Decisions.**
+>
+> CloudDesk AI is an AI-Powered Customer Support & Ticket Investigation Platform. A ticket arrives,
+> a team of AI agents investigates it and proposes a resolution, and a human approves anything that
+> costs money or touches an account.
 
-**Status**: In Development - phase 1 of 14 complete (runtime skeleton, validated locally) | **Version**: 0.1.0
+**Status**: In development. Phase 1 of 14 is complete (runtime skeleton, validated locally). **Version**: 0.1.0
 
----
+**Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
+named `clouddesk`.
 
-## Overview
+## Table of contents
 
-CloudDesk is a support-resolution platform for a fictional SaaS company (team collaboration, cloud
-file storage, billing, workspaces, API access). It is used by **support agents**, not by customers
-directly.
+1. [About CloudDesk AI](#1-about-clouddesk-ai)
+   - [1.1 What it does](#11-what-it-does)
+   - [1.2 How a ticket is handled](#12-how-a-ticket-is-handled)
+   - [1.3 The one design rule](#13-the-one-design-rule)
+2. [Project status](#2-project-status)
+3. [Planned architecture](#3-planned-architecture)
+4. [Roadmap](#4-roadmap)
+5. [Getting started](#5-getting-started)
+   - [5.1 What you need](#51-what-you-need)
+   - [5.2 Install and run](#52-install-and-run)
+   - [5.3 Without make](#53-without-make)
+   - [5.4 Activate the environment](#54-activate-the-environment)
+6. [Development](#6-development)
+   - [6.1 Everyday commands](#61-everyday-commands)
+   - [6.2 Working with Claude Code](#62-working-with-claude-code)
+7. [Where to find things](#7-where-to-find-things)
+8. [Author](#8-author)
 
-Every ticket goes through one pipeline:
+## 1. About CloudDesk AI
 
-```text
-Understand -> Classify -> Investigate -> Retrieve -> Troubleshoot -> Decide -> Resolve -> Act -> Escalate -> Remember
+CloudDesk AI is built for support agents, not for customers. It is shown here working for a fictional
+software company, also called CloudDesk, which sells team collaboration, cloud file storage, billing,
+workspaces and API access.
+
+### 1.1 What it does
+
+- Reads a new support ticket and works out what it is about and how urgent it is.
+- Looks up the customer, their plan and their earlier tickets.
+- Searches the knowledge base and shows the articles it used, so every claim can be checked.
+- Suggests likely causes, step-by-step checks and a draft reply.
+- Stops and asks a person before any refund or account change.
+- Escalates risky cases, such as security incidents, data loss and payment disputes, to the right team.
+- Remembers what it learned for the customer's next ticket.
+
+### 1.2 How a ticket is handled
+
+```mermaid
+flowchart LR
+    A[Ticket arrives] --> B[Understand and classify]
+    B --> C[Investigate and retrieve]
+    C --> D[Troubleshoot]
+    D --> E[Decide and plan]
+    E --> F{Needs a human?}
+    F -- yes --> G[Approval or escalation]
+    F -- no --> H[Act]
+    G --> H
+    H --> I[Remember]
 ```
 
-The design rests on one rule: **policy is decided by rules, judgement is added by the model.**
-Cases such as payment disputes, account deletion, security incidents, and data loss are escalated by
-deterministic, tested rules and are never left to the model's probabilities. Anything involving a
-refund or an account change waits for recorded human approval.
+### 1.3 The one design rule
 
-## Planned Architecture
+**Rules decide policy. The model adds judgement.**
+
+Cases such as payment disputes, account deletion, security incidents and data loss are escalated by
+fixed, tested rules. They are never left to the model's odds. Anything that involves a refund or an
+account change waits for a recorded human approval.
+
+[↑ Back to top](#clouddesk-ai)
+
+## 2. Project status
+
+Phase 1, the runtime skeleton, is complete and validated locally. The service starts offline and answers
+health checks. What exists today:
+
+- Three health routes: `GET /health`, `GET /health/live` (no outside calls) and `GET /health/ready`
+  (checks configuration, returns `503` when something is wrong).
+- An `X-Request-ID` on every response, errors included, repeated on every log line of that request.
+- Settings for every variable in `.env.example`, with secrets and URL passwords hidden when printed.
+- JSON logging that carries `request_id` and `workflow_id`.
+- An offline test suite (no network, no API key), a linter (Ruff) and a `Makefile`.
+- A Claude Code setup in `.claude/` (see [6.2](#62-working-with-claude-code)). It has not yet been used in a
+  live session.
+- The written specification and plan (see [7](#7-where-to-find-things)).
+
+Not built yet: the database and demo data, sign-in, the support API, the knowledge pipeline, tools,
+agents, the workflow, approvals, memory and the web console.
+
+No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
+
+[↑ Back to top](#clouddesk-ai)
+
+## 3. Planned architecture
 
 | Layer | Choice |
 |---|---|
 | Frontend | Next.js 15 (App Router), TypeScript, Tailwind |
 | Backend | FastAPI, Pydantic v2, async SQLAlchemy 2 |
 | Orchestration | LangGraph workflow coordinating six specialist agents |
-| Retrieval | Hybrid semantic + keyword search with reranking, cited evidence |
-| Data | PostgreSQL (SQLite for the demo), Redis (fakeredis offline), Qdrant (in-memory offline) |
-| Safety | Prompt-injection defence, output validation, role-based access, audit log |
-| Delivery | Docker, Terraform for AWS / Azure / GCP, GitHub Actions |
+| Retrieval | Hybrid semantic and keyword search with reranking and cited evidence |
+| Data | PostgreSQL (SQLite for the demo), Redis (fakeredis offline), Qdrant (in memory offline) |
+| Safety | Prompt-injection defence, output checks, role-based access, audit log |
+| Delivery | Docker, Terraform for AWS, Azure and GCP, GitHub Actions |
 
-The six agents are the Support Supervisor, Customer, Knowledge, Troubleshooting, Resolution, and
-Escalation agents.
+The six agents are the Support Supervisor, Customer, Knowledge, Troubleshooting, Resolution and Escalation
+agents.
 
-The whole stack is designed to run **offline** with a fake LLM provider, so tests and the demo
-need no API key.
+The whole stack is designed to run offline with a fake language model, so the tests and the demo need no
+API key.
 
-## Current State
+[↑ Back to top](#clouddesk-ai)
 
-Phase 1 (the runtime skeleton) is complete and validated locally. The service boots offline and answers health probes. What exists today:
-
-- `GET /health`, `GET /health/live` (no dependency I/O) and `GET /health/ready` (configuration probes, `503` when degraded)
-- an `X-Request-ID` on every response, including errors, echoed when safe and bound to every log line of the request
-- cached settings for every variable in `.env.example`, with secrets and URL passwords redacted
-- JSON logging with `request_id` and `workflow_id`
-- an offline test suite (97 tests: no network, no API key), lint (Ruff), and a `Makefile`
-- a Claude Code setup in `.claude/`: seven agents, eight skills, three rules, and a hook that runs lint and tests before Claude commits (see [Working with Claude Code](#working-with-claude-code); not yet exercised in a live session)
-- the specification and plan: `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md` (status and decisions), and `docs/`
-
-Not yet built: the database and demo data, authentication, the support API, the knowledge pipeline, tools, agents, the workflow, approvals, memory, and the console. No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
-
-## Build Plan
+## 4. Roadmap
 
 | Phase | Name | Status |
 |---|---|---|
@@ -78,34 +135,36 @@ Not yet built: the database and demo data, authentication, the support API, the 
 | 13 | Ticket workflow screen | not started |
 | 14 | Evaluation and delivery | not started |
 
-Sub-tasks, branches, and dependencies are in `TASKS.md`; the requirements and each phase's exit
-criteria are in `PLAN.md`; the implementation spec is in `CLAUDE.md`.
+The next task is `P2-1` in `TASKS.md`.
 
-The upstream design documents this is built from are in `docs/`: a BRD and PRD
-(`01`, `02`), a high-level design (`03`) and a low-level design (`04`), written by the course
-author. They specify the full multi-tenant product; this repo is a single-tenant v1 of the same
-architecture, and `CLAUDE.md` §1.1 tables the differences.
+[↑ Back to top](#clouddesk-ai)
 
-## Getting Started
+## 5. Getting started
 
-Requires [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
+### 5.1 What you need
+
+[uv](https://docs.astral.sh/uv/). It installs Python 3.12 if you do not have it.
+
+### 5.2 Install and run
 
 ```bash
-make setup              # uv sync, and copy .env.example to .env if there is none
-make backend            # FastAPI on http://localhost:8000 (reloads on edits)
+make setup              # install packages, and copy .env.example to .env if there is none
+make backend            # start the API on http://localhost:8000 (reloads when you edit)
 curl http://localhost:8000/health/ready
 ```
 
-`make` is not part of Windows; `winget install ezwinports.make` adds it. Without it, run the same steps through uv:
+On Windows, `make` is not included. Install it with `winget install ezwinports.make`.
+
+### 5.3 Without make
 
 ```bash
 uv sync
 uv run uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
-Routes so far: `GET /health`, `GET /health/live`, `GET /health/ready`. The next phase starts at task `P2-1` in `TASKS.md`.
+### 5.4 Activate the environment
 
-Activate the environment instead of prefixing commands with `uv run`:
+You can activate the virtual environment instead of typing `uv run` before each command:
 
 ```bash
 # Windows PowerShell
@@ -115,35 +174,59 @@ Activate the environment instead of prefixing commands with `uv run`:
 source .venv/bin/activate
 ```
 
-Secrets belong in a local `.env` file, which is git-ignored. Never commit real keys.
+Keep secrets in a local `.env` file. It is ignored by git. Never commit real keys.
 
-## Development
+[↑ Back to top](#clouddesk-ai)
+
+## 6. Development
+
+### 6.1 Everyday commands
 
 ```bash
-make test               # pytest, fully offline (or: uv run pytest)
-make lint               # ruff (or: uv run ruff check .)
-make format             # ruff format
+make test               # run the tests, fully offline (or: uv run pytest)
+make lint               # check the code with ruff (or: uv run ruff check .)
+make format             # format the code with ruff
 ```
 
-### Working with Claude Code
+### 6.2 Working with Claude Code
 
-The `.claude/` folder is committed, so a clone gets the same setup. Sonnet is the default model. Opus runs
-only for planning and for one-off design questions, and Haiku handles search and log digests, which keeps
-routine work cheap.
+The `.claude/` folder is committed, so a clone gets the same setup. Sonnet is the default model. Opus is
+used only for planning and for single design questions, and Haiku for searching and reading long logs. This
+keeps routine work cheap.
 
 | Command | What it does |
 |---|---|
-| `/plan P2-1` | Writes a plan for a `TASKS.md` task to `docs/plans/` |
-| `/implement docs/plans/p2-1.md` | Executes an approved plan, test first |
-| `/test`, `/review` | Targeted tests with a digest; a ranked review of the diff |
-| `/phase-docs 1` | Writes a finished phase's four documents from `docs/09_PHASE_DOCUMENTATION.md` |
-| `/pr-review 10`, `/consult-opus`, `/cost-report` | Review a pull request; ask one design question; show cost and cache health |
+| `/plan P2-1` | Writes a plan for a task from `TASKS.md` |
+| `/implement <plan file>` | Carries out an approved plan, tests first |
+| `/test`, `/review` | Runs targeted tests and gives a short digest; reviews the current changes |
+| `/phase-docs 1` | Writes a finished phase's four documents |
+| `/pr-review 10`, `/consult-opus`, `/cost-report` | Reviews a pull request; asks one design question; shows cost and cache health |
 
-A hook runs `ruff` and `pytest` before Claude runs `git commit` and blocks the commit if either fails. It
-does not run when you commit by hand. Setup notes, the open checks, and proposed `CLAUDE.md` edits are in
-[`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md). Prompt caching works: inside
-one conversation it is complete, and only a new session's first request pays full price. The cache TTL is left at the default.
+A hook runs `ruff` and `pytest` before Claude runs `git commit`, and blocks the commit if either fails. It
+does not run when you commit by hand. Setup notes and open checks are in
+[`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md).
 
-## Author
+[↑ Back to top](#clouddesk-ai)
+
+## 7. Where to find things
+
+| You want | Open |
+|---|---|
+| The full specification and coding rules | `CLAUDE.md` |
+| Requirements and what each phase must achieve | `PLAN.md` |
+| Every task, its branch and its status | `TASKS.md` |
+| Honest status, decisions and open questions | `MEMORY.md` |
+| The business case, product, high-level and low-level design | `docs/01` to `docs/04` |
+| Git and GitHub flow | `docs/07_GIT_WORKFLOW.md` |
+| Documents written for each finished phase | `internal/` |
+
+The design documents in `docs/` describe the full multi-tenant product. This repository builds a
+single-tenant first version of the same architecture. `CLAUDE.md` section 1.1 lists the differences.
+
+[↑ Back to top](#clouddesk-ai)
+
+## 8. Author
 
 Built by **Mahesh Kumar**, Founder & CEO of **SaffronyxAI.in**.
+
+[↑ Back to top](#clouddesk-ai)
