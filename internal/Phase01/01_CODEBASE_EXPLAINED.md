@@ -5,6 +5,8 @@
 > **Status of this phase:** implemented and checked locally (97 tests pass, lint is clean). Nothing is deployed. Phase 1 has **no database, no AI model, no login and no web screens**. Those arrive in later phases.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md) and [infrastructure evolution](./03_INFRA_EVOLUTION.md).
+>
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
@@ -118,7 +120,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 379 lines across seven files, plus a 105-line test harness. Paths are relative to the project root.
+The Phase 1 application code is 379 lines across seven files, plus a 106-line test harness. Paths are relative to the project root.
 
 ### `backend/app/main.py` (33 lines)
 
@@ -129,7 +131,7 @@ The Phase 1 application code is 379 lines across seven files, plus a 105-line te
 | Main components | `create_app()`, the module-level `app` |
 | Inputs | Settings from `get_settings()` |
 | Processing | Starts logging, adds the health router, adds `RequestIdMiddleware`, then `CORSMiddleware` |
-| Outputs | A configured `FastAPI` instance titled "CloudDesk API" |
+| Outputs | A configured `FastAPI` instance titled "CloudDesk AI API" |
 | Dependencies | `backend/app/core/config.py`, `backend/app/core/logging.py`, `backend/app/api/health.py`, `backend/app/middleware/request_id.py` |
 | Execution point | Loaded by uvicorn (`app.main:app`) and by the test client |
 | Interview explanation | "It is the front door: it wires the parts together in the right order." |
@@ -208,7 +210,7 @@ The reply shapes are typed models, so a response that does not match its documen
 
 The reasons name the setting at fault but never echo a URL, password or key. This is tested.
 
-### `tests/conftest.py` (105 lines)
+### `tests/conftest.py` (106 lines)
 
 | Item | Explanation |
 |---|---|
@@ -326,7 +328,7 @@ These are the decisions the code and the project record actually show.
 **Results, run while writing this document:**
 
 - Phase 1's own tests: **97 passed** in about 3 seconds, offline.
-- The whole suite when this was written: **220 passed**; it has grown since, as later tasks add tests. The extra 123 belong to later tooling tasks, not to Phase 1.
+- The whole suite when this was updated, on 2026-11-03 (`make test`): **346 passed**. The extra 249 belong to later tooling and documentation tasks, not to Phase 1. It was 220 when this document was first written.
 - `uv run ruff check .`: **All checks passed**.
 
 | Test file | Tests | What it checks |
@@ -400,4 +402,4 @@ For tests, the environment is fixed before the application even loads, every cre
 | Offline harness | Every test in every phase |
 | Readiness checks | Phase 2 and later replace configuration checks with real connection checks |
 
-**Tooling added to Phase 1's tracker afterwards.** Tasks P1-5 to P1-14 in `TASKS.md` are additive developer tooling and documents (document timestamps, Claude Code setup, numbered documents, the documentation workflow, the README, an audit). They were added after the runtime skeleton was finished and are not part of what this document explains. The checks they added are why the whole suite is larger than Phase 1's 97 tests.
+**Tooling added to Phase 1's tracker afterwards.** Tasks P1-5 to P1-18 in `TASKS.md` are additive developer tooling and documents (document timestamps, Claude Code setup, numbered documents, the documentation workflow, the README, an audit with decision records, ignore rules, the design folder, and this refresh). Only two of them touched Phase 1's own files: P1-14 gave the API the title "CloudDesk AI API" and made the test client import the app directly, which is why the harness grew by one line. They were added after the runtime skeleton was finished and are not part of what this document explains. The checks they added are why the whole suite is larger than Phase 1's 97 tests.

@@ -5,6 +5,8 @@
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md) and [infrastructure evolution](./03_INFRA_EVOLUTION.md).
 >
 > **Status:** implemented and checked locally on 2026-10-31 and since. 97 tests pass and lint is clean (run while writing this). Not deployed.
+>
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
@@ -83,7 +85,7 @@ flowchart TD
 
 - **Original design.** Settings and logging existed but nothing verified them offline.
 - **Motivation.** Without a guard, a test can quietly reach the internet, spend money or pick up a real key from a developer's shell.
-- **Introduced.** `tests/conftest.py` fixes an offline environment *before* the application is imported, blanks every credential, blocks non-loopback network access, and clears the settings cache around each test. Its `client` fixture is written to skip itself until the application exists.
+- **Introduced.** `tests/conftest.py` fixes an offline environment *before* the application is imported, blanks every credential, blocks non-loopback network access, and clears the settings cache around each test. Its `client` fixture was first written to skip itself until the application existed. Since P1-14 it imports the application directly, so a broken import fails instead of skipping.
 - **Effect.** Tests written afterwards inherit the guarantee automatically.
 - **Benefits and trade-offs.** Free, hermetic tests. A test that genuinely needs a network has no opt-out yet.
 - **Status.** Completed and verified: 24 tests in `tests/unit/test_harness.py`.
@@ -234,7 +236,7 @@ If the response had already begun, the layer re-raises instead of writing a seco
 | Context | Tests should never be able to touch the network or a real key, from the first test |
 | Alternatives | Write the harness after the first routes; rely on discipline |
 | Rationale | Every test written afterwards is protected automatically |
-| Benefits | No retrofit, and the `client` fixture skips cleanly until the app exists |
+| Benefits | No retrofit, and the `client` fixture skipped cleanly until the app existed (P1-14 later removed the skip, so a broken import now fails loudly) |
 | Trade-offs | A harness reviewed before it has real code to guard |
 | Status | Implemented |
 
@@ -344,4 +346,4 @@ Compared with the empty start, and only where the implementation or a test suppo
 
 **Carried into Phase 2.** The settings object (the database URL), the app factory, the harness, and the request ID and workflow ID that the logs already support.
 
-**Not part of this document.** Tasks P1-5 to P1-10 in `TASKS.md` are developer tooling added to Phase 1's tracker after the runtime skeleton was finished. They add no runtime architecture.
+**Not part of this document.** Tasks P1-5 to P1-18 in `TASKS.md` are developer tooling and documents added to Phase 1's tracker after the runtime skeleton was finished. They add no runtime architecture.

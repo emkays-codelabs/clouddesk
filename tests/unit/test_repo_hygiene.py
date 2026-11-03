@@ -352,3 +352,65 @@ class TestClaudeLocalFiles:
 
         assert "CLAUDE.local.md" in layout
         assert "git-ignored" in layout.split("CLAUDE.local.md")[1].splitlines()[0]
+
+
+class TestPhase1DocumentsQuoteTrueFacts:
+    """The Phase 1 documents state sizes and names. These tests stop them drifting from the code."""
+
+    DOC1 = "internal/Phase01/01_CODEBASE_EXPLAINED.md"
+    DOC3 = "internal/Phase01/03_INFRA_EVOLUTION.md"
+    QNA = "internal/Phase01/04_INTERVIEW_QNA.md"
+    PHASE_1_TESTS = [
+        "tests/unit/test_config_logging.py",
+        "tests/unit/test_harness.py",
+        "tests/api/test_health.py",
+        "tests/unit/test_makefile.py",
+        "tests/unit/test_env_example.py",
+    ]
+
+    def test_the_api_title_they_quote_is_the_real_one(self, client):
+        title = client.get("/openapi.json").json()["info"]["title"]
+
+        assert f'titled "{title}"' in _read(self.DOC1)
+        assert f"{title}: three health routes" in _read(self.DOC3)
+
+    def test_the_harness_size_they_quote_is_the_real_one(self):
+        real = len(_read("tests/conftest.py").splitlines())
+        text = _read(self.DOC1)
+
+        assert f"plus a {real}-line test harness" in text
+        assert f"`tests/conftest.py` ({real} lines)" in text
+
+    def test_the_application_size_they_quote_is_the_real_one(self):
+        files = subprocess.run(
+            ["git", "ls-files", "backend"], cwd=ROOT, capture_output=True, text=True
+        ).stdout.split()
+        sizes = [len(_read(f).splitlines()) for f in files]
+        real = sum(n for n in sizes if n > 1)
+
+        assert f"is {real} lines across seven files" in _read(self.DOC1)
+        assert sum(1 for n in sizes if n > 1) == 7
+
+    def test_the_phase_1_test_count_they_quote_is_the_real_one(self):
+        out = subprocess.run(
+            [sys.executable, "-m", "pytest", "--collect-only", "-q", *self.PHASE_1_TESTS],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        ).stdout
+        real = int(re.search(r"(\d+) tests? collected", out).group(1))
+
+        assert f"Phase 1's own tests: **{real} passed**" in _read(self.DOC1)
+
+    def test_the_private_questions_file_quotes_the_same_harness_size_when_it_exists(self):
+        if not (ROOT / self.QNA).exists():
+            pytest.skip("the private interview file is local only")
+        real = len(_read("tests/conftest.py").splitlines())
+
+        assert f"a {real}-line harness" in _read(self.QNA)
+
+    @pytest.mark.parametrize(
+        "name", ["01_CODEBASE_EXPLAINED", "02_DESIGN_EVOLUTION", "03_INFRA_EVOLUTION"]
+    )
+    def test_each_committed_document_says_when_it_was_last_brought_up_to_date(self, name):
+        assert "**Updated 2026-11-03 (task P1-18).**" in _read(f"internal/Phase01/{name}.md")
