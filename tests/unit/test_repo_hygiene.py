@@ -414,3 +414,26 @@ class TestPhase1DocumentsQuoteTrueFacts:
     )
     def test_each_committed_document_says_when_it_was_last_brought_up_to_date(self, name):
         assert "**Updated 2026-11-03 (task P1-18).**" in _read(f"internal/Phase01/{name}.md")
+
+
+class TestCommunicationRule:
+    def _rule(self):
+        rules = (
+            _read("CLAUDE.md").split("## 18. Coding rules for this project")[1].split("### 18.1")[0]
+        )
+        return next(ln for ln in rules.splitlines() if ln.startswith("21. "))
+
+    def test_the_coding_rules_end_with_a_communication_rule(self):
+        assert self._rule().startswith("21. **Communication.**")
+
+    def test_it_asks_for_the_answer_first_and_no_filler_or_closing_recap(self):
+        rule = self._rule()
+
+        assert "lead with the answer" in rule
+        assert "closing recaps" in rule
+
+    def test_it_keeps_full_detail_where_detail_is_a_safety_matter(self):
+        rule = self._rule()
+
+        assert "when asked" in rule
+        assert "Error reports" in rule and "destructive" in rule
