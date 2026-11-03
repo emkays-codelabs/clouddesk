@@ -326,7 +326,7 @@ These are the decisions the code and the project record actually show.
 **Results, run while writing this document:**
 
 - Phase 1's own tests: **97 passed** in about 3 seconds, offline.
-- The whole suite today: **220 passed**. The extra 123 belong to later tooling tasks, not to Phase 1.
+- The whole suite when this was written: **220 passed**; it has grown since, as later tasks add tests. The extra 123 belong to later tooling tasks, not to Phase 1.
 - `uv run ruff check .`: **All checks passed**.
 
 | Test file | Tests | What it checks |
@@ -400,4 +400,4 @@ For tests, the environment is fixed before the application even loads, every cre
 | Offline harness | Every test in every phase |
 | Readiness checks | Phase 2 and later replace configuration checks with real connection checks |
 
-**Tooling added to Phase 1's tracker afterwards.** Tasks P1-5 to P1-10 in `TASKS.md` are additive developer tooling (document timestamps, Claude Code setup, numbered documents, the documentation workflow). They were added after the runtime skeleton was finished and are not part of what this document explains. The checks they added are why the whole suite now has 220 tests.
+**Tooling added to Phase 1's tracker afterwards.** Tasks P1-5 to P1-14 in `TASKS.md` are additive developer tooling and documents (document timestamps, Claude Code setup, numbered documents, the documentation workflow, the README, an audit). They were added after the runtime skeleton was finished and are not part of what this document explains. The checks they added are why the whole suite is larger than Phase 1's 97 tests.

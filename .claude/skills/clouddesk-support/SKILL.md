@@ -10,7 +10,7 @@ description: >-
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-02 22:32 +0530_
+_Last updated: 2026-11-03 08:41 +0530_
 
 ## The files, and which one to trust
 
@@ -47,7 +47,7 @@ tiering, Kubernetes, and the harder eval bar. Do not build any of them and do no
 ## Before coding
 
 1. Find the task in `TASKS.md`. Check its **Needs** line: every predecessor must already be merged.
-   Copy the branch name from its row. One task is one `feature/<name>` branch, opened against
+   Copy the branch name from its row. One task is one branch named in its row (`feature/`, `docs/` or `chore/`), opened against
    `development`. Never stack a branch on another feature branch.
 2. If the user names work that has no row, add the row first, with its **Needs**, **Done when**, and a
    requirement ID. Do not build untracked work.

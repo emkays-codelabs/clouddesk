@@ -9,4 +9,6 @@ argument-hint: "[task id or topic, e.g. P2-1]"
 
 Plan this: $ARGUMENTS
 
-Write the plan to `docs/plans/<topic>.md` and return only the file path.
+Write the plan to `docs/plans/<task-id>.md` with the id in lower case (`p2-1.md`), or a short slug when the
+request has no task. Plans are working files: they are not committed (the folder is git-ignored apart from
+`.gitkeep`) and are deleted once the task merges. Return only the file path.

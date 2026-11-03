@@ -7,10 +7,10 @@ This is the only place that proposes changes to a protected file. `CLAUDE.md` wa
 
 | File | Where | Lines |
 |---|---|---|
-| `CLAUDE.md` | repository root | 694 |
+| `CLAUDE.md` | repository root | about 700, and growing |
 | `SKILLS.md` | none exists | not created |
 
-The prompt's verification step expects a protected `CLAUDE.md` of 200 lines or fewer. This one is 694.
+The prompt's verification step expects a protected `CLAUDE.md` of 200 lines or fewer. This one was 694 lines when this was written and has grown since.
 That is reported, not changed.
 
 ## 2. Suggested changes to `CLAUDE.md`
@@ -49,7 +49,7 @@ Apply these between sessions: `CLAUDE.md` is read once at session start, so an e
 ## 3. `SKILLS.md`
 
 None exists. Claude Code loads `.claude/skills/<name>/SKILL.md`. The existing `clouddesk-support` skill is
-kept unchanged; the seven new skills sit beside it.
+kept unchanged; the new skills sit beside it.
 
 ## 4. Per-run budgets (guidelines, not limits)
 
@@ -69,7 +69,7 @@ Exceeding one is a signal to split the task. Scale up for a larger repository.
 
 | Skipped | Why | Add it when |
 |---|---|---|
-| `architect` agent | One module today (`backend/app/`) and no ADR folder | `rag/`, `agents/` and `frontend/` exist, or an ADR folder appears |
+| `architect` agent | One module today (`backend/app/`); decisions are recorded in `docs/adr/` | `rag/`, `agents/` and `frontend/` exist, or the records outgrow `docs/adr/` |
 | `wait` skill | No job runs for more than a few minutes (the suite takes about 3 seconds) | Phase 14 adds Terraform and image builds |
 | `fix-issue` skill | No issue tracker is referenced: `TASKS.md` is the tracker | GitHub Issues is adopted |
 
@@ -92,7 +92,7 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
   different build and its version could not be read from here. Run `claude --version` or `/status` where
   you launch it. Several keys below are version-gated.
 - **Model ids pinned:** `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`.
-- **TTL: `<DECIDE: probe result>`.** Not set. Prices from the official pricing page, 2026-11-02, per million
+- **TTL: left at the default.** Not set. Prices from the official pricing page, 2026-11-02, per million
   tokens:
 
   | Model | Base input | 5m write | 1h write | Cache read | Output |
@@ -184,7 +184,7 @@ that touch the same file, migration, lock file or schema run in sequence. In thi
 
 ## 10. Remaining placeholders
 
-- `<DECIDE: probe result>`: the cache TTL (section 7).
+- None. The cache TTL, which was the last, is left at the default (section 7).
 
 There are no `<PIN: ...>` or `<TODO: ...>` placeholders: the three model ids were stated in the model list
 for the first-party API, and the commands came from `pyproject.toml` and the `Makefile`.

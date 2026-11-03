@@ -1,6 +1,6 @@
-# PLAN.md — CloudDesk Project 1
+# PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-02 23:11 +0530_
+_Last updated: 2026-11-03 08:57 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -74,7 +74,7 @@ Pytest uses `asyncio_mode = "auto"` and `loop_scope = "session"`. Do not add `@p
 
 ## Upstream traceability
 
-`CLAUDE.md` §1.1 explains the relationship: the upstream PRD (`docs/01b_…`) and BRD (`docs/01a_…`) specify **ACSRP**, the full
+`CLAUDE.md` §1.1 explains the relationship: the upstream PRD (`docs/02_PRD.md`) and BRD (`docs/01_BRD.md`) specify **ACSRP**, the full
 multi-tenant product, with requirements FR-01–42 and NFR-01–16. The catalogue above is CloudDesk's v1
 subset. This table is the map, so a reader can tell a deliberate omission from an oversight.
 
@@ -93,13 +93,13 @@ subset. This table is the map, so a reader can tell a deliberate omission from a
 | F11 | FR-25, FR-28 |
 | F12 | FR-31–34 |
 | F13 | NFR-11 (local tracing, not OpenTelemetry) |
-| F14 | NFR-05 (offline operation) |
+| F14 | — (CloudDesk's own: offline operation. NFR-05 is availability and a human-handoff mode, which v1 does not build) |
 | N1 | NFR-07 |
 | N2 | NFR-10 (request limits, not token budgets) |
 | N3 | — (CloudDesk's own) |
 | N4 | NFR-08 |
 | N5 | FR-10 |
-| N6 | NFR-07, compliance in PRD §11 |
+| N6 | NFR-07, compliance in BRD §11 |
 | N7 | NFR-09 (memory only, not logs) |
 | N8 | NFR-14 |
 
@@ -112,7 +112,7 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 |---|---|---|
 | FR-05 | Ask clarifying questions, at most 2 turns, then hand off | No node and no requirement. The upstream graph has a `clarify` node; CloudDesk's does not. |
 | FR-21 | An approver may **edit** the arguments before approving | `docs/06_API_CONTRACT.md` offers approve and reject only. |
-| FR-29, FR-07 | Distil resolutions into reviewed **resolution cards** and index them | The learning loop (upstream journey J5). F6 retrieves past tickets but nothing distils them. |
+| FR-29, FR-07 | Distil resolutions into reviewed **resolution cards** and index them | The learning loop (upstream journey J5; FR-29 is a Should). F6 retrieves past tickets but nothing distils them. |
 | FR-30 | Capture CSAT and agent feedback, linked to traces | No `feedback` table, route or requirement. The eval suite has no outcome signal without it. |
 | FR-35 | Analytics: autonomous rate, first response time, MTTR, CSAT, cost, escalation reasons | `GET /dashboard/summary` returns counts only. These are the PRD's business objectives BO-1 to BO-7. |
 | FR-39 | Upload or connect knowledge sources, with scheduled re-index | P5-4 reindexes files already on disk; there is no upload path or schedule. |
@@ -120,6 +120,11 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | NFR-10 | LLM token budgets per tenant | N2 limits requests, not tokens. The PRD names cost runaway as a risk. |
 | NFR-01–04 | Latency and scale targets | No performance requirement or test. |
 | NFR-15, NFR-16 | ≥ 80% coverage on core services; WCAG 2.1 AA | Neither is measured. |
+| FR-36 | Admin: knowledge sources, ingestion jobs, policies, tool registry, users and roles | `GET /settings` is read-only; nothing edits sources, policies, tools or users. |
+| FR-41 | Feature flags per tenant: copilot, supervised or autonomous | `AUTONOMY_MODE` is listed in `CLAUDE.md` §10.2 as a later setting; no requirement, task or test. |
+| NFR-05 | 99.9% availability; a human-handoff mode if the model provider fails | No handoff mode and no availability target. |
+| NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is built (P10-1), but runs are in process and a restart can drop one (ADR-0007). |
+| NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13); routing is decision D4 (ADR-0010). |
 
 Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a
 `prohibited` risk tier, MCP write servers, model tiering, Kubernetes and the harder eval bar remain
@@ -211,7 +216,7 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
 
-**Tooling (not an exit criterion).** P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its cache was measured: it is complete inside a conversation, and partial between sessions because of user-level settings, not this repository (`docs/08_CLAUDE_SETUP.md`, section 7).
+**Tooling (not an exit criterion).** P1-5 and P1-7 to P1-14 add document timestamps, numbered document names, the phase-documentation workflow and its documents, the README, and an audit with decision records in `docs/adr/`. P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its cache was measured: it is complete inside a conversation, and partial between sessions because of user-level settings, not this repository (`docs/08_CLAUDE_SETUP.md`, section 7).
 
 ### Phase 2 — Persistence and demo data
 
@@ -413,7 +418,7 @@ Tasks: `TASKS.md`, Phase 14.
 
 **Requirements.** F2, F5, F8, F10 thresholds; F14; N8. Honest status in §15.1.
 
-**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml`, `deployment/{aws,azure,gcp}`, `deployment/kubernetes`, `deployment/scripts/`, `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
+**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml`, `deployment/{aws,azure,gcp}`, `deployment/scripts/`, `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
 
 **Tests.** Eval metrics meet the thresholds in `PLAN.md`. Deployment tests check compose services, non-root Dockerfiles, `HEALTHCHECK`, `.env.example` coverage, and that no `.env` is committed. `docker compose config -q` passes. `make terraform-validate` passes locally. `BASE_URL=http://localhost:8000 make smoke` passes against the local stack.
 

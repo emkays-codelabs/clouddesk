@@ -1,7 +1,7 @@
 [project]
 name = "clouddesk"
 version = "0.1.0"
-description = "CloudDesk: an autonomous customer-support and resolution platform built on FastAPI and LangGraph."
+description = "CloudDesk AI: an AI-powered customer support and ticket investigation platform built on FastAPI and LangGraph."
 readme = "README.md"
 authors = [{ name = "Mahesh Kumar", email = "aiwithemkay@gmail.com" }]
 requires-python = ">=3.12"
@@ -9,6 +9,8 @@ keywords = ["ai", "agents", "rag", "langgraph", "fastapi"]
 # Each task in TASKS.md adds the packages it introduces (for example pydantic-settings in P1-1,
 # SQLAlchemy in P2-1, qdrant-client in P5-2). Vectors are Qdrant and the console is Next.js, so
 # chromadb and streamlit are not part of this design.
+# langchain, langchain-openai, langgraph and openai are installed up front because Phases 9 and 10 build on
+# them; nothing imports them yet.
 dependencies = [
     "fastapi>=0.162.0",
     "langchain>=1.4.7",
@@ -46,6 +48,9 @@ asyncio_default_test_loop_scope = "session"
 line-length = 100
 target-version = "py312"
 src = ["backend", "."]
+# ruff also formats code blocks inside markdown, which would rewrite CLAUDE.md and the upstream design
+# documents. Markdown is not ours to format.
+extend-exclude = ["**/*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

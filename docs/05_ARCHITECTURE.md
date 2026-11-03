@@ -1,6 +1,6 @@
-# CloudDesk architecture
+# CloudDesk AI architecture
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-03 08:41 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -8,7 +8,7 @@ These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. T
 high-level and low-level designs for the full product are `03_HLD.md` and `04_LLD.md` in this folder;
 `CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
 
-This is the design to build. Application code is not in the repo yet. No cloud account has been applied, and nothing in these diagrams is deployed.
+This is the design to build. Only Phase 1 of the application exists (the runtime skeleton: health routes, request ids, settings and logging); the rest is not built yet. No cloud account has been applied, and nothing in these diagrams is deployed.
 
 The product is used by support agents of the fictional SaaS **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
 
