@@ -89,7 +89,7 @@ class TestVersionAndIdentity:
             "PLAN.md",
             "TASKS.md",
             "MEMORY.md",
-            "docs/05_ARCHITECTURE.md",
+            "docs/design/05_ARCHITECTURE.md",
             "docs/07_GIT_WORKFLOW.md",
         ],
     )
@@ -322,3 +322,22 @@ class TestPlansAgreeWithTheUpstreamDocuments:
         task = _read("TASKS.md").split("**P1-3 · Offline pytest harness**")[1].split("**P1-4")[0]
 
         assert "P1-14" in task
+
+
+class TestDesignFolder:
+    def test_the_stamp_list_names_the_moved_documents_at_their_new_paths(self):
+        stamper = _read("scripts/stamp_docs.py")
+
+        assert "docs/design/05_ARCHITECTURE.md" in stamper
+        assert "docs/design/06_API_CONTRACT.md" in stamper
+
+    def test_the_spec_layout_shows_the_design_folder(self):
+        layout = _read("CLAUDE.md").split("### 4.3 Folder layout")[1].split("## 5.")[0]
+
+        assert "design/ 05_ARCHITECTURE.md · 06_API_CONTRACT.md" in layout
+
+    def test_the_moved_architecture_document_does_not_call_the_upstream_design_this_folder(self):
+        text = _read("docs/design/05_ARCHITECTURE.md")
+
+        assert "in this folder" not in text
+        assert "../03_HLD.md" in text

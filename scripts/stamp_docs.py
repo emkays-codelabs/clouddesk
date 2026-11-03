@@ -28,8 +28,8 @@ STAMPED = [
     "TASKS.md",
     "MEMORY.md",
     "README.md",
-    "docs/06_API_CONTRACT.md",
-    "docs/05_ARCHITECTURE.md",
+    "docs/design/06_API_CONTRACT.md",
+    "docs/design/05_ARCHITECTURE.md",
     "docs/07_GIT_WORKFLOW.md",
     ".claude/skills/clouddesk-support/SKILL.md",
 ]
