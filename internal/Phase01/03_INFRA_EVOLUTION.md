@@ -5,6 +5,8 @@
 > What Phase 1 *does* have is one local Python process, started with one command, configured from the environment. This document explains that honestly, and it explains the container ideas the spec asks about only as concepts, clearly marked as planned for a later phase. Nothing below claims a container exists.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md) and [system design evolution](./02_DESIGN_EVOLUTION.md).
+>
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
@@ -226,7 +228,7 @@ A real log line from this phase's run, shortened:
 flowchart TD
     subgraph Host["Developer machine (no containers)"]
         subgraph Proc["Native process: uvicorn on 127.0.0.1:8000"]
-            APP2["CloudDesk API: three health routes, request-ID and CORS layers"]
+            APP2["CloudDesk AI API: three health routes, request-ID and CORS layers"]
         end
         ENVF[".env, copied from .env.example"]
         VENV[".venv created by uv"]
@@ -257,7 +259,7 @@ Run on 2026-11-02 while writing this document. Where I could not check something
 | A safe request ID is echoed, an unsafe one replaced | **Verified** | `abc-123` echoed; an ID with spaces and a slash replaced by a UUID |
 | CORS | **Verified** | The console origin got `allow-origin` and `expose-headers: X-Request-ID`; an unknown origin got none |
 | Logs are JSON and carry both IDs | **Verified** | 13 log lines, all with `request_id` and `workflow_id` |
-| `make test`, `make lint` | **Verified** | Exit 0; 220 passed when checked (97 for Phase 1); "All checks passed!" |
+| `make test`, `make lint` | **Verified** | Exit 0 on 2026-11-03; 346 passed (97 for Phase 1; 220 when first written); "All checks passed!" |
 | The server stops cleanly | **Verified with a caveat** | A tree kill frees the port; stopping only the `uv` wrapper does not |
 | Internal DNS resolution | Not applicable | No other services |
 | Application-to-database connectivity | Not applicable | No database client |

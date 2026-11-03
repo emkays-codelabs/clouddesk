@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 09:37 +0530_
+_Last updated: 2026-11-03 09:44 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -58,7 +58,7 @@ The longest dependency chain is 16 tasks long.
 
 > Depends on: nothing. Unblocks: every later phase.
 > Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
-> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14, P1-15, P1-16 and P1-17 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
+> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14, P1-15, P1-16, P1-17 and P1-18 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -79,6 +79,7 @@ The longest dependency chain is 16 tasks long.
 | P1-15 · Ignore the local prompt note | — | `chore/ignore-prompt-note` | Completed ✅ |
 | P1-16 · Design documents in docs/design/ | — | `docs/design-folder` | Completed ✅ |
 | P1-17 · Ignore CLAUDE.local.md, track .claude/commands/ | — | `chore/gitignore-claude-local` | Completed ✅ |
+| P1-18 · Refresh the Phase 1 documents | — | `docs/refresh-phase01` | Completed ✅ |
 
 #### Task definitions
 
@@ -282,6 +283,13 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `.gitignore`, `CLAUDE.md`, `README.md`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_readme.py`, `TASKS.md`, `MEMORY.md`, `PLAN.md`
 - **Done when:** A test shows git ignores `CLAUDE.local.md` and does not ignore `.claude/commands/review.md` or `.mcp.json`; the layout in `CLAUDE.md` mentions the personal file and says it is git-ignored.
 - **Note:** no `.mcp.json` is added, because no project-level MCP server is configured. No application code changes.
+
+**P1-18 · Refresh the Phase 1 documents**
+- **Needs:** `P1-17`
+- **Build:** The four Phase 1 documents in `internal/Phase01/` quoted facts that later tasks changed. The API title is now "CloudDesk AI API", the test harness is 106 lines, the whole suite is 346 tests (97 of them Phase 1's, checked by running `make test` and `make lint`), and the range of later tooling and documentation tasks runs to P1-18. Each document carries a dated update note. The architecture and behaviour they describe did not change, so nothing else is rewritten. The private Q&A file is refreshed locally and stays git-ignored.
+- **Files:** `internal/Phase01/01_CODEBASE_EXPLAINED.md`, `internal/Phase01/02_DESIGN_EVOLUTION.md`, `internal/Phase01/03_INFRA_EVOLUTION.md`, `internal/Phase01/04_INTERVIEW_QNA.md` (local only), `tests/unit/test_repo_hygiene.py`, `TASKS.md`, `MEMORY.md`, `PLAN.md`
+- **Done when:** Tests compare the API title, the harness size, the application size and the Phase 1 test count quoted in the documents with the real ones, and each committed document carries its update note; the cited-path and diagram checks still pass.
+- **Note:** documents are updated when what they state stops being true (`docs/09` section 7, Step 4); the whole-suite count is a dated snapshot and is deliberately not checked, because it changes with every task. No application code changes.
 
 ---
 
@@ -892,7 +900,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 80 tasks are Completed ✅ and the Progress summary reads 80 of 80.
+- All 81 tasks are Completed ✅ and the Progress summary reads 81 of 81.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -922,7 +930,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 17 | 17 |
+| 1 | Runtime skeleton | 18 | 18 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -936,4 +944,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **80** | **17** |
+| **Total** | | **81** | **18** |
