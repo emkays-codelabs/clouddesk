@@ -134,6 +134,11 @@ class TestTableOfContents:
 
         assert missing == []
 
+    def test_each_subsection_entry_shows_the_same_label_as_its_heading(self):
+        shown = re.findall(r"^   - \[(\d+\.\d+ .+?)\]\(#.+\)$", "\n".join(self._toc_lines()), re.M)
+
+        assert shown == [f"{a}.{b} {title}" for _, a, b, title in H3]
+
 
 class TestBackToTop:
     def test_the_link_points_at_the_title_and_the_title_exists(self):
@@ -186,3 +191,23 @@ def test_the_unnumbered_contents_heading_is_the_only_unnumbered_h2(heading: str)
     unnumbered = [ln for ln in LINES if re.match(r"^## (?!\d+\. )", ln)]
 
     assert unnumbered == [f"## {heading}"]
+
+
+class TestItPointsAtTheRealFolders:
+    def test_every_folder_it_names_in_where_to_find_things_exists(self):
+        section = README.split("## 7. Where to find things")[1].split("## 8.")[0]
+        named = set(re.findall(r"`(docs/[a-z0-9_]+/|internal/)`", section))
+
+        assert {"docs/design/", "docs/adr/", "internal/"} <= named
+        assert [n for n in named if not (ROOT / n.rstrip("/")).exists()] == []
+
+    def test_it_explains_the_branch_names_and_the_personal_overrides_file(self):
+        assert "### 6.3 Branches and pull requests" in README
+        for prefix in ("feature/<name>", "docs/<name>", "chore/<name>"):
+            assert prefix in README
+        assert "CLAUDE.local.md" in README
+
+    def test_it_says_the_api_contract_describes_routes_that_are_not_built_yet(self):
+        assert "not built yet" in README.split("docs/design/")[1].split("\n")[0].lower() or (
+            "contract describes routes that are not built" in README
+        )

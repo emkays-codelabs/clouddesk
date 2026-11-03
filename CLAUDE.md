@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-03 09:37 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -173,9 +173,9 @@ datasets/      eval_cases.json
 scripts/       demo.py · stamp_docs.py · check_phase_docs.py · claude_usage/ (placeholder)
 .githooks/     pre-commit (committed, installed by `make setup`)
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
-.claude/       settings.json · agents/ · skills/ · rules/ · hooks/pre-commit.sh
+.claude/       settings.json · agents/ · skills/ · rules/ · hooks/pre-commit.sh (a commands/ folder is tracked too if one is added)
 internal/      one folder per phase, `Phase01/`, `Phase02/` and so on, with four documents written by `/phase-docs N` (§18, rule 19); the interview Q&A file is git-ignored
-(root)         CLAUDE.md · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
+(root)         CLAUDE.md · CLAUDE.local.md (optional personal overrides, git-ignored) · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
                .env.example · pyproject.toml · uv.lock
 ```
 

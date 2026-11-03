@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-03 09:37 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -58,7 +58,7 @@ The longest dependency chain is 16 tasks long.
 
 > Depends on: nothing. Unblocks: every later phase.
 > Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
-> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14, P1-15 and P1-16 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
+> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14, P1-15, P1-16 and P1-17 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -78,6 +78,7 @@ The longest dependency chain is 16 tasks long.
 | P1-14 · Audit fixes and decision records | — | `docs/audit-fixes` | Completed ✅ |
 | P1-15 · Ignore the local prompt note | — | `chore/ignore-prompt-note` | Completed ✅ |
 | P1-16 · Design documents in docs/design/ | — | `docs/design-folder` | Completed ✅ |
+| P1-17 · Ignore CLAUDE.local.md, track .claude/commands/ | — | `chore/gitignore-claude-local` | Completed ✅ |
 
 #### Task definitions
 
@@ -274,6 +275,13 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `docs/design/05_ARCHITECTURE.md`, `docs/design/06_API_CONTRACT.md`, `scripts/stamp_docs.py`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/07_GIT_WORKFLOW.md`, `.claude/`, `tests/unit/test_docs_folder.py`, `tests/unit/test_repo_hygiene.py`, `tests/api/test_health.py`
 - **Done when:** The two files are in `docs/design/` and nowhere else; numbers run 01 to 10 across both folders with no gap; no tracked file uses the old flat paths, including the markdown-escaped form; the stamp list names the new paths and every listed file exists; and every relative link still resolves.
 - **Note:** the move was made with `git mv`, so history follows. The earlier tasks' texts (P1-7) name the files without a folder and are left as written. No application code changes.
+
+**P1-17 · Ignore CLAUDE.local.md, track .claude/commands/**
+- **Needs:** `P1-16`
+- **Build:** Two gaps found by comparing this repository with the standard Claude Code project layout. `CLAUDE.local.md` (personal overrides for `CLAUDE.md`) was not ignored, so a personal file could be committed by accident; it is ignored now. `.claude/commands/` (custom slash commands) would have been ignored by the rule that tracks only the shared setup; it is now tracked if someone adds it. The `CLAUDE.md` layout notes both. This repository uses skills rather than commands, so no commands folder is created. The README is brought up to date with P1-14 to P1-17: it lists the design folder and the checks that keep the documents honest, explains the branch names and the personal overrides files, and says which documents describe the full product.
+- **Files:** `.gitignore`, `CLAUDE.md`, `README.md`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_readme.py`, `TASKS.md`, `MEMORY.md`, `PLAN.md`
+- **Done when:** A test shows git ignores `CLAUDE.local.md` and does not ignore `.claude/commands/review.md` or `.mcp.json`; the layout in `CLAUDE.md` mentions the personal file and says it is git-ignored.
+- **Note:** no `.mcp.json` is added, because no project-level MCP server is configured. No application code changes.
 
 ---
 
@@ -884,7 +892,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 79 tasks are Completed ✅ and the Progress summary reads 79 of 79.
+- All 80 tasks are Completed ✅ and the Progress summary reads 80 of 80.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -914,7 +922,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 16 | 16 |
+| 1 | Runtime skeleton | 17 | 17 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -928,4 +936,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **79** | **16** |
+| **Total** | | **80** | **17** |
