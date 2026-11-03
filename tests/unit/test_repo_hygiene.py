@@ -116,6 +116,7 @@ class TestIgnoreRules:
             "infra/backend.hcl",
             ".claude/settings.local.json",
             "docs/plans/p2-1.md",
+            "docs/10_PROMPT_COST.md",
             "internal/Phase07/04_INTERVIEW_QNA.md",
         ],
     )
