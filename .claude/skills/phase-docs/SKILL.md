@@ -19,12 +19,12 @@ Write the four documents for phase $ARGUMENTS.
 3. Document only what exists. Mark each item implemented, partial, planned, or a future recommendation.
    Cite file paths in backticks: a test fails on any cited path that does not exist. On a line that
    names a planned, removed or historical file, use that word.
-4. Write these files, creating the folders if missing. If one exists, update it in place and keep what is
-   still true:
-   - `internal/Phase<N>/01_CODEBASE_EXPLAINED.md`
-   - `internal/Phase<N>/02_DESIGN_EVOLUTION.md`
-   - `internal/Phase<N>/03_INFRA_EVOLUTION.md`
-   - `internal/Phase<N>/04_INTERVIEW_QNA.md`
+4. Write these files (`<NN>` is the phase number as two digits), creating folders as needed. If one exists,
+   update it in place and keep what is still true:
+   - `internal/Phase<NN>/01_CODEBASE_EXPLAINED.md`
+   - `internal/Phase<NN>/02_DESIGN_EVOLUTION.md`
+   - `internal/Phase<NN>/03_INFRA_EVOLUTION.md`
+   - `internal/Phase<NN>/04_INTERVIEW_QNA.md`
 5. Claim a test passed only if you ran it now: run `uv run pytest -q` and `uv run ruff check .` and quote
    the result. If there is no Docker setup yet, say the infrastructure document covers a local setup.
 6. Draw Mermaid from the actual code. Run `uv run pytest tests/unit/test_phase_doc_checks.py -q`, and say
