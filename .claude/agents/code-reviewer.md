@@ -19,7 +19,7 @@ Check, in this order:
    in memory notes.
 3. Layering (section 4.2): SQL outside repositories, a model call outside `call_structured`, a tool call
    outside `ToolRegistry`, a router holding business rules.
-4. A route or payload change that did not update `docs/06_API_CONTRACT.md`, the schemas and `frontend/lib/types.ts`.
+4. A route or payload change that did not update `docs/design/06_API_CONTRACT.md`, the schemas and `frontend/lib/types.ts`.
 5. Anything in the diff that is `.env`, `data/`, `*.db`, a key or a state file.
 
 If one question blocks the review, spawn `opus-consultant` once. Spawn no other agent.

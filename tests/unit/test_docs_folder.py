@@ -8,6 +8,7 @@ import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
+DESIGN = DOCS / "design"
 
 # NN_NAME.ext: two-digit number so a plain listing is reading order, capitals and underscores only.
 DOC_NAME = re.compile(r"^(\d{2})_[A-Z][A-Z0-9_]*\.(?:md|txt)$")
@@ -34,6 +35,7 @@ OLD_NAMES = [
     r"_Lj7c",
     r"\b01[ab]\b",
     r"\b01[ab]_",  # \b does not fire before an underscore, so "01a_BRD" slipped past the line above
+    r"docs/0[56]\\?_(?:ARCHITECTURE|API\\?_CONTRACT)",  # the flat paths, before docs/design/
 ]
 TEXT_SUFFIXES = {".md", ".py", ".txt", ".toml", ".json", ".yaml", ".yml", ".sh", ".example"}
 
@@ -55,18 +57,30 @@ def _tracked_text_files() -> list[pathlib.Path]:
     ]
 
 
+def _document_files() -> list[pathlib.Path]:
+    """Numbered documents live in docs/ and in docs/design/; the numbers are shared."""
+    return [p for folder in (DOCS, DESIGN) for p in folder.iterdir() if p.is_file()]
+
+
 class TestNames:
-    def test_every_file_in_docs_is_numbered_in_capitals_with_underscores(self):
-        files = [p for p in DOCS.iterdir() if p.is_file()]
+    def test_every_file_in_docs_and_docs_design_is_numbered_in_capitals_with_underscores(self):
+        files = _document_files()
 
         assert [p.name for p in files if not DOC_NAME.match(p.name)] == []
 
-    def test_the_numbers_are_unique_and_run_from_01_without_a_gap(self):
-        numbers = sorted(
-            int(DOC_NAME.match(p.name).group(1)) for p in DOCS.iterdir() if p.is_file()
-        )
+    def test_the_numbers_run_from_01_without_a_gap_across_docs_and_docs_design(self):
+        numbers = sorted(int(DOC_NAME.match(p.name).group(1)) for p in _document_files())
 
         assert numbers == list(range(1, len(numbers) + 1))
+
+    def test_the_design_folder_holds_the_architecture_and_the_api_contract(self):
+        assert sorted(p.name for p in DESIGN.iterdir() if p.is_file()) == [
+            "05_ARCHITECTURE.md",
+            "06_API_CONTRACT.md",
+        ]
+
+    def test_docs_has_only_the_subfolders_that_have_a_purpose(self):
+        assert {p.name for p in DOCS.iterdir() if p.is_dir()} == {"adr", "design", "plans"}
 
     def test_the_design_documents_come_first_in_dependency_order(self):
         names = sorted(p.name for p in DOCS.iterdir() if p.is_file())

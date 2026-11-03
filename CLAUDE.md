@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-03 08:57 +0530_
+_Last updated: 2026-11-03 09:19 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -111,7 +111,7 @@ Three-tier: **Next.js 15 frontend → FastAPI backend → data stores**. The bus
 **LangGraph workflow** that orchestrates six specialist agents, a RAG pipeline, permissioned tools and
 memory. Agents are one component inside a normal web app; auth, DB, cache, observability and deploy
 are the same as any SaaS product. Component and infrastructure diagrams are in
-[`docs/05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md).
+[`docs/design/05_ARCHITECTURE.md`](docs/design/05_ARCHITECTURE.md).
 
 ```text
 Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID)─▶ FastAPI (:8000)
@@ -165,8 +165,8 @@ sample_data/   tickets.json · customers.json · subscriptions.json · workspace
 tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · deployment/
 deployment/    aws/ · azure/ · gcp/ · docker/ · scripts/   (a kubernetes/ folder only if D5 is accepted)
 data/          (git-ignored) support.db · checkpoints.db
-docs/          06_API_CONTRACT.md (the API contract – source of truth for routes and types)
-               05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
+docs/          07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
+               design/ 05_ARCHITECTURE.md · 06_API_CONTRACT.md (the API contract – source of truth for routes and types)
                01_BRD · 02_PRD · 03_HLD · 04_LLD (upstream design, §1.1)
                docs/adr/ (architecture decision records, one per file) · docs/plans/ (working plans, git-ignored)
 datasets/      eval_cases.json
@@ -472,7 +472,7 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 
 ## 12. API contract
 
-`docs/06_API_CONTRACT.md` is the source of truth for every route and type. Summary of groups:
+`docs/design/06_API_CONTRACT.md` is the source of truth for every route and type. Summary of groups:
 `/auth` · `/dashboard/summary` · `/tickets` (+ `/run`, `/workflow`, `/events`, `/reply`, `/request-info`,
 `/escalate`) · `/approvals` (+ approve/reject) · `/customers` · `/knowledge` (+ search, reindex) ·
 `/escalations` · `/agents` · `/audit` · `/settings` · `/mcp/tools`.

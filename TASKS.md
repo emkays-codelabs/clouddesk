@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 09:02 +0530_
+_Last updated: 2026-11-03 09:19 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -58,7 +58,7 @@ The longest dependency chain is 16 tasks long.
 
 > Depends on: nothing. Unblocks: every later phase.
 > Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
-> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14 and P1-15 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
+> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14, P1-15 and P1-16 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -77,6 +77,7 @@ The longest dependency chain is 16 tasks long.
 | P1-13 · Professional README | — | `docs/professional-readme` | Completed ✅ |
 | P1-14 · Audit fixes and decision records | — | `docs/audit-fixes` | Completed ✅ |
 | P1-15 · Ignore the local prompt note | — | `chore/ignore-prompt-note` | Completed ✅ |
+| P1-16 · Design documents in docs/design/ | — | `docs/design-folder` | Completed ✅ |
 
 #### Task definitions
 
@@ -256,7 +257,7 @@ The longest dependency chain is 16 tasks long.
 **P1-14 · Audit fixes and decision records**
 - **Needs:** `P1-13`
 - **Build:** Fixes the findings of the 2026-11-03 repository audit. The test client imports the app directly instead of skipping; ruff leaves markdown alone; the product name CloudDesk AI reaches `pyproject.toml`, the API title and the document headings; stale facts are corrected in `MEMORY.md`, `PLAN.md`, `docs/05`, `docs/07`, `docs/08` and the Phase 1 documents; the branch convention names `docs/` and `chore/`; plan files get a naming rule and are not committed; the permission lists no longer allow deleting a branch; and `docs/adr/` records the architecture decisions, with D2 to D6 as proposed. A second pass corrects the task dependencies (P9-1 and P11-2), the package lines of five tasks, the upstream requirement ids that `PLAN.md` and `MEMORY.md` cite, the Kubernetes folder that was planned while undecided, and the run-route file.
-- **Files:** `docs/adr/`, `tests/unit/test_tracker.py`, `tests/unit/test_adr.py`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_docs_folder.py`, `tests/conftest.py`, `pyproject.toml`, `.gitignore`, `.claude/`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/05_ARCHITECTURE.md`, `docs/07_GIT_WORKFLOW.md`, `docs/08_CLAUDE_SETUP.md`, `docs/09_PHASE_DOCUMENTATION.md`, `internal/Phase01/`, `backend/app/main.py`
+- **Files:** `docs/adr/`, `tests/unit/test_tracker.py`, `tests/unit/test_adr.py`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_docs_folder.py`, `tests/conftest.py`, `pyproject.toml`, `.gitignore`, `.claude/`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/design/05_ARCHITECTURE.md`, `docs/07_GIT_WORKFLOW.md`, `docs/08_CLAUDE_SETUP.md`, `docs/09_PHASE_DOCUMENTATION.md`, `internal/Phase01/`, `backend/app/main.py`
 - **Done when:** The new tests fail on the audited state and pass now; the tracker counters, rows, definitions, `Needs` lines and branch prefixes are checked by a test; `PLAN.md` and `CLAUDE.md` give every phase the same status; `docs/adr/` has an index and twelve records; and the old-name guard catches the escaped and underscore forms it missed.
 - **Note:** left for the owner: promoting `development` to `main`, branch protection, and the untracked `docs/10_PROMPT_COST.md`. The unused language-model packages stay installed and are now explained rather than removed. No application behaviour changes beyond the API title.
 
@@ -266,6 +267,13 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `.gitignore`, `tests/unit/test_repo_hygiene.py`, `TASKS.md`, `MEMORY.md`
 - **Done when:** A test shows git ignores `docs/10_PROMPT_COST.md`; `git status` is clean with the file still on disk.
 - **Note:** the file is neither moved nor deleted. No application code changes.
+
+**P1-16 · Design documents in docs/design/**
+- **Needs:** `P1-15`
+- **Build:** At the owner's request `05_ARCHITECTURE.md` and `06_API_CONTRACT.md` move into `docs/design/`. Both are CloudDesk's own design (the diagrams, and the contract that code follows), kept apart from the process documents in `docs/`. They keep their numbers, so the numbering stays shared and unbroken across `docs/` and `docs/design/`. Every reference is updated: the stamp list, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/07`, the `.claude` skill and agent, and the docstring in the health tests. The links inside `05` to the upstream HLD and LLD now point one folder up.
+- **Files:** `docs/design/05_ARCHITECTURE.md`, `docs/design/06_API_CONTRACT.md`, `scripts/stamp_docs.py`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/07_GIT_WORKFLOW.md`, `.claude/`, `tests/unit/test_docs_folder.py`, `tests/unit/test_repo_hygiene.py`, `tests/api/test_health.py`
+- **Done when:** The two files are in `docs/design/` and nowhere else; numbers run 01 to 10 across both folders with no gap; no tracked file uses the old flat paths, including the markdown-escaped form; the stamp list names the new paths and every listed file exists; and every relative link still resolves.
+- **Note:** the move was made with `git mv`, so history follows. The earlier tasks' texts (P1-7) name the files without a folder and are left as written. No application code changes.
 
 ---
 
@@ -352,7 +360,7 @@ The longest dependency chain is 16 tasks long.
 ## Phase 4 — Support API
 
 > Depends on: P2-3 and P3-1. Unblocks: Phase 12. Does not block Phases 5, 6, or 7.
-> `docs/06_API_CONTRACT.md` already describes every route, so P4-1 reviews it against the schemas.
+> `docs/design/06_API_CONTRACT.md` already describes every route, so P4-1 reviews it against the schemas.
 > Merge order: P4-1 first, so ticket and customer work share a written contract. P4-2 and P4-3 in parallel after it. P4-4 after P4-2. P4-5 after P2-3 and P3-1.
 
 | Task | Covers | Branch | Status |
@@ -367,8 +375,8 @@ The longest dependency chain is 16 tasks long.
 
 **P4-1 · Ticket and customer API contract**
 - **Needs:** `P2-1`
-- **Build:** Review `docs/06_API_CONTRACT.md` against the Pydantic schemas and write the request and response models for tickets and customers. Contract, schemas, and `frontend/lib/types.ts` change together from here on.
-- **Files:** `backend/app/schemas/` (ticket, customer), `docs/06_API_CONTRACT.md`
+- **Build:** Review `docs/design/06_API_CONTRACT.md` against the Pydantic schemas and write the request and response models for tickets and customers. Contract, schemas, and `frontend/lib/types.ts` change together from here on.
+- **Files:** `backend/app/schemas/` (ticket, customer), `docs/design/06_API_CONTRACT.md`
 - **Done when:** Schemas serialize to the shapes in the contract (`TicketSummary`, `Ticket`, `TicketDetail`, `Customer`, `CustomerDetail`) with tests.
 
 **P4-2 · Ticket API**
@@ -876,7 +884,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 78 tasks are Completed ✅ and the Progress summary reads 78 of 78.
+- All 79 tasks are Completed ✅ and the Progress summary reads 79 of 79.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -906,7 +914,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 15 | 15 |
+| 1 | Runtime skeleton | 16 | 16 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -920,4 +928,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **78** | **15** |
+| **Total** | | **79** | **16** |

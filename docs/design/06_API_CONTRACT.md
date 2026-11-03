@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-02 20:33 +0530_
+_Last updated: 2026-11-03 09:19 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.

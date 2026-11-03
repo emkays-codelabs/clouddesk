@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-03 08:57 +0530_
+_Last updated: 2026-11-03 09:19 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -219,6 +219,7 @@ does not run when you commit by hand. Setup notes and open checks are in
 | Honest status, decisions and open questions | `MEMORY.md` |
 | The business case, product, high-level and low-level design | `docs/01` to `docs/04` |
 | Git and GitHub flow | `docs/07_GIT_WORKFLOW.md` |
+| The system diagrams and the API contract | `docs/design/` |
 | Why an architecture choice was made | `docs/adr/` |
 | Documents written for each finished phase | `internal/` |
 

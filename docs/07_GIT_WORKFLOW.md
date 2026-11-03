@@ -1,6 +1,6 @@
 # CloudDesk AI: Git & GitHub Workflow Guide
 
-_Last updated: 2026-11-03 08:41 +0530_
+_Last updated: 2026-11-03 09:19 +0530_
 
 CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
 
@@ -92,9 +92,9 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 | TASKS.md | The sub-task you are doing, its feature/\<name\> branch, and Pending ❌ or Completed ✅. |
 | PLAN.md | Requirement catalog F1–F14 and N1–N8, and each phase's exit criteria and demo checkpoint. |
 | MEMORY.md | Honest status, locked decisions, and open questions. Update it when the status changes. |
-| docs/05_ARCHITECTURE.md | Component and infrastructure diagrams. |
+| docs/design/05_ARCHITECTURE.md | Component and infrastructure diagrams. |
 | .claude/skills/clouddesk-support/SKILL.md | How to implement a change in this repo. |
-| docs/06\_API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
+| docs/design/06\_API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
 
 # 3. First-time setup
 
@@ -302,7 +302,7 @@ The pull request itself already set that TASKS.md row to Completed ✅ and updat
 - make test passes offline. make lint passes.
 - TASKS.md is updated in this pull request: the task's row is Completed ✅ and the Progress summary (phase count and total) is current.
 - A frontend change also has npm run lint and npm run test -- --run, and the ticket flow was checked in the browser when a server exists.
-- A route or payload change updates docs/06\_API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
+- A route or payload change updates docs/design/06\_API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
 - A schema change adds a new database/migrations/000N\_\<name\>.sql file and updates the model and database/schema.sql. Applied migrations are not edited.
 - The diff contains no .env, data/, \*.db, terraform.tfvars, backend.hcl, tfplan, or service-role key.
 - The Honest status in MEMORY.md is updated when implementation, local validation, cloud credentials, or deploy state changed.
@@ -427,7 +427,7 @@ main is the production candidate. Deploy is a separate, reviewed apply. Nothing 
 - Branch and release policy: this guide and the repository admin.
 - Which sub-task to pick: TASKS.md. Respect the task's Needs line.
 - Spec, layers, and safety rules: CLAUDE.md.
-- Diagrams: docs/05_ARCHITECTURE.md.
+- Diagrams: docs/design/05_ARCHITECTURE.md.
 
 If the shape of a change is unclear, open a draft pull request into development early.
 
