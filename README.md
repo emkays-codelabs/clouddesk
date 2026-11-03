@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-03 09:37 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -30,6 +30,7 @@ named `clouddesk`.
 6. [Development](#6-development)
    - [6.1 Everyday commands](#61-everyday-commands)
    - [6.2 Working with Claude Code](#62-working-with-claude-code)
+   - [6.3 Branches and pull requests](#63-branches-and-pull-requests)
 7. [Where to find things](#7-where-to-find-things)
 8. [Author](#8-author)
 
@@ -85,10 +86,13 @@ health checks. What exists today:
 - Settings for every variable in `.env.example`, with secrets and URL passwords hidden when printed.
 - JSON logging that carries `request_id` and `workflow_id`.
 - An offline test suite (no network, no API key), a linter (Ruff) and a `Makefile`.
+- Tests that keep the documents honest: the task tracker's counters and dependencies, every link, the roadmap in this
+  file, and the decision records are all checked, so a document that drifts fails the build.
 - A Claude Code setup in `.claude/` (see [6.2](#62-working-with-claude-code)). It has not yet been used in a
   live session.
 - The written specification and plan (see [7](#7-where-to-find-things)).
 - Architecture decision records in `docs/adr/`: seven decisions taken, and five open questions recorded as proposed.
+- The system diagrams and the API contract in `docs/design/`. The contract describes routes that are not built yet.
 
 Not built yet: the database and demo data, sign-in, the support API, the knowledge pipeline, tools,
 agents, the workflow, approvals, memory and the web console.
@@ -207,6 +211,16 @@ A hook runs `ruff` and `pytest` before Claude runs `git commit`, and blocks the 
 does not run when you commit by hand. Setup notes and open checks are in
 [`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md).
 
+Personal settings stay out of the repository: put overrides for `CLAUDE.md` in `CLAUDE.local.md` and per-machine
+settings in `.claude/settings.local.json`. Git ignores both.
+
+### 6.3 Branches and pull requests
+
+One task is one branch and one pull request. Name the branch as in `TASKS.md`: `feature/<name>` for product work,
+`docs/<name>` for documents and `chore/<name>` for tooling. Branch from `development` and open the pull request
+against `development`. `testing` and `main` are promotion branches, and nothing has been promoted yet. Each pull
+request also updates `TASKS.md`. The full flow is in [`docs/07_GIT_WORKFLOW.md`](docs/07_GIT_WORKFLOW.md).
+
 [↑ Back to top](#clouddesk-ai)
 
 ## 7. Where to find things
@@ -223,8 +237,9 @@ does not run when you commit by hand. Setup notes and open checks are in
 | Why an architecture choice was made | `docs/adr/` |
 | Documents written for each finished phase | `internal/` |
 
-The design documents in `docs/` describe the full multi-tenant product. This repository builds a
-single-tenant first version of the same architecture. `CLAUDE.md` section 1.1 lists the differences.
+The upstream design documents, `docs/01` to `docs/04`, describe the full multi-tenant product. This repository
+builds a single-tenant first version of the same architecture, and `docs/design/` shows that version.
+`CLAUDE.md` section 1.1 lists the differences.
 
 [↑ Back to top](#clouddesk-ai)
 

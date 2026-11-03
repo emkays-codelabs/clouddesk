@@ -117,6 +117,7 @@ class TestIgnoreRules:
             ".claude/settings.local.json",
             "docs/plans/p2-1.md",
             "docs/10_PROMPT_COST.md",
+            "CLAUDE.local.md",
             "internal/Phase07/04_INTERVIEW_QNA.md",
         ],
     )
@@ -130,6 +131,8 @@ class TestIgnoreRules:
             ".claude/settings.json",
             ".claude/hooks/pre-commit.sh",
             ".claude/agents/planner.md",
+            ".claude/commands/review.md",
+            ".mcp.json",
             "docs/plans/.gitkeep",
             "internal/Phase01/01_CODEBASE_EXPLAINED.md",
         ],
@@ -341,3 +344,11 @@ class TestDesignFolder:
 
         assert "in this folder" not in text
         assert "../03_HLD.md" in text
+
+
+class TestClaudeLocalFiles:
+    def test_the_spec_layout_mentions_the_personal_overrides_file_and_that_it_is_ignored(self):
+        layout = _read("CLAUDE.md").split("### 4.3 Folder layout")[1].split("## 5.")[0]
+
+        assert "CLAUDE.local.md" in layout
+        assert "git-ignored" in layout.split("CLAUDE.local.md")[1].splitlines()[0]
