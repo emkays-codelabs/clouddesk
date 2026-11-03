@@ -13,7 +13,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
     setup_logging()
 
-    app = FastAPI(title="CloudDesk API", version=__version__)
+    app = FastAPI(title="CloudDesk AI API", version=__version__)
     app.include_router(health_router)
 
     # add_middleware wraps outward, so the last one added is outermost. Target order, outermost

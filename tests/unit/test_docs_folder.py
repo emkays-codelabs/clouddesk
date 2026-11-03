@@ -20,7 +20,7 @@ AUTHORS_TEXT = {"docs/03_HLD.md", "docs/04_LLD.md"}
 
 # Every name a document had before it was numbered. A match means a reference was missed.
 OLD_NAMES = [
-    r"(?<![\d_])API_CONTRACT\.md",
+    r"(?<![\d_])API\\?_CONTRACT\.md",  # \\? also catches the markdown-escaped API\_CONTRACT
     r"(?<![\d_])ARCHITECTURE\.md",
     r"Git_GitHub_Workflow_Guide",
     r"claude-setup-suggestions",
@@ -33,6 +33,7 @@ OLD_NAMES = [
     r"_adbX",
     r"_Lj7c",
     r"\b01[ab]\b",
+    r"\b01[ab]_",  # \b does not fire before an underscore, so "01a_BRD" slipped past the line above
 ]
 TEXT_SUFFIXES = {".md", ".py", ".txt", ".toml", ".json", ".yaml", ".yml", ".sh", ".example"}
 

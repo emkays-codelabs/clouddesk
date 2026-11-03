@@ -1,11 +1,11 @@
-# CloudDesk Support — Task tracker
+# CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 08:02 +0530_
+_Last updated: 2026-11-03 08:41 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
 
-**Branch convention:** `feature/<name>` (one feature branch per sub-task; open the PR against `development`)
+**Branch convention:** `feature/<name>` for product work, `docs/<name>` for documents and `chore/<name>` for tooling (one branch per sub-task; open the PR against `development`)
 **Status:** `Pending ❌` · `Completed ✅`
 
 Sub-tasks in the same phase that do not share files can be open at the same time. Do not stack a branch on another feature branch. Merge the listed predecessor first when a row names one.
@@ -20,7 +20,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 
 Work every task the same way:
 
-1. Create `feature/<name>` (the branch in the task's row) from an up-to-date `development`.
+1. Create the branch named in the task's row (`feature/<name>`, `docs/<name>` or `chore/<name>`) from an up-to-date `development`.
 2. Read the task's definition below, the phase in `PLAN.md`, and the matching section of `CLAUDE.md`.
 3. Write the test first and name the requirement (F1–F14, N1–N8) it proves. Watch it fail.
 4. Implement until the test passes. Keep the layers in `CLAUDE.md` §4.2.
@@ -58,6 +58,7 @@ The longest dependency chain is 16 tasks long.
 
 > Depends on: nothing. Unblocks: every later phase.
 > Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
+> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13 and P1-14 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -74,6 +75,7 @@ The longest dependency chain is 16 tasks long.
 | P1-11 · Per-phase documentation layout | — | `docs/phase-1-documents` | Completed ✅ |
 | P1-12 · Zero-padded phase folders | — | `docs/zero-pad-phase-folders` | Completed ✅ |
 | P1-13 · Professional README | — | `docs/professional-readme` | Completed ✅ |
+| P1-14 · Audit fixes and decision records | — | `docs/audit-fixes` | Completed ✅ |
 
 #### Task definitions
 
@@ -238,7 +240,7 @@ The longest dependency chain is 16 tasks long.
   (`internal/Phase*/04_INTERVIEW_QNA.md`) needed no change because it uses a wildcard. No application code changes.
 
 **P1-13 · Professional README**
-- **Needs:** `P1-8`
+- **Needs:** `P1-12`
 - **Build:** The README takes the product identity the owner chose: title CloudDesk AI, category AI-Powered Customer Support
   & Ticket Investigation Platform, tagline "Intelligent Resolution. Human-Controlled Decisions." It gains a numbered table of
   contents, numbered sections and subsections in sequence, a back-to-top link ending every section, and plainer wording. The
@@ -247,8 +249,15 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** A test fails on any gap in the numbering, a contents entry that is missing or points nowhere, a section
   without a back-to-top link, a roadmap that differs from `PLAN.md`, a `make` command that is not a Makefile target, a broken
   diagram, or a missing "not deployed" statement.
-- **Note:** only the README changes; the product name is not yet propagated to `pyproject.toml`, the API title or `CLAUDE.md`.
+- **Note:** only the README changes (P1-14 carried the product name to the other files). It was stacked on P1-12 at the owner's request, which the no-stacking rule normally forbids.
   No application code changes.
+
+**P1-14 · Audit fixes and decision records**
+- **Needs:** `P1-13`
+- **Build:** Fixes the findings of the 2026-11-03 repository audit. The test client imports the app directly instead of skipping; ruff leaves markdown alone; the product name CloudDesk AI reaches `pyproject.toml`, the API title and the document headings; stale facts are corrected in `MEMORY.md`, `PLAN.md`, `docs/05`, `docs/07`, `docs/08` and the Phase 1 documents; the branch convention names `docs/` and `chore/`; plan files get a naming rule and are not committed; the permission lists no longer allow deleting a branch; and `docs/adr/` records the architecture decisions, with D2 to D6 as proposed.
+- **Files:** `docs/adr/`, `tests/unit/test_tracker.py`, `tests/unit/test_adr.py`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_docs_folder.py`, `tests/conftest.py`, `pyproject.toml`, `.gitignore`, `.claude/`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/05_ARCHITECTURE.md`, `docs/07_GIT_WORKFLOW.md`, `docs/08_CLAUDE_SETUP.md`, `docs/09_PHASE_DOCUMENTATION.md`, `internal/Phase01/`, `backend/app/main.py`
+- **Done when:** The new tests fail on the audited state and pass now; the tracker counters, rows, definitions, `Needs` lines and branch prefixes are checked by a test; `PLAN.md` and `CLAUDE.md` give every phase the same status; `docs/adr/` has an index and twelve records; and the old-name guard catches the escaped and underscore forms it missed.
+- **Note:** left for the owner: promoting `development` to `main`, branch protection, and the untracked `docs/10_PROMPT_COST.md`. The unused language-model packages stay installed and are now explained rather than removed. No application behaviour changes beyond the API title.
 
 ---
 
@@ -859,7 +868,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 76 tasks are Completed ✅ and the Progress summary reads 76 of 76.
+- All 77 tasks are Completed ✅ and the Progress summary reads 77 of 77.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -889,7 +898,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 13 | 13 |
+| 1 | Runtime skeleton | 14 | 14 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -903,4 +912,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **76** | **13** |
+| **Total** | | **77** | **14** |

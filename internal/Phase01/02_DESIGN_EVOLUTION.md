@@ -318,7 +318,7 @@ Compared with the empty start, and only where the implementation or a test suppo
 
 **Bottlenecks and scalability.** Not assessed. The service has one route group and no I/O.
 
-**Technical debt.** The `client` fixture's skip message still says the app does not exist until P1-2, which is now out of date, though harmless.
+**Technical debt (fixed in P1-14).** The `client` fixture's skip message said the app did not exist until P1-2, which was out of date. The fixture now imports the app directly, so a broken import fails instead of skipping.
 
 **Recommendations (not implemented).**
 

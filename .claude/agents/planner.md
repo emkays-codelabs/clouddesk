@@ -14,7 +14,7 @@ You write plans. You never change code, tests, `CLAUDE.md` or `TASKS.md`.
 2. Read the task's Build, Files and Done-when, the phase in `PLAN.md`, and the matching section of
    `CLAUDE.md`. `CLAUDE.md` wins over every other file.
 3. Name the requirement ID (F1-F14 or N1-N8) and the test that will prove it.
-4. Write `docs/plans/<topic>.md` with: goal, requirement and test, files to change grouped by layer
+4. Write `docs/plans/<task-id>.md` (lower case, for example `p2-1.md`) with: goal, requirement and test, files to change grouped by layer
    (`CLAUDE.md` section 4.2), steps in test-first order, risks, and a `Parallel` or `Sequential` label on
    each step. Two steps that touch the same file, migration, lock file or schema are `Sequential`.
 5. If the plan would contradict `CLAUDE.md`, say so in the plan. Do not resolve it yourself.

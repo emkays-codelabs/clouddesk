@@ -45,6 +45,9 @@ secrets.json
 .claude/transcripts/
 # Backups taken before a .claude/ change (see docs/08_CLAUDE_SETUP.md).
 .claude.bak-*/
+# Implementation plans are working files for one task (.claude/skills/plan/SKILL.md): only the folder is tracked.
+docs/plans/*
+!docs/plans/.gitkeep
 
 # --- Local Vector Store Data (Qdrant) and Logs ---
 qdrant_storage/

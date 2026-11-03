@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-03 08:02 +0530_
+_Last updated: 2026-11-03 08:41 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -196,7 +196,7 @@ keeps routine work cheap.
 
 | Command | What it does |
 |---|---|
-| `/plan P2-1` | Writes a plan for a task from `TASKS.md` |
+| `/plan P2-1` | Writes a plan for a task from `TASKS.md` to `docs/plans/` (not committed) |
 | `/implement <plan file>` | Carries out an approved plan, tests first |
 | `/test`, `/review` | Runs targeted tests and gives a short digest; reviews the current changes |
 | `/phase-docs 1` | Writes a finished phase's four documents |
@@ -218,6 +218,7 @@ does not run when you commit by hand. Setup notes and open checks are in
 | Honest status, decisions and open questions | `MEMORY.md` |
 | The business case, product, high-level and low-level design | `docs/01` to `docs/04` |
 | Git and GitHub flow | `docs/07_GIT_WORKFLOW.md` |
+| Why an architecture choice was made | `docs/adr/` |
 | Documents written for each finished phase | `internal/` |
 
 The design documents in `docs/` describe the full multi-tenant product. This repository builds a

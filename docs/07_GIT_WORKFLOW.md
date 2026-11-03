@@ -1,8 +1,10 @@
-**Git & GitHub Workflow Guide**
+# CloudDesk AI: Git & GitHub Workflow Guide
 
-CloudDesk — Autonomous Customer Support & Resolution Platform
+_Last updated: 2026-11-03 08:41 +0530_
 
-*Version 1.1  \|  Last updated: October 31, 2026*
+CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
+
+*Version 1.2*
 
 |  |  |
 |---|---|
@@ -11,14 +13,12 @@ CloudDesk — Autonomous Customer Support & Resolution Platform
 | GitHub account | emkays-codelabs |
 | Default integration branch | development |
 | Long-lived branches | development, testing, main |
-| Task tracker | TASKS.md — one feature/\<name\> branch per sub-task |
+| Task tracker | TASKS.md — one branch per sub-task: feature/\<name\>, docs/\<name\> or chore/\<name\> |
 | Remote status | `main`, `development`, and `testing` exist on GitHub. Pushes wait for the owner's go-ahead (see MEMORY.md). |
 
 This guide is how code moves for CloudDesk. Feature work branches from development and merges back through a pull request. testing and main are promotion branches for staging and production. Follow it so main stays releasable and every sub-task in TASKS.md has one reviewable branch.
 
 # Contents
-
-_Last updated: 2026-11-02 20:33 +0530_
 
 - 1. Branch model at a glance
 - 2. Before you start
@@ -37,7 +37,7 @@ Three long-lived branches. Day-to-day work targets development only. They alread
 
 | **Branch** | **Purpose** | **Who merges here** | **What it represents** |
 |---|---|---|---|
-| development | Integration branch for active work | Contributors, via a PR from feature/\* or bugfix/\* | Dev / integration. Not a production deploy. |
+| development | Integration branch for active work | Contributors, via a PR from feature/\*, docs/\*, chore/\* or bugfix/\* | Dev / integration. Not a production deploy. |
 | testing | QA and staging validation | Release owner | Staging. Apply still needs a reviewed plan. |
 | main | Code that is allowed to ship | Release owner | Production candidate. A merge is not itself a deploy. |
 
@@ -94,7 +94,7 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 | MEMORY.md | Honest status, locked decisions, and open questions. Update it when the status changes. |
 | docs/05_ARCHITECTURE.md | Component and infrastructure diagrams. |
 | .claude/skills/clouddesk-support/SKILL.md | How to implement a change in this repo. |
-| docs/API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
+| docs/06\_API\_CONTRACT.md | Route and payload shapes. Keep it aligned with schemas and frontend/lib/types.ts when a route changes. |
 
 # 3. First-time setup
 
@@ -175,7 +175,7 @@ DEMO\_MODE=true, LLM\_PROVIDER=fake, VECTOR\_STORE=memory, and USE\_FAKE\_REDIS=
 
 # 4. Daily workflow (feature → development)
 
-Use this cycle for every row in TASKS.md. Start with P1-1 on feature/backend-config-logging. Phases 4, 5, 6, and 7 can run in parallel only after their listed predecessors are on development.
+Use this cycle for every row in TASKS.md. The first task, P1-1, used feature/backend-config-logging. Phases 4, 5, 6, and 7 can run in parallel only after their listed predecessors are on development.
 
 ## Step 1 — Sync development
 
@@ -265,6 +265,8 @@ The pull request itself already set that TASKS.md row to Completed ✅ and updat
 | **Your branch** | **Pull request base** |
 |---|---|
 | feature/\* | development |
+| docs/\* | development |
+| chore/\* | development |
 | bugfix/\* | development |
 | hotfix/\* | main, then backport to development and testing |
 | development (promotion) | testing |
@@ -300,7 +302,7 @@ The pull request itself already set that TASKS.md row to Completed ✅ and updat
 - make test passes offline. make lint passes.
 - TASKS.md is updated in this pull request: the task's row is Completed ✅ and the Progress summary (phase count and total) is current.
 - A frontend change also has npm run lint and npm run test -- --run, and the ticket flow was checked in the browser when a server exists.
-- A route or payload change updates docs/API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
+- A route or payload change updates docs/06\_API\_CONTRACT.md, backend/app/schemas/, and frontend/lib/types.ts together.
 - A schema change adds a new database/migrations/000N\_\<name\>.sql file and updates the model and database/schema.sql. Applied migrations are not edited.
 - The diff contains no .env, data/, \*.db, terraform.tfvars, backend.hcl, tfplan, or service-role key.
 - The Honest status in MEMORY.md is updated when implementation, local validation, cloud credentials, or deploy state changed.
@@ -361,7 +363,9 @@ When staging behavior is accepted and a production candidate is intended. Mergin
 
 | **Pattern** | **Use** | **Create from** | **Merge into** |
 |---|---|---|---|
-| feature/\<name\> | One TASKS.md sub-task | development | development |
+| feature/\<name\> | One TASKS.md sub-task that changes the product | development | development |
+| docs/\<name\> | One TASKS.md sub-task that only changes documents | development | development |
+| chore/\<name\> | One TASKS.md sub-task of tooling or configuration | development | development |
 | bugfix/\<name\> | A fix that is not a tracker row | development | development |
 | hotfix/\<name\> | Urgent fix to released code | main | main, then backport |
 
@@ -404,7 +408,7 @@ git pull origin development
 git checkout -b feature/my-task
 # work, commit, push
 gh pr create --base development --head feature/my-task
-# review, squash-merge
+# review, merge (a merge commit, not a squash)
 git checkout development
 git pull origin development
 git branch -d feature/my-task

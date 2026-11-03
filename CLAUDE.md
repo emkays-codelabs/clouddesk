@@ -1,6 +1,6 @@
-# CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
+# CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-02 23:17 +0530_
+_Last updated: 2026-11-03 08:41 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -168,8 +168,9 @@ data/          (git-ignored) support.db · checkpoints.db
 docs/          06_API_CONTRACT.md (the API contract – source of truth for routes and types)
                05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
                01_BRD · 02_PRD · 03_HLD · 04_LLD (upstream design, §1.1)
+               docs/adr/ (architecture decision records, one per file) · docs/plans/ (working plans, git-ignored)
 datasets/      eval_cases.json
-scripts/       demo.py · stamp_docs.py
+scripts/       demo.py · stamp_docs.py · check_phase_docs.py · claude_usage/ (placeholder)
 .githooks/     pre-commit (committed, installed by `make setup`)
 .github/       workflows/ (test · security · docker-build · terraform-validate · _deploy)
 .claude/       settings.json · agents/ · skills/ · rules/ · hooks/pre-commit.sh
@@ -532,6 +533,7 @@ make demo TICKET=CD-1005
 make mcp              # MCP server (read-only tools)
 make test             # backend pytest, ~6 s, offline
 make lint             # ruff
+make format           # ruff format
 git commit            # the pre-commit hook stamps each staged document with the time it changed
 cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
 docker compose config -q && docker compose up --build

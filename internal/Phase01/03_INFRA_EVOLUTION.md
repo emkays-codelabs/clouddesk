@@ -257,7 +257,7 @@ Run on 2026-11-02 while writing this document. Where I could not check something
 | A safe request ID is echoed, an unsafe one replaced | **Verified** | `abc-123` echoed; an ID with spaces and a slash replaced by a UUID |
 | CORS | **Verified** | The console origin got `allow-origin` and `expose-headers: X-Request-ID`; an unknown origin got none |
 | Logs are JSON and carry both IDs | **Verified** | 13 log lines, all with `request_id` and `workflow_id` |
-| `make test`, `make lint` | **Verified** | Exit 0; 220 passed; "All checks passed!" |
+| `make test`, `make lint` | **Verified** | Exit 0; 220 passed when checked (97 for Phase 1); "All checks passed!" |
 | The server stops cleanly | **Verified with a caveat** | A tree kill frees the port; stopping only the `uv` wrapper does not |
 | Internal DNS resolution | Not applicable | No other services |
 | Application-to-database connectivity | Not applicable | No database client |

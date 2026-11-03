@@ -1,8 +1,8 @@
 # MANDATORY PHASE-WISE DOCUMENTATION, SYSTEM DESIGN EVOLUTION, INFRASTRUCTURE DOCUMENTATION, AND INTERVIEW PREPARATION
 
-> **Layout revised 2026-11-02, at the owner's instruction.** The four documents for a phase now sit together in one folder per phase, `internal/PhaseNN/`, numbered in reading order. The earlier layout, one folder per category, is superseded. `NN` in `PhaseNN` is the phase number zero-padded to two digits (`Phase01` to `Phase14`), so a listing stays in phase order. Nothing else in this specification has changed.
+> **Layout revised 2026-11-02, at the owner's instruction.** The four documents for a phase now sit together in one folder per phase, `internal/PhaseNN/`, numbered in reading order. The earlier layout, one folder per category, is superseded. `NN` in `PhaseNN` is the phase number zero-padded to two digits (`Phase01` to `Phase14`), so a listing stays in phase order. The interview Q&A file, `04_INTERVIEW_QNA.md`, is git-ignored and stays local, because the repository is public and interview preparation is private; the other three documents are committed. Nothing else in this specification has changed.
 
-## 1. PRIMARY OBJECTIVE
+# 1. PRIMARY OBJECTIVE
 
 During the development of this application, every phase and its associated subtasks will introduce, modify, or improve multiple code components, architectural decisions, infrastructure configurations, and system capabilities.
 

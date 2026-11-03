@@ -36,5 +36,5 @@ Write the four documents for phase $ARGUMENTS.
    what should change instead.
 
 Return the completion report of section 7, step 6 (a status for each deliverable, diagrams, links, test
-results, known gaps) and the four paths. Say that phase N must be removed from `OWED` in
-`tests/unit/test_phase_doc_checks.py`.
+results, known gaps) and the four paths. Say whether the phase-document checks pass for
+phase N.

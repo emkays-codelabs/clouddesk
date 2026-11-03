@@ -96,9 +96,10 @@ def _fresh_settings() -> Iterator[None]:
 
 @pytest.fixture
 def client() -> "Iterator[TestClient]":
-    """A test client for the real app. Imported lazily so the harness can exist before the app."""
-    app_main = pytest.importorskip("app.main", reason="the app does not exist until task P1-2")
+    """A test client for the real app. The app is imported here so it sees the offline profile."""
     from fastapi.testclient import TestClient
+
+    import app.main as app_main  # a broken import must fail every API test loudly, never skip it
 
     # raise_server_exceptions=False so a crashing route returns its real 500 response.
     with TestClient(app_main.create_app(), raise_server_exceptions=False) as test_client:
