@@ -78,6 +78,10 @@ tfplan
 terraform.tfvars
 backend.hcl
 
+# --- The owner's local prompt note ---
+# A project-agnostic prompt, not CloudDesk documentation, so it is not committed. docs/ holds numbered project documents.
+docs/10_PROMPT_COST.md
+
 # --- Private interview preparation (see docs/09_PHASE_DOCUMENTATION.md) ---
 # The repository is public. The other documents in each internal/PhaseNN/ folder hold project documentation and are committed.
 internal/Phase*/04_INTERVIEW_QNA.md

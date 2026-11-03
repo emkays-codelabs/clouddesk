@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 08:57 +0530_
+_Last updated: 2026-11-03 09:02 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -58,7 +58,7 @@ The longest dependency chain is 16 tasks long.
 
 > Depends on: nothing. Unblocks: every later phase.
 > Merge order: P1-1 first. P1-3 and P1-4 in parallel after it. P1-2 after P1-3, because its tests use the harness's `client` fixture.
-> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13 and P1-14 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
+> Tooling and documents: P1-5, P1-6, P1-7, P1-8, P1-9, P1-10, P1-11, P1-12, P1-13, P1-14 and P1-15 are developer tooling and documents. They change no application code, are not in the waves above, and each names its own predecessor.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -76,6 +76,7 @@ The longest dependency chain is 16 tasks long.
 | P1-12 · Zero-padded phase folders | — | `docs/zero-pad-phase-folders` | Completed ✅ |
 | P1-13 · Professional README | — | `docs/professional-readme` | Completed ✅ |
 | P1-14 · Audit fixes and decision records | — | `docs/audit-fixes` | Completed ✅ |
+| P1-15 · Ignore the local prompt note | — | `chore/ignore-prompt-note` | Completed ✅ |
 
 #### Task definitions
 
@@ -258,6 +259,13 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `docs/adr/`, `tests/unit/test_tracker.py`, `tests/unit/test_adr.py`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_docs_folder.py`, `tests/conftest.py`, `pyproject.toml`, `.gitignore`, `.claude/`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/05_ARCHITECTURE.md`, `docs/07_GIT_WORKFLOW.md`, `docs/08_CLAUDE_SETUP.md`, `docs/09_PHASE_DOCUMENTATION.md`, `internal/Phase01/`, `backend/app/main.py`
 - **Done when:** The new tests fail on the audited state and pass now; the tracker counters, rows, definitions, `Needs` lines and branch prefixes are checked by a test; `PLAN.md` and `CLAUDE.md` give every phase the same status; `docs/adr/` has an index and twelve records; and the old-name guard catches the escaped and underscore forms it missed.
 - **Note:** left for the owner: promoting `development` to `main`, branch protection, and the untracked `docs/10_PROMPT_COST.md`. The unused language-model packages stay installed and are now explained rather than removed. No application behaviour changes beyond the API title.
+
+**P1-15 · Ignore the local prompt note**
+- **Needs:** `P1-14`
+- **Build:** `docs/10_PROMPT_COST.md` is the owner's project-agnostic prompt for setting up Claude Code cost governance. It was the source for P1-6 but is not CloudDesk documentation, and it sat untracked in `docs/`, showing in every `git status`. It is now git-ignored.
+- **Files:** `.gitignore`, `tests/unit/test_repo_hygiene.py`, `TASKS.md`, `MEMORY.md`
+- **Done when:** A test shows git ignores `docs/10_PROMPT_COST.md`; `git status` is clean with the file still on disk.
+- **Note:** the file is neither moved nor deleted. No application code changes.
 
 ---
 
@@ -868,7 +876,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 77 tasks are Completed ✅ and the Progress summary reads 77 of 77.
+- All 78 tasks are Completed ✅ and the Progress summary reads 78 of 78.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -898,7 +906,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
-| 1 | Runtime skeleton | 14 | 14 |
+| 1 | Runtime skeleton | 15 | 15 |
 | 2 | Persistence and demo data | 4 | 0 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
@@ -912,4 +920,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **77** | **14** |
+| **Total** | | **78** | **15** |
