@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-03 08:41 +0530_
+_Last updated: 2026-11-03 08:57 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -125,7 +125,7 @@ Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID
 
 ### 4.1 Request flow – "Run AI workflow"
 
-1. UI `POST /api/v1/tickets/{id}/run` → `api/tickets.py::run_workflow`
+1. UI `POST /api/v1/tickets/{id}/run` → `api/workflow.py::run_workflow`
 2. `workflow_service.create_run()` writes `workflow_runs`, returns **202** `{workflow_id}`
 3. `BackgroundTasks` → `workflow_service.start_workflow(state)`
 4. Graph runs with `astream`; after **every** node the state is saved (UI polls `/workflow` every 2 s)
@@ -163,7 +163,7 @@ database/      schema.sql · rls_policies.sql · seed.sql · migrations/
 sample_data/   tickets.json · customers.json · subscriptions.json · workspaces.json · incidents.json
                previous_resolutions.json · products.json · knowledge_base/*.md (15 articles)
 tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · deployment/
-deployment/    aws/ · azure/ · gcp/ · kubernetes/ · docker/ · scripts/
+deployment/    aws/ · azure/ · gcp/ · docker/ · scripts/   (a kubernetes/ folder only if D5 is accepted)
 data/          (git-ignored) support.db · checkpoints.db
 docs/          06_API_CONTRACT.md (the API contract – source of truth for routes and types)
                05_ARCHITECTURE.md · 07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
@@ -219,7 +219,7 @@ Two forms on purpose:
 
 Tables: `profiles, customers, subscriptions, workspaces, products, tickets, ticket_messages,
 support_articles, incidents, workflow_runs, workflow_events, resolution_actions, approval_requests,
-escalations, customer_memory, audit_logs`.
+escalations, customer_memory, audit_logs`, plus `tenants`, which holds the one seeded tenant (D1).
 
 Key rules:
 - The workflow itself is data: `workflow_runs.state` (JSON = `WorkflowState`), `workflow_events`,
@@ -702,7 +702,7 @@ already promised RLS on all data tables while the table list had no column to ke
 spec contradicted itself; and the column is nearly free now and ruinous to retrofit across 16 tables.
 
 **D2–D6 are not taken, and none may be built without a `TASKS.md` row first.** Each changes the plan,
-not just the code:
+not just the code, and each is also a proposed record in `docs/adr/` (0008 to 0012):
 
 | # | Decision | Why it cannot wait |
 |---|---|---|

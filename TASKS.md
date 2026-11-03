@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 08:41 +0530_
+_Last updated: 2026-11-03 08:57 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -93,7 +93,7 @@ The longest dependency chain is 16 tasks long.
 
 **P1-3 · Offline pytest harness**
 - **Needs:** `P1-1`
-- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), every credential blanked so a key exported in the shell cannot reach a test, a guard that fails any attempt to reach a non-local host (loopback still works), a `client` fixture that imports `create_app` lazily and skips with a clear reason until the app exists (so the harness can land first), and pytest `asyncio_mode = "auto"` with session loop scope.
+- **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), every credential blanked so a key exported in the shell cannot reach a test, a guard that fails any attempt to reach a non-local host (loopback still works), a `client` fixture that imports `create_app` lazily and skips with a clear reason until the app exists (so the harness can land first; P1-14 later made it import the app directly, so a broken import fails), and pytest `asyncio_mode = "auto"` with session loop scope.
 - **Files:** `tests/conftest.py`, `tests/unit/test_harness.py`, `pyproject.toml` (pytest `asyncio_mode` and session loop scope, and the `pytest-asyncio` and `httpx` dev dependencies; `pythonpath` already set by P1-1)
 - **Done when:** `pytest` passes with no network and no API key; a test that changes env vars sees the change after `get_settings.cache_clear()`.
 
@@ -254,7 +254,7 @@ The longest dependency chain is 16 tasks long.
 
 **P1-14 · Audit fixes and decision records**
 - **Needs:** `P1-13`
-- **Build:** Fixes the findings of the 2026-11-03 repository audit. The test client imports the app directly instead of skipping; ruff leaves markdown alone; the product name CloudDesk AI reaches `pyproject.toml`, the API title and the document headings; stale facts are corrected in `MEMORY.md`, `PLAN.md`, `docs/05`, `docs/07`, `docs/08` and the Phase 1 documents; the branch convention names `docs/` and `chore/`; plan files get a naming rule and are not committed; the permission lists no longer allow deleting a branch; and `docs/adr/` records the architecture decisions, with D2 to D6 as proposed.
+- **Build:** Fixes the findings of the 2026-11-03 repository audit. The test client imports the app directly instead of skipping; ruff leaves markdown alone; the product name CloudDesk AI reaches `pyproject.toml`, the API title and the document headings; stale facts are corrected in `MEMORY.md`, `PLAN.md`, `docs/05`, `docs/07`, `docs/08` and the Phase 1 documents; the branch convention names `docs/` and `chore/`; plan files get a naming rule and are not committed; the permission lists no longer allow deleting a branch; and `docs/adr/` records the architecture decisions, with D2 to D6 as proposed. A second pass corrects the task dependencies (P9-1 and P11-2), the package lines of five tasks, the upstream requirement ids that `PLAN.md` and `MEMORY.md` cite, the Kubernetes folder that was planned while undecided, and the run-route file.
 - **Files:** `docs/adr/`, `tests/unit/test_tracker.py`, `tests/unit/test_adr.py`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_docs_folder.py`, `tests/conftest.py`, `pyproject.toml`, `.gitignore`, `.claude/`, `CLAUDE.md`, `PLAN.md`, `TASKS.md`, `MEMORY.md`, `README.md`, `docs/05_ARCHITECTURE.md`, `docs/07_GIT_WORKFLOW.md`, `docs/08_CLAUDE_SETUP.md`, `docs/09_PHASE_DOCUMENTATION.md`, `internal/Phase01/`, `backend/app/main.py`
 - **Done when:** The new tests fail on the audited state and pass now; the tracker counters, rows, definitions, `Needs` lines and branch prefixes are checked by a test; `PLAN.md` and `CLAUDE.md` give every phase the same status; `docs/adr/` has an index and twelve records; and the old-name guard catches the escaped and underscore forms it missed.
 - **Note:** left for the owner: promoting `development` to `main`, branch protection, and the untracked `docs/10_PROMPT_COST.md`. The unused language-model packages stay installed and are now explained rather than removed. No application behaviour changes beyond the API title.
@@ -278,7 +278,7 @@ The longest dependency chain is 16 tasks long.
 **P2-1 · SQLAlchemy entities and category enum**
 - **Needs:** `P1-1`
 - **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
-- **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`
+- **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `pyproject.toml` (adds `sqlalchemy` and `aiosqlite`)
 - **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels; and a test asserts every data table has a not-null `tenant_id`, so a table added later cannot quietly omit it.
 
 **P2-2 · Postgres schema, RLS, and migrations**
@@ -318,7 +318,7 @@ The longest dependency chain is 16 tasks long.
 **P3-1 · JWT and `require_role`**
 - **Needs:** `P1-2`, `P2-1`
 - **Build:** JWT handling (HS256 via PyJWT, Supabase secret preferred when set) and `require_role` with the ranking `viewer 1 < agent 2 < admin 3`.
-- **Files:** `backend/app/core/security.py`, `tests/api/test_auth.py`
+- **Files:** `backend/app/core/security.py`, `tests/api/test_auth.py`, `pyproject.toml` (adds `pyjwt`)
 - **Done when:** Missing and bad tokens are rejected; an agent token is accepted; `vic.viewer` receives 403 on a mutating route (N1).
 
 **P3-2 · Demo auth routes and tokens**
@@ -330,7 +330,7 @@ The longest dependency chain is 16 tasks long.
 **P3-3 · Redis rate limit**
 - **Needs:** `P1-2`
 - **Build:** The Redis client (real Redis, or fakeredis when `REDIS_URL` is empty or `USE_FAKE_REDIS`) and a fixed-window rate limiter per client at `RATE_LIMIT_PER_MINUTE` (demo 120).
-- **Files:** `backend/app/core/redis.py`, `backend/app/middleware/rate_limit.py`, `tests/api/test_rate_limit.py`
+- **Files:** `backend/app/core/redis.py`, `backend/app/middleware/rate_limit.py`, `tests/api/test_rate_limit.py`, `pyproject.toml` (adds `redis` and `fakeredis`)
 - **Done when:** With fakeredis the request after the limit returns 429; the limit resets on the next window (N2).
 
 **P3-4 · Audit middleware and middleware order**
@@ -471,7 +471,7 @@ The longest dependency chain is 16 tasks long.
 **P6-5 · MCP read-only server and `/mcp/tools`**
 - **Needs:** `P6-2`
 - **Build:** A read-only MCP server exposing the read tools, a client example, `make mcp`, and `GET /mcp/tools`.
-- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `Makefile`
+- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `Makefile`, `pyproject.toml` (adds `mcp`)
 - **Done when:** `/mcp/tools` lists `name`, `description`, and `requires_approval`; no write tool is exposed.
 
 ---
@@ -568,7 +568,7 @@ The longest dependency chain is 16 tasks long.
 #### Task definitions
 
 **P9-1 · Workflow schemas and fake LLM**
-- **Needs:** `P5-4`, `P6-3`, `P7-1`, `P7-2`, `P7-3`, `P7-4`, `P8-3`
+- **Needs:** `P5-4`, `P6-2`, `P6-3`, `P7-1`, `P7-2`, `P7-3`, `P7-4`, `P8-3`
 - **Build:** Workflow schemas and the LLM layer: `Classification`, `SeverityAssessment`, `CustomerContext`, `Evidence`, `PreviousCase`, `Diagnosis`, `ResolutionPlan`, `EscalationDecision`, `WorkflowState`; `get_llm()` with the fake provider; `call_structured` for telemetry, usage, and retry.
 - **Files:** `backend/app/schemas/workflow.py`, `backend/app/core/llm.py`, `tests/unit/test_llm.py`
 - **Done when:** The fake provider returns valid structured output with cost `0.0`; no code calls a model except through `call_structured`.
@@ -637,7 +637,7 @@ The longest dependency chain is 16 tasks long.
 **P10-1 · Support state and checkpointer**
 - **Needs:** `P9-1`
 - **Build:** `SupportState` with reducers (`errors` and `completed_nodes` append, `token_usage` sums via `merge_usage`), the `step_count` and `route_history` fields the run budgets in `CLAUDE.md` §7.2 are counted from, and the checkpointer (`InMemorySaver` for `:memory:`, `AsyncSqliteSaver` for a file).
-- **Files:** `agents/state.py`, `agents/checkpointer.py`, `tests/workflow/test_state.py`
+- **Files:** `agents/state.py`, `agents/checkpointer.py`, `tests/workflow/test_state.py`, `pyproject.toml` (adds `langgraph-checkpoint-sqlite`)
 - **Done when:** Reducers never overwrite; the right saver is chosen from `CHECKPOINT_DB_PATH`.
 
 **P10-2 · Supervisor graph nodes**
@@ -660,7 +660,7 @@ The longest dependency chain is 16 tasks long.
 
 **P10-5 · Graph wiring and run API**
 - **Needs:** `P10-2`, `P10-3`, `P10-4`
-- **Build:** Wire the graph and the run API: `agents/graph.py` (with `GRAPH_NODES` and `GRAPH_EDGES`), `workflow_service`, `POST /tickets/{id}/run` (202) and `GET /tickets/{id}/workflow`. State is saved after every node. The approval and escalation branches are named edges to nodes that P11-1 and P11-3 add; until then a ticket that is not low risk ends the run as `failed` with an error and executes nothing.
+- **Build:** Wire the graph and the run API: `agents/graph.py` (with `GRAPH_NODES` and `GRAPH_EDGES`), `workflow_service`, `POST /tickets/{id}/run` (202) and `GET /tickets/{id}/workflow`, both in `backend/app/api/workflow.py` rather than `tickets.py`. State is saved after every node. The approval and escalation branches are named edges to nodes that P11-1 and P11-3 add; until then a ticket that is not low risk ends the run as `failed` with an error and executes nothing.
 - **Files:** `agents/graph.py`, `backend/app/services/workflow_service.py`, `backend/app/api/workflow.py`, `tests/workflow/test_graph.py`
 - **Done when:** A low-risk ticket runs to END; polling `/workflow` reaches `completed`; a ticket that is not low risk executes no action; graph shape and routing are tested; the run budgets in `CLAUDE.md` §7.2 hold — a run that reaches 12 steps, a second investigation cycle, or confidence below 0.6 escalates instead of looping.
 
@@ -681,7 +681,7 @@ The longest dependency chain is 16 tasks long.
 ## Phase 11 — Approval and escalation
 
 > Depends on: P6-3 and Phase 10. Unblocks: the ticket action screen and `make demo`.
-> Merge order: P11-1 and P11-3 in parallel. P11-2 after P11-1. P11-4 after P11-1 and P11-3. P11-5 last. P11-6 after P11-3.
+> Merge order: P11-1 and P11-3 in parallel. P11-2 after P11-1 and P11-3. P11-4 after P11-1 and P11-3. P11-5 last. P11-6 after P11-3.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -701,7 +701,7 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** `CD-1002` pauses with a pending approval row and the ticket in `waiting_on_approval`; a second run during the pause returns 409 (F9).
 
 **P11-2 · Approval decide and resume API**
-- **Needs:** `P11-1`
+- **Needs:** `P11-1`, `P11-3`
 - **Build:** Approval API: `GET /approvals`, `GET /approvals/{id}`, `POST /approvals/{id}/approve` and `/reject`, resuming with `Command(resume=…)`.
 - **Files:** `backend/app/api/approvals.py`, `backend/app/services/approval_service.py`, `tests/api/test_approvals.py`
 - **Done when:** Approve resumes and finishes the run; reject routes to escalation; resuming a run that is not paused returns 409; a viewer gets 403.
@@ -855,7 +855,7 @@ The longest dependency chain is 16 tasks long.
 **P14-5 · Deployment hygiene tests**
 - **Needs:** `P14-2`, `P14-3`
 - **Build:** Deployment hygiene tests: compose services, non-root Dockerfiles with `HEALTHCHECK`, `.env.example` coverage, no committed `.env`; and `BASE_URL=http://localhost:8000 make smoke`.
-- **Files:** `tests/deployment/`, `deployment/scripts/smoke_test.sh`
+- **Files:** `tests/deployment/`, `deployment/scripts/smoke_test.sh`, `Makefile` (the `smoke` target)
 - **Done when:** The tests pass and the smoke test passes against the local stack.
 
 ---

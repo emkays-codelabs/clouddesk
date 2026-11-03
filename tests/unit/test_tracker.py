@@ -129,3 +129,39 @@ class TestPhaseStatusesAgree:
         }
 
         assert progress == plan
+
+
+def _block(task: str) -> str:
+    return TASKS.split(f"**{task} · ")[1].split("\n**P")[0]
+
+
+def _needs(task: str) -> set[str]:
+    return set(re.findall(r"P\d+-\d+", re.search(r"- \*\*Needs:\*\* (.+)", _block(task)).group(1)))
+
+
+class TestDependenciesMatchWhatTasksUse:
+    def test_every_requirement_is_covered_by_at_least_one_task(self):
+        covered = set()
+        for row in ROWS:
+            covered |= set(re.findall(r"[FN]\d+", row[4]))
+        wanted = {f"F{n}" for n in range(1, 15)} | {f"N{n}" for n in range(1, 9)}
+
+        assert wanted - covered == set()
+
+    def test_the_approval_api_waits_for_the_escalation_node_its_rejection_path_needs(self):
+        assert {"P11-1", "P11-3"} <= _needs("P11-2")
+
+    def test_the_specialists_wait_for_the_read_tools_they_call(self):
+        assert "P6-2" in _needs("P9-1")
+
+    def test_a_task_that_adds_a_package_lists_pyproject_in_its_files(self):
+        missing = [
+            task
+            for task in ("P2-1", "P3-1", "P3-3", "P6-5", "P10-1")
+            if "pyproject.toml" not in re.search(r"- \*\*Files:\*\* (.+)", _block(task)).group(1)
+        ]
+
+        assert missing == []
+
+    def test_the_smoke_target_is_added_by_a_task_that_lists_the_makefile(self):
+        assert "Makefile" in re.search(r"- \*\*Files:\*\* (.+)", _block("P14-5")).group(1)

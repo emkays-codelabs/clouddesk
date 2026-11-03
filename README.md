@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-03 08:41 +0530_
+_Last updated: 2026-11-03 08:57 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -88,6 +88,7 @@ health checks. What exists today:
 - A Claude Code setup in `.claude/` (see [6.2](#62-working-with-claude-code)). It has not yet been used in a
   live session.
 - The written specification and plan (see [7](#7-where-to-find-things)).
+- Architecture decision records in `docs/adr/`: seven decisions taken, and five open questions recorded as proposed.
 
 Not built yet: the database and demo data, sign-in, the support API, the knowledge pipeline, tools,
 agents, the workflow, approvals, memory and the web console.

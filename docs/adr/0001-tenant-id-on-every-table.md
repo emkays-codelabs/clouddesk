@@ -7,7 +7,7 @@ Accepted. Settled 2026-11-02 as decision D1.
 ## Context
 
 The upstream product (ACSRP) is multi-tenant: `tenant_id` and row-level security on every table
-(`04_LLD.md` section 3.2, requirement NFR-07). CloudDesk is a single-tenant v1. `CLAUDE.md` section 6
+(`04_LLD.md` section 3.2, requirement FR-42). CloudDesk is a single-tenant v1. `CLAUDE.md` section 6
 already promised row-level security on all data tables, but the table list had no column to key a policy on,
 so the specification contradicted itself.
 

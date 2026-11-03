@@ -221,6 +221,9 @@ class TestDocumentsHaveNotDrifted:
         "(4 of 67)",
         "State on 2026-10-31",
         "<DECIDE: probe result>",
+        "compliance in PRD §11",
+        "NFR-05 (offline operation)",
+        "upstream NFR-07 and LLD",
     ]
 
     def test_no_document_still_says_something_that_stopped_being_true(self):
@@ -275,3 +278,46 @@ class TestDocumentsHaveNotDrifted:
 
     def test_the_setup_notes_no_longer_say_there_is_no_adr_folder(self):
         assert "no ADR folder" not in _read("docs/08_CLAUDE_SETUP.md")
+
+
+class TestPlansAgreeWithTheUpstreamDocuments:
+    def test_every_requirement_id_we_cite_exists_in_the_upstream_prd(self):
+        prd = _read("docs/02_PRD.md")
+        known = set(re.findall(r"\b(?:FR|NFR)-\d+\b", prd))
+        cited = {}
+        for rel in subprocess.run(
+            ["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True
+        ).stdout.split():
+            if rel.startswith(("docs/01_", "docs/02_", "docs/03_", "docs/04_")):
+                continue
+            for ident in re.findall(r"\b(?:FR|NFR)-\d+\b", _read(rel)):
+                cited.setdefault(ident, rel)
+
+        assert {k: v for k, v in cited.items() if k not in known} == {}
+
+    def test_tenancy_cites_the_multi_tenancy_requirement_not_the_security_one(self):
+        assert "FR-42" in _read("docs/adr/0001-tenant-id-on-every-table.md")
+        assert "FR-42" in _read("MEMORY.md")
+
+    def test_the_traceability_table_leaves_no_upstream_must_requirement_unmentioned(self):
+        plan = _read("PLAN.md")
+
+        for ident in ("FR-36", "FR-41", "NFR-05", "NFR-06", "NFR-13"):
+            assert ident in plan
+
+    def test_kubernetes_is_not_planned_as_built_while_it_is_undecided(self):
+        assert "deployment/kubernetes" not in _read("PLAN.md")
+        layout = next(ln for ln in _read("CLAUDE.md").splitlines() if ln.startswith("deployment/"))
+        assert "kubernetes/" not in layout or "D5" in layout
+
+    def test_the_run_route_is_in_the_same_file_in_the_spec_and_in_the_plan(self):
+        assert "api/workflow.py::run_workflow" in _read("CLAUDE.md")
+        assert "api/tickets.py::run_workflow" not in _read("CLAUDE.md")
+
+    def test_the_spec_lists_the_tenants_table_beside_the_sixteen(self):
+        assert "plus `tenants`" in _read("CLAUDE.md").split("## 6. Data model")[1].split("## 7.")[0]
+
+    def test_the_first_harness_task_no_longer_describes_a_skipping_fixture_as_current(self):
+        task = _read("TASKS.md").split("**P1-3 · Offline pytest harness**")[1].split("**P1-4")[0]
+
+        assert "P1-14" in task
