@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-03 09:37 +0530_
+_Last updated: 2026-11-03 10:29 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -640,6 +640,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 18. **Tool arguments need provenance.** An id or an amount in a tool call comes from customer context or a tool result, never from ticket text (§7.4, §9).
 19. **A phase is not done until its four documents exist.** Run `/phase-docs N`. The specification is `docs/09_PHASE_DOCUMENTATION.md`, and `tests/unit/test_phase_doc_checks.py` checks that a finished phase has them, with phases still owed listed in its `OWED` set. Document only what exists, and say planned, partial or future where it is not. The checks do not prove a document is accurate or that a diagram renders.
 20. **Cost.** Sonnet is the default model. Opus runs only in `planner` and `opus-consultant`, and Haiku in `Explore` and `log-triage`. Finish one task before starting another and do not switch models mid-task. The full rules are in `.claude/rules/cost-and-delegation.md`.
+21. **Communication.** Be concise: lead with the answer, and skip filler, restating the question and closing recaps. Use tables or lists only for real structure. Give full detail when asked. Error reports, failing output and confirmations for destructive actions stay complete.
 
 ### 18.1 Things that must never happen
 
