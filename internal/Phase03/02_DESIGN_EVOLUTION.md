@@ -59,3 +59,20 @@
 | Injectable clock; tests clear the `get_redis` cache | No sleeping; no counter leaks between tests. |
 
 **Not done.** No real Redis server was run. The limit is per client address, not per user. Multi-worker behaviour is correct by design (shared Redis) but untested.
+
+---
+
+## P3-4: Audit middleware and middleware order
+
+**What changed.** `backend/app/middleware/audit.py` adds a plain ASGI `AuditMiddleware` that writes one `audit_logs` row for every request whose method is not GET, HEAD or OPTIONS (N6). The row holds the actor (email or `sub` from a valid bearer token, otherwise `anonymous`), `action` as method plus path, the resource type and id read from the path (`/api/v1/tickets/42/reply` gives `tickets`, `42`), the status code in `details`, and the request id. The write goes through `AuditLogRepository`; the middleware contains no SQL. the logging module in `core` gains `current_request_id()` so the middleware reads the id RequestId already bound. `main.py` now registers the four middleware in the final order, outermost first: CORS, RequestId, RateLimit, Audit.
+
+**Decisions.**
+
+| Choice | Reason |
+|---|---|
+| Audit is innermost | A request throttled by RateLimit never reaches the application, so it is not a state change and gets no row; RequestId has already bound the id. |
+| Reads only the Authorization header, never the body or query | No secret or ticket text can reach the log. |
+| A failed write is logged and swallowed | Auditing must not turn a successful request into an error. |
+| Status 500 is recorded if the app raises | The outer RequestId handler returns 500 in that case. |
+
+**Not done.** The row is written after the response is sent, so a crash between the two loses it. Rate-limited 429 responses are not audited. No routes beyond auth exist yet, so tests use unrouted paths (404) to exercise the row. Reading the log (`GET /audit`) is P4-5.

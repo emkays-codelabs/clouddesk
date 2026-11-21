@@ -10,6 +10,13 @@ _request_id: ContextVar[str | None] = ContextVar("request_id", default=None)
 _workflow_id: ContextVar[str | None] = ContextVar("workflow_id", default=None)
 
 _UNSET = object()
+
+
+def current_request_id() -> str | None:
+    """The request id bound by the request-id middleware, or None outside a request."""
+    return _request_id.get()
+
+
 _HANDLER_MARK = "_clouddesk_json_handler"
 
 
