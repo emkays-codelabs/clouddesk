@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 02:37 +0530_
+_Last updated: 2026-11-22 02:42 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -862,7 +862,7 @@ The longest dependency chain is 16 tasks long.
 |------|--------|--------|--------|
 | P14-1 · Evaluation thresholds | F2, F5, F8, F10 | `feature/eval-thresholds` | Pending ❌ |
 | P14-2 · Backend and frontend Dockerfiles | N8 | `feature/docker-images` | Completed ✅ |
-| P14-3 · Compose stack | N8 | `feature/docker-compose` | Pending ❌ |
+| P14-3 · Compose stack | N8 | `feature/docker-compose` | Completed ✅ |
 | P14-4 · Terraform and CI scaffolds | N8 | `feature/delivery-terraform-ci` | Pending ❌ |
 | P14-5 · Deployment hygiene tests | N8 | `feature/deployment-hygiene-tests` | Pending ❌ |
 
@@ -882,6 +882,7 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** Both images build and report healthy.
 
 **P14-3 · Compose stack**
+- **Note:** `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up: the Docker daemon was not running, so "comes up healthy" is still unproven.
 - **Needs:** `P14-2`
 - **Build:** The Compose stack: frontend → backend → redis and qdrant, `depends_on: service_healthy`, named volumes, `restart: unless-stopped`.
 - **Files:** `docker-compose.yml`
@@ -952,5 +953,5 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 11 | Approval and escalation | 6 | 0 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
-| 14 | Evaluation and delivery | 5 | 1 |
-| **Total** | | **82** | **35** |
+| 14 | Evaluation and delivery | 5 | 2 |
+| **Total** | | **82** | **36** |
