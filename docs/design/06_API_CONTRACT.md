@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-22 01:24 +0530_
+_Last updated: 2026-11-22 01:37 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -36,9 +36,9 @@ SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk
 ## Tickets
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/tickets?status=&severity=&search=&page=1&page_size=20` | `{ items: TicketSummary[], total, page, page_size }` |
-| POST | `/tickets` | body `{ customer_id, subject, body, channel?: "email"|"chat"|"web"|"api" }` (`channel` defaults to `"web"`; `subject` 1–300 characters, `body` non-empty; unknown keys are **422**) → `Ticket` (also creates first `ticket_messages` row; does **not** start the workflow) |
-| GET | `/tickets/{id}` | `TicketDetail` |
+| GET | `/tickets?status=&severity=&search=&page=1&page_size=20` | `{ items: TicketSummary[], total, page, page_size }`, newest first. `search` matches subject or ticket number, case-insensitively. `page` is at least 1 and `page_size` 1–100, else **422**. Any authenticated role may read |
+| POST | `/tickets` | body `{ customer_id, subject, body, channel?: "email"|"chat"|"web"|"api" }` (`channel` defaults to `"web"`; `subject` 1–300 characters, `body` non-empty; unknown keys are **422**) → **201** `Ticket` (also creates first `ticket_messages` row; does **not** start the workflow; unknown `customer_id` is **404**). The first message has role `customer` and the customer's name as author |
+| GET | `/tickets/{id}` | `TicketDetail`; **404** `{ "detail": "Ticket not found" }` for an unknown id. `history` is the customer's other tickets, newest first, at most 10 |
 | POST | `/tickets/{id}/run` | starts the LangGraph workflow (background task). **202** `{ workflow_id, status:"running" }`. **409** when the ticket is already `waiting_on_approval` |
 | GET | `/tickets/{id}/workflow` | `WorkflowState` (latest run) |
 | GET | `/tickets/{id}/events` | `WorkflowEvent[]` (node transitions, tool calls, timings) |

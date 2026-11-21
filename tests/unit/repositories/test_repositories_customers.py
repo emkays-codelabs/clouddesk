@@ -53,3 +53,10 @@ async def test_subscription_and_workspace_for_customer(session, tenants):
     assert (await subs.get_for_customer(a.id)).seats == 8
     assert (await spaces.get_for_customer(a.id)).name == "Acme HQ"
     assert await spaces.get_for_customer(b.id) is None
+
+
+async def test_get_many_returns_only_the_requested_ids(session, tenants):
+    repo, a, b, _ = await _seed(session)
+    found = await repo.get_many([a.id, b.id, "missing"])
+    assert set(found) == {a.id, b.id} and found[a.id].name == "Ada Lovelace"
+    assert await repo.get_many([]) == {}

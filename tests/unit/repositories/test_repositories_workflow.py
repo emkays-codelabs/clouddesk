@@ -81,3 +81,14 @@ async def test_idempotency_key_lookup_and_unique_constraint(session, tenants):
     assert done.status == ResolutionActionStatus.executed and done.executed_at is not None
     with pytest.raises(IntegrityError):
         await actions.create(**kw)
+
+
+async def test_list_actions_for_ticket_in_creation_order(session, tenants):
+    t = await _seed(session)
+    run = await WorkflowRunRepository(session).create(ticket_id=t.id, thread_id="a")
+    actions = ResolutionActionRepository(session)
+    for key in ("k1", "k2"):
+        await actions.create(ticket_id=t.id, workflow_id=run.id, tool="x", idempotency_key=key)
+    await session.commit()
+    assert [a.idempotency_key for a in await actions.list_for_ticket(t.id)] == ["k1", "k2"]
+    assert await actions.list_for_ticket("other") == []

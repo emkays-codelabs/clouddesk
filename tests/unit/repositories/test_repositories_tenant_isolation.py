@@ -84,6 +84,7 @@ async def seed_world(session, tenant_id):
 READS = [
     (customers.CustomerRepository, "get", lambda w: {"id": w.customer}, True),
     (customers.CustomerRepository, "get_by_email", lambda w: {"email": "ada@x.io"}, True),
+    (customers.CustomerRepository, "get_many", lambda w: {"ids": [w.customer]}, True),
     (customers.CustomerRepository, "list", lambda w: {}, False),
     (customers.SubscriptionRepository, "get_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
     (customers.WorkspaceRepository, "get_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
@@ -104,11 +105,13 @@ READS = [
     (workflow.WorkflowRunRepository, "list_recent", lambda w: {}, False),
     (workflow.WorkflowEventRepository, "list_for_ticket", lambda w: {"ticket_id": w.ticket}, True),
     (workflow.WorkflowEventRepository, "list_for_workflow", lambda w: {"workflow_id": w.run}, True),
+    (workflow.ResolutionActionRepository, "list_for_ticket", lambda w: {"ticket_id": w.ticket}, True),  # noqa: E501
     (workflow.ResolutionActionRepository, "get_by_idempotency_key", lambda w: {"key": "k1"}, True),
     (approvals.ApprovalRepository, "get", lambda w: {"id": w.approval}, True),
     (approvals.ApprovalRepository, "list", lambda w: {}, False),
     (approvals.ApprovalRepository, "list_expired", lambda w: {"now": NOW}, False),
     (approvals.EscalationRepository, "get", lambda w: {"id": w.escalation}, True),
+    (approvals.EscalationRepository, "latest_for_ticket", lambda w: {"ticket_id": w.ticket}, True),
     (approvals.EscalationRepository, "list", lambda w: {}, False),
     (memory.CustomerMemoryRepository, "list_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
     (
@@ -177,6 +180,8 @@ def _rows(result):
         return []
     if isinstance(result, bool):
         return [result] if result else []
+    if isinstance(result, dict):
+        return list(result.values())
     if isinstance(result, tuple):
         items, total = result
         assert total == len(items) or items == [] or total >= len(items)
@@ -243,7 +248,10 @@ def _scoped_classes():
 
 def test_every_public_repository_method_is_classified():
     known = (
-        {(c.__name__, m) for c, m, *_ in READS} | {(c.__name__, m) for c, m, _ in WRITES} | CREATES
+        {(c.__name__, m) for c, m, *_ in READS}
+        | {(c.__name__, m) for c, m, _ in WRITES}
+        | CREATES
+        | {("TicketRepository", "next_ticket_number")}
     )
     unclassified = []
     for cls in _scoped_classes():
@@ -259,3 +267,13 @@ def test_the_tenant_repository_is_the_only_unscoped_one():
     for cls in _scoped_classes():
         if cls is not TenantRepository:
             assert issubclass(cls, ScopedRepository), cls.__name__
+
+
+async def test_ticket_numbering_ignores_another_tenants_tickets(session, worlds):
+    _, theirs = worlds
+    other = tickets.TicketRepository(session, OTHER_TENANT_ID)
+    await other.create(ticket_number="CD-5000", customer_id=theirs.customer, subject="s", body="b")
+    await session.commit()
+
+    assert await tickets.TicketRepository(session, DEMO_TENANT_ID).next_ticket_number() == "CD-1001"
+    assert await other.next_ticket_number() == "CD-5001"
