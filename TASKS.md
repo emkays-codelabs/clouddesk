@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 02:02 +0530_
+_Last updated: 2026-11-22 02:18 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -436,7 +436,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P5-1 · Knowledge articles and chunking | F5 | `feature/rag-chunking` | Pending ❌ |
+| P5-1 · Knowledge articles and chunking | F5 | `feature/rag-chunking` | Completed ✅ |
 | P5-2 · Vector store and fake embeddings | F5 | `feature/rag-vector-store` | Pending ❌ |
 | P5-3 · Hybrid retriever | F5, F6 | `feature/rag-hybrid-retriever` | Pending ❌ |
 | P5-4 · Ingest command and knowledge API | F5 | `feature/rag-ingest-api` | Pending ❌ |
@@ -942,7 +942,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 2 | Persistence and demo data | 4 | 4 |
 | 3 | Identity and request guards | 4 | 4 |
 | 4 | Support API | 5 | 5 |
-| 5 | Knowledge pipeline | 4 | 0 |
+| 5 | Knowledge pipeline | 4 | 1 |
 | 6 | Tools and mocks | 5 | 0 |
 | 7 | Rules and guardrails | 4 | 0 |
 | 8 | Memory | 3 | 0 |
@@ -952,4 +952,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **82** | **32** |
+| **Total** | | **82** | **33** |
