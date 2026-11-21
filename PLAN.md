@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-03 10:29 +0530_
+_Last updated: 2026-11-22 00:42 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -139,7 +139,7 @@ decisions D2–D6 in `CLAUDE.md` §20. The chat widget (FR-37) and multi-languag
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Runtime skeleton | validated locally |
-| 2 | Persistence and demo data | not started |
+| 2 | Persistence and demo data | validated locally |
 | 3 | Identity and request guards | not started |
 | 4 | Support API | not started |
 | 5 | Knowledge pipeline | not started |
