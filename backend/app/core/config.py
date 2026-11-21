@@ -67,6 +67,11 @@ class Settings(BaseSettings):
     langchain_api_key: SecretStr = SecretStr("")
     langchain_project: str = "clouddesk-support"
 
+    @property
+    def effective_jwt_secret(self) -> str:
+        """The key tokens are signed and checked with: Supabase's when set, else the local one."""
+        return self.supabase_jwt_secret.get_secret_value() or self.jwt_secret.get_secret_value()
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, value: Any) -> Any:

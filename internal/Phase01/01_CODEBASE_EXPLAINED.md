@@ -120,7 +120,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 406 lines across seven files, plus a 106-line test harness. Paths are relative to the project root.
+The Phase 1 application code is 411 lines across seven files, plus a 127-line test harness. Paths are relative to the project root.
 
 ### `backend/app/main.py` (33 lines)
 
@@ -210,7 +210,7 @@ The reply shapes are typed models, so a response that does not match its documen
 
 The reasons name the setting at fault but never echo a URL, password or key. This is tested.
 
-### `tests/conftest.py` (106 lines)
+### `tests/conftest.py` (127 lines)
 
 | Item | Explanation |
 |---|---|
