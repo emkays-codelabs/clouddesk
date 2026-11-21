@@ -1,0 +1,74 @@
+[
+  {
+    "key": "res-001",
+    "category": "login_issue",
+    "subject": "SSO redirect loop after certificate rotation",
+    "summary": "SAML login looped back to the sign-in page.",
+    "steps": [
+      "Confirm the identity provider rotated its signing certificate",
+      "Upload the new certificate in the SSO settings",
+      "Ask one user to sign in again and confirm"
+    ],
+    "resolution": "Updated the SAML certificate; logins recovered."
+  },
+  {
+    "key": "res-002",
+    "category": "billing",
+    "subject": "Charged for unused seats",
+    "summary": "Customer billed for more seats than active members.",
+    "steps": [
+      "Compare billed seats with active workspace members",
+      "Create a refund request for the difference",
+      "Reduce the seat count before the next renewal"
+    ],
+    "resolution": "Refund approved for the unused seats and seat count reduced."
+  },
+  {
+    "key": "res-003",
+    "category": "api_failure",
+    "subject": "HTTP 429 on scheduled job",
+    "summary": "A batch job exceeded the per-minute rate limit.",
+    "steps": [
+      "Check the plan API rate limit",
+      "Add backoff and spread requests over the minute",
+      "Consider a plan upgrade for a higher limit"
+    ],
+    "resolution": "Customer added backoff and the job stayed under the limit."
+  },
+  {
+    "key": "res-004",
+    "category": "storage_quota",
+    "subject": "Uploads blocked at quota",
+    "summary": "Workspace storage hit the plan quota.",
+    "steps": [
+      "Check used storage against the quota",
+      "Empty the trash, which still counts toward usage",
+      "Archive old folders or upgrade the plan"
+    ],
+    "resolution": "Customer emptied the trash and archived old folders."
+  },
+  {
+    "key": "res-005",
+    "category": "workspace_permissions",
+    "subject": "External sharing disabled",
+    "summary": "Member could not share outside the workspace.",
+    "steps": [
+      "Check the workspace external sharing policy",
+      "Confirm the member role allows sharing",
+      "Ask an admin to enable external sharing for the folder"
+    ],
+    "resolution": "Admin enabled external sharing for that folder."
+  },
+  {
+    "key": "res-006",
+    "category": "integration",
+    "subject": "Slack notifications stopped",
+    "summary": "Integration token had expired.",
+    "steps": [
+      "Open the workspace integrations page",
+      "Disconnect and reconnect Slack",
+      "Post a test update to the channel"
+    ],
+    "resolution": "Reconnected Slack and notifications resumed."
+  }
+]

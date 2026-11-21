@@ -1,7 +1,7 @@
-.PHONY: setup backend test lint format
+.PHONY: setup backend test lint format seed
 
 # `uv run` uses .venv and the pytest `pythonpath` setting, so no PYTHONPATH juggling is needed.
-# Later tasks add: seed, ingest, demo, mcp, smoke, terraform-validate.
+# Later tasks add: ingest, demo, mcp, smoke, terraform-validate.
 
 # Recipes only call `uv`, so they work in cmd.exe, PowerShell and sh alike (no `test`/`cp`/`&&`).
 setup:
@@ -20,3 +20,7 @@ lint:
 
 format:
 	uv run ruff format .
+
+seed: export PYTHONPATH = backend
+seed:
+	uv run python -m app.services.seed_service

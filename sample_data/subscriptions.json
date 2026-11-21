@@ -1,0 +1,90 @@
+[
+  {
+    "customer_key": "cust-northwind",
+    "plan": "enterprise",
+    "seats": 120,
+    "status": "active",
+    "renews_at": "2027-03-01T00:00:00Z",
+    "mrr": 6000.0,
+    "storage_quota_gb": 5000.0,
+    "storage_used_gb": 2100.0,
+    "api_rate_limit": 10000
+  },
+  {
+    "customer_key": "cust-brightpath",
+    "plan": "business",
+    "seats": 8,
+    "status": "active",
+    "renews_at": "2027-01-15T00:00:00Z",
+    "mrr": 200.0,
+    "storage_quota_gb": 1000.0,
+    "storage_used_gb": 310.0,
+    "api_rate_limit": 3000
+  },
+  {
+    "customer_key": "cust-pixelforge",
+    "plan": "pro",
+    "seats": 15,
+    "status": "active",
+    "renews_at": "2027-02-10T00:00:00Z",
+    "mrr": 180.0,
+    "storage_quota_gb": 500.0,
+    "storage_used_gb": 220.0,
+    "api_rate_limit": 600
+  },
+  {
+    "customer_key": "cust-harborlane",
+    "plan": "pro",
+    "seats": 6,
+    "status": "past_due",
+    "renews_at": "2026-12-05T00:00:00Z",
+    "mrr": 72.0,
+    "storage_quota_gb": 100.0,
+    "storage_used_gb": 100.0,
+    "api_rate_limit": 600
+  },
+  {
+    "customer_key": "cust-quantaleaf",
+    "plan": "enterprise",
+    "seats": 250,
+    "status": "active",
+    "renews_at": "2027-05-20T00:00:00Z",
+    "mrr": 12500.0,
+    "storage_quota_gb": 10000.0,
+    "storage_used_gb": 4800.0,
+    "api_rate_limit": 10000
+  },
+  {
+    "customer_key": "cust-mosaic",
+    "plan": "business",
+    "seats": 22,
+    "status": "active",
+    "renews_at": "2027-04-02T00:00:00Z",
+    "mrr": 440.0,
+    "storage_quota_gb": 1000.0,
+    "storage_used_gb": 540.0,
+    "api_rate_limit": 3000
+  },
+  {
+    "customer_key": "cust-oakridge",
+    "plan": "business",
+    "seats": 14,
+    "status": "active",
+    "renews_at": "2027-01-28T00:00:00Z",
+    "mrr": 280.0,
+    "storage_quota_gb": 1000.0,
+    "storage_used_gb": 760.0,
+    "api_rate_limit": 3000
+  },
+  {
+    "customer_key": "cust-juniper",
+    "plan": "free",
+    "seats": 2,
+    "status": "trialing",
+    "renews_at": "2026-12-20T00:00:00Z",
+    "mrr": 0.0,
+    "storage_quota_gb": 5.0,
+    "storage_used_gb": 1.2,
+    "api_rate_limit": 60
+  }
+]

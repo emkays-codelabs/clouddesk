@@ -1,0 +1,79 @@
+[
+  {
+    "customer_key": "cust-northwind",
+    "name": "Northwind Operations",
+    "member_count": 118,
+    "storage_used_gb": 2100.0,
+    "integrations": [
+      "okta",
+      "slack"
+    ],
+    "sso_enabled": true
+  },
+  {
+    "customer_key": "cust-brightpath",
+    "name": "BrightPath Studio HQ",
+    "member_count": 5,
+    "storage_used_gb": 310.0,
+    "integrations": [
+      "slack"
+    ],
+    "sso_enabled": false
+  },
+  {
+    "customer_key": "cust-pixelforge",
+    "name": "PixelForge Builds",
+    "member_count": 14,
+    "storage_used_gb": 220.0,
+    "integrations": [
+      "github"
+    ],
+    "sso_enabled": false
+  },
+  {
+    "customer_key": "cust-harborlane",
+    "name": "HarborLane Shared Drive",
+    "member_count": 6,
+    "storage_used_gb": 100.0,
+    "integrations": [],
+    "sso_enabled": false
+  },
+  {
+    "customer_key": "cust-quantaleaf",
+    "name": "Quantaleaf Research",
+    "member_count": 240,
+    "storage_used_gb": 4800.0,
+    "integrations": [
+      "okta",
+      "jira"
+    ],
+    "sso_enabled": true
+  },
+  {
+    "customer_key": "cust-mosaic",
+    "name": "Mosaic Projects",
+    "member_count": 20,
+    "storage_used_gb": 540.0,
+    "integrations": [
+      "slack",
+      "figma"
+    ],
+    "sso_enabled": false
+  },
+  {
+    "customer_key": "cust-oakridge",
+    "name": "Oakridge Legacy Matters",
+    "member_count": 9,
+    "storage_used_gb": 760.0,
+    "integrations": [],
+    "sso_enabled": false
+  },
+  {
+    "customer_key": "cust-juniper",
+    "name": "Juniper Personal",
+    "member_count": 2,
+    "storage_used_gb": 1.2,
+    "integrations": [],
+    "sso_enabled": false
+  }
+]

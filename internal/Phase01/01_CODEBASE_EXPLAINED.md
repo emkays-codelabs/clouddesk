@@ -120,7 +120,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 379 lines across seven files, plus a 106-line test harness. Paths are relative to the project root.
+The Phase 1 application code is 406 lines across seven files, plus a 106-line test harness. Paths are relative to the project root.
 
 ### `backend/app/main.py` (33 lines)
 
@@ -327,7 +327,7 @@ These are the decisions the code and the project record actually show.
 
 **Results, run while writing this document:**
 
-- Phase 1's own tests: **97 passed** in about 3 seconds, offline.
+- Phase 1's own tests: **98 passed** in about 3 seconds, offline.
 - The whole suite when this was updated, on 2026-11-03 (`make test`): **346 passed**. The extra 249 belong to later tooling and documentation tasks, not to Phase 1. It was 220 when this document was first written.
 - `uv run ruff check .`: **All checks passed**.
 

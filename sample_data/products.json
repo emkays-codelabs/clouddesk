@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "collaboration",
+    "name": "Team Collaboration",
+    "description": "Shared channels, comments and activity feeds for teams.",
+    "features": [
+      "comments",
+      "mentions",
+      "activity feed"
+    ]
+  },
+  {
+    "slug": "file-storage",
+    "name": "Cloud File Storage",
+    "description": "Versioned cloud storage with quotas per plan.",
+    "features": [
+      "versioning",
+      "sharing links",
+      "quota alerts"
+    ]
+  },
+  {
+    "slug": "billing",
+    "name": "Billing",
+    "description": "Seat-based subscriptions, invoices and refunds.",
+    "features": [
+      "seats",
+      "invoices",
+      "refund requests"
+    ]
+  },
+  {
+    "slug": "workspaces",
+    "name": "Workspaces",
+    "description": "Workspaces with roles, SSO and external sharing controls.",
+    "features": [
+      "roles",
+      "SSO",
+      "external sharing"
+    ]
+  },
+  {
+    "slug": "api-access",
+    "name": "API Access",
+    "description": "REST API with per-plan rate limits and tokens.",
+    "features": [
+      "tokens",
+      "rate limits",
+      "webhooks"
+    ]
+  }
+]
