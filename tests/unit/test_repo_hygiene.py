@@ -382,14 +382,19 @@ class TestPhase1DocumentsQuoteTrueFacts:
         assert f"`tests/conftest.py` ({real} lines)" in text
 
     def test_the_application_size_they_quote_is_the_real_one(self):
-        files = subprocess.run(
-            ["git", "ls-files", "backend"], cwd=ROOT, capture_output=True, text=True
-        ).stdout.split()
-        sizes = [len(_read(f).splitlines()) for f in files]
-        real = sum(n for n in sizes if n > 1)
+        # Phase 1's application code is a fixed set; later phases add files and must not change it.
+        files = [
+            "backend/app/main.py",
+            "backend/app/api/health.py",
+            "backend/app/core/config.py",
+            "backend/app/core/logging.py",
+            "backend/app/core/readiness.py",
+            "backend/app/middleware/request_id.py",
+            "backend/app/schemas/health.py",
+        ]
+        real = sum(len(_read(f).splitlines()) for f in files)
 
         assert f"is {real} lines across seven files" in _read(self.DOC1)
-        assert sum(1 for n in sizes if n > 1) == 7
 
     def test_the_phase_1_test_count_they_quote_is_the_real_one(self):
         out = subprocess.run(

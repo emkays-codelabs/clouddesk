@@ -10,7 +10,7 @@ description: >-
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-21 23:49 +0530_
 
 ## The files, and which one to trust
 
@@ -37,7 +37,7 @@ carry no `ACSRP_` prefix. Renaming any of these to match a document breaks the s
 contract and the tests at once. Change `CLAUDE.md` §5 or §10.1 first if it is genuinely wanted.
 
 Of the six larger differences, **D1 (multi-tenancy) is settled**: every data table carries a not-null,
-indexed `tenant_id`, the RLS policies are keyed on it from P2-1, one tenant is seeded, and no tenant
+indexed `tenant_id` from P2-1, the RLS policies are keyed on it from P2-2, one tenant is seeded, and no tenant
 features are built. Repositories are the only place the filter lives, so SQLite's lack of RLS still
 leaves one enforcement point. See `CLAUDE.md` §6.
 

@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-03 10:29 +0530_
+_Last updated: 2026-11-21 23:49 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -308,7 +308,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P2-1 · SQLAlchemy entities and category enum | F1 | `feature/sqlalchemy-entities` | Pending ❌ |
+| P2-1 · SQLAlchemy entities and category enum | F1 | `feature/sqlalchemy-entities` | Completed ✅ |
 | P2-2 · Postgres schema, RLS, and migrations | — | `feature/postgres-schema-rls` | Pending ❌ |
 | P2-3 · Repository layer | F4 | `feature/repository-layer` | Pending ❌ |
 | P2-4 · Sample data and demo bootstrap | F4 | `feature/sample-data-bootstrap` | Pending ❌ |
@@ -939,7 +939,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | Phase | Name | Tasks | Completed |
 |-------|------|-------|-----------|
 | 1 | Runtime skeleton | 19 | 19 |
-| 2 | Persistence and demo data | 4 | 0 |
+| 2 | Persistence and demo data | 4 | 1 |
 | 3 | Identity and request guards | 4 | 0 |
 | 4 | Support API | 5 | 0 |
 | 5 | Knowledge pipeline | 4 | 0 |
@@ -952,4 +952,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **82** | **19** |
+| **Total** | | **82** | **20** |
