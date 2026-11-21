@@ -1,0 +1,20 @@
+[
+  {
+    "key": "admin",
+    "email": "admin@clouddesk.demo",
+    "full_name": "Ada Admin",
+    "role": "admin"
+  },
+  {
+    "key": "sam-agent",
+    "email": "sam.agent@clouddesk.demo",
+    "full_name": "Sam Agent",
+    "role": "agent"
+  },
+  {
+    "key": "vic-viewer",
+    "email": "vic.viewer@clouddesk.demo",
+    "full_name": "Vic Viewer",
+    "role": "viewer"
+  }
+]

@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.core.config import get_settings, redact_url
 from app.core.database import create_tables, dispose_engine
@@ -42,6 +43,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="CloudDesk AI API", version=__version__, lifespan=lifespan)
     app.include_router(health_router)
+    app.include_router(auth_router, prefix="/api/v1")
 
     # add_middleware wraps outward, so the last one added is outermost. Target order, outermost
     # first, is CORS -> RequestId -> RateLimit -> Audit; Phase 3 adds the last two below RequestId.
