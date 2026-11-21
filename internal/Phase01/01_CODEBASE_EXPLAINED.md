@@ -120,9 +120,9 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 427 lines across seven files, plus a 137-line test harness. Paths are relative to the project root.
+The Phase 1 application code is 429 lines across seven files, plus a 137-line test harness. Paths are relative to the project root.
 
-### `backend/app/main.py` (69 lines today; 33 in Phase 1, later phases added the seed hook, the auth router and the tickets router)
+### `backend/app/main.py` (71 lines today; 33 in Phase 1, later phases added the seed hook, the auth, tickets and customers routers)
 
 | Item | Explanation |
 |---|---|
