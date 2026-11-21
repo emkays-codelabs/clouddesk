@@ -56,6 +56,12 @@ class ResolutionActionRepository(ScopedRepository[ResolutionAction]):
     async def create(self, **fields: Any) -> ResolutionAction:
         return await self._add(ResolutionAction(**fields))
 
+    async def list_for_ticket(self, ticket_id: str) -> list[ResolutionAction]:
+        stmt = self._select(ResolutionAction.ticket_id == ticket_id).order_by(
+            ResolutionAction.created_at
+        )
+        return list((await self.session.execute(stmt)).scalars().all())
+
     async def get_by_idempotency_key(self, key: str) -> ResolutionAction | None:
         result = await self.session.execute(self._select(ResolutionAction.idempotency_key == key))
         return result.scalar_one_or_none()

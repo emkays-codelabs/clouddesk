@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
+import sqlalchemy as sa
+
 from app.models.entities import Ticket, TicketMessage
 from app.repositories.base import ScopedRepository, contains_any
 from app.schemas.common import Severity, TicketStatus
+
+TICKET_PREFIX = "CD-"
+FIRST_TICKET_NUMBER = 1001
 
 
 class TicketRepository(ScopedRepository[Ticket]):
@@ -21,6 +26,16 @@ class TicketRepository(ScopedRepository[Ticket]):
     async def get_by_number(self, ticket_number: str) -> Ticket | None:
         result = await self.session.execute(self._select(Ticket.ticket_number == ticket_number))
         return result.scalar_one_or_none()
+
+    async def next_ticket_number(self) -> str:
+        """The next `CD-NNNN`, one past the highest number in this tenant (1001 when empty)."""
+        # Cast the numeric suffix: as text, CD-10000 would sort below CD-1013.
+        suffix = sa.cast(sa.func.substr(Ticket.ticket_number, len(TICKET_PREFIX) + 1), sa.Integer)
+        stmt = sa.select(sa.func.max(suffix)).where(
+            Ticket.tenant_id == self.tenant_id, Ticket.ticket_number.like(f"{TICKET_PREFIX}%")
+        )
+        highest = (await self.session.execute(stmt)).scalar_one_or_none()
+        return f"{TICKET_PREFIX}{max(highest or 0, FIRST_TICKET_NUMBER - 1) + 1}"
 
     async def list(
         self,

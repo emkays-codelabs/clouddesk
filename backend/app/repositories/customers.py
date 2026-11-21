@@ -21,6 +21,12 @@ class CustomerRepository(ScopedRepository[Customer]):
         result = await self.session.execute(self._select(Customer.email == email))
         return result.scalar_one_or_none()
 
+    async def get_many(self, ids: list[str]) -> dict[str, Customer]:
+        if not ids:
+            return {}
+        rows = await self.session.execute(self._select(Customer.id.in_(ids)))
+        return {c.id: c for c in rows.scalars().all()}
+
     async def list(
         self, search: str | None = None, page: int = 1, page_size: int = 20
     ) -> tuple[list[Customer], int]:

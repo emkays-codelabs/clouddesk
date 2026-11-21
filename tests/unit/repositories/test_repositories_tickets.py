@@ -71,3 +71,14 @@ async def test_messages_come_back_in_insertion_order(session, tenants):
         await msgs.add(ticket_id=t1.id, role=MessageRole.customer, body=f"m{i}")
     await session.commit()
     assert [m.body for m in await msgs.list_for_ticket(t1.id)] == ["m0", "m1", "m2", "m3"]
+
+
+async def test_next_ticket_number_starts_at_1001_and_continues_numerically(session, tenants):
+    repo = TicketRepository(session)
+    assert await repo.next_ticket_number() == "CD-1001"
+    cust = await CustomerRepository(session).create(name="Ada", email="ada@x.io")
+    for number in ("CD-1013", "CD-1002", "CD-10000"):
+        await repo.create(ticket_number=number, customer_id=cust.id, subject="s", body="b")
+    await session.commit()
+    # Numeric, not alphabetical: as text CD-10000 sorts below CD-1013.
+    assert await repo.next_ticket_number() == "CD-10001"

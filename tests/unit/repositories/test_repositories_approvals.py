@@ -64,3 +64,13 @@ async def test_escalation_round_trip(session, tenants):
     assert [x.id for x in await repo.list(status=EscalationStatus.acknowledged)] == [e.id]
     assert await repo.list(status=EscalationStatus.open) == []
     assert (await repo.get(e.id)).reason == "breach"
+
+
+async def test_latest_escalation_for_ticket(session, tenants):
+    t, _ = await _seed(session)
+    repo = EscalationRepository(session)
+    assert await repo.latest_for_ticket(t.id) is None
+    await repo.create(ticket_id=t.id, reason="first")
+    second = await repo.create(ticket_id=t.id, reason="second")
+    await session.commit()
+    assert (await repo.latest_for_ticket(t.id)).id == second.id

@@ -66,6 +66,14 @@ class EscalationRepository(ScopedRepository[Escalation]):
     async def get(self, id: str) -> Escalation | None:
         return await self._get(id)
 
+    async def latest_for_ticket(self, ticket_id: str) -> Escalation | None:
+        stmt = (
+            self._select(Escalation.ticket_id == ticket_id)
+            .order_by(Escalation.created_at.desc())
+            .limit(1)
+        )
+        return (await self.session.execute(stmt)).scalar_one_or_none()
+
     async def list(self, status: EscalationStatus | None = None) -> list[Escalation]:
         stmt = self._select().order_by(Escalation.created_at.desc())
         if status is not None:
