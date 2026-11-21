@@ -47,6 +47,17 @@ class ApprovalRepository(ScopedRepository[ApprovalRequest]):
         await self.session.flush()
         return row
 
+    async def count_pending(self) -> int:
+        stmt = (
+            sa.select(sa.func.count())
+            .select_from(ApprovalRequest)
+            .where(
+                ApprovalRequest.tenant_id == self.tenant_id,
+                ApprovalRequest.status == ApprovalStatus.pending,
+            )
+        )
+        return (await self.session.execute(stmt)).scalar_one()
+
     async def list_expired(self, now: datetime) -> list[ApprovalRequest]:
         # Compared in SQL: SQLite hands datetimes back naive, so a Python comparison would fail.
         stmt = self._select(
@@ -79,6 +90,17 @@ class EscalationRepository(ScopedRepository[Escalation]):
         if status is not None:
             stmt = stmt.where(Escalation.status == status)
         return list((await self.session.execute(stmt)).scalars().all())
+
+    async def count_open(self) -> int:
+        stmt = (
+            sa.select(sa.func.count())
+            .select_from(Escalation)
+            .where(
+                Escalation.tenant_id == self.tenant_id,
+                Escalation.status == EscalationStatus.open,
+            )
+        )
+        return (await self.session.execute(stmt)).scalar_one()
 
     async def update_status(self, id: str, status: EscalationStatus) -> Escalation | None:
         return await self._update_where(id, status=status)

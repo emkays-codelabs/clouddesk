@@ -6,9 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.customers import router as customers_router
+from app.api.dashboard import router as dashboard_router
 from app.api.health import router as health_router
+from app.api.settings import router as settings_router
 from app.api.tickets import router as tickets_router
 from app.core.config import get_settings, redact_url
 from app.core.database import create_tables, dispose_engine
@@ -50,6 +53,9 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(tickets_router, prefix="/api/v1")
     app.include_router(customers_router, prefix="/api/v1")
+    app.include_router(dashboard_router, prefix="/api/v1")
+    app.include_router(audit_router, prefix="/api/v1")
+    app.include_router(settings_router, prefix="/api/v1")
 
     # add_middleware wraps outward, so the last one added is outermost. Target order, outermost
     # first, is CORS -> RequestId -> RateLimit -> Audit (N6). A 429 therefore still carries the

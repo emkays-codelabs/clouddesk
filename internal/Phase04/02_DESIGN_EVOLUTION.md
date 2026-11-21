@@ -1,6 +1,6 @@
 # Phase 4: system design evolution
 
-> **Status of this phase:** in progress. P4-1 to P4-4 are done (implemented and checked locally); P4-5 is not started. Nothing is deployed.
+> **Status of this phase:** in progress. P4-1 to P4-5 are done (implemented and checked locally). Nothing is deployed.
 
 ---
 
@@ -33,3 +33,12 @@
 - Transitions are recorded as an internal `system` message ("Status changed from X to Y by <actor>") when `request-info`, `escalate` or `PATCH` actually changes the status. `PATCH` also sets `resolved_at` on `resolved` or `closed` and clears it when the ticket reopens.
 - `escalate` writes an `escalations` row with `created_by` `human`, team `Tier 2 Support` (a default, not routing), sets the ticket `escalated` and `escalation_required`.
 - Deviation from the contract: the three POST routes return **201** rather than 200. The contract table does not state a code.
+
+## P4-5: dashboard, audit and settings read APIs
+
+- `GET /api/v1/dashboard/summary`, `GET /api/v1/audit` (page, page_size, actor, action; `{items, total}`) and `GET /api/v1/settings` were added in `backend/app/api/{dashboard,audit,settings}.py`, open to any authenticated role. Services: `dashboard_service`, `audit_service`, `settings_service`.
+- New tenant-scoped repository aggregates, all in the isolation test: `TicketRepository.count_open`, `count_resolved_since`, `count_by_severity`, `count_by_category`, `resolution_spans`, `ApprovalRepository.count_pending`, `EscalationRepository.count_open`. The average resolution time is computed in Python from the (created, resolved) pairs so it works the same on SQLite and Postgres.
+- `by_severity` and `by_category` always list every value, with zeros. `agent_activity` is an empty list until workflow events exist (Phase 10). "Resolved today" counts from UTC midnight.
+- `/settings` has response fields only for booleans and names, so no key, URL or password can be serialised. `approval_required_tools` is a constant in `settings_service` until the tool registry exists (Phase 6).
+- API tests that count whole-table rows use a private database (`fresh_db` in `tests/api/conftest.py`), because the default test database is shared by the session.
+- No contract deviation. `main.py` grew by six lines; the Phase 1 line counts were updated.
