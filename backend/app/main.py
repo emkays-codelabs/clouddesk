@@ -11,6 +11,7 @@ from app.api.health import router as health_router
 from app.core.config import get_settings, redact_url
 from app.core.database import create_tables, dispose_engine
 from app.core.logging import setup_logging
+from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.request_id import HEADER as REQUEST_ID_HEADER
 from app.middleware.request_id import RequestIdMiddleware
 from app.services.seed_service import bootstrap_demo_data
@@ -46,7 +47,9 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
 
     # add_middleware wraps outward, so the last one added is outermost. Target order, outermost
-    # first, is CORS -> RequestId -> RateLimit -> Audit; Phase 3 adds the last two below RequestId.
+    # first, is CORS -> RequestId -> RateLimit -> Audit. RateLimit is in (P3-3); Audit arrives in
+    # P3-4 and is added before it. A 429 therefore still carries the request id and CORS headers.
+    app.add_middleware(RateLimitMiddleware, limit=settings.rate_limit_per_minute)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,
