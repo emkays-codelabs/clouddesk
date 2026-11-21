@@ -164,8 +164,9 @@ class TestHooks:
     def test_the_claude_hook_blocks_with_exit_2_and_names_each_check(self):
         text = _read(".claude/hooks/pre-commit.sh")
 
-        assert text.count("exit 2") == 2
+        assert text.count("exit 2") == 3
         assert "ruff check" in text and "pytest" in text
+        assert "npm run --silent lint" in text and "frontend/node_modules" in text
 
     def test_the_git_hook_runs_the_stamp_script_and_skips_quietly_without_uv(self):
         text = _read(".githooks/pre-commit")

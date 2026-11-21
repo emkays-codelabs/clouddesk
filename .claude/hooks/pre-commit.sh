@@ -10,7 +10,8 @@
 #
 # `python -m` avoids the uv script trampoline, which fails on some Windows paths.
 #
-# Only Python exists so far. When frontend/ lands (Phase 12), add `npm run lint` and `npm run test` here.
+# The frontend checks (`npm run lint`, `npm run test`) run only when frontend/package.json and
+# frontend/node_modules exist, so a clone that has not run `npm install` is not blocked.
 payload=$(cat)
 
 case "$payload" in
@@ -38,6 +39,14 @@ if ! out=$(uv run --quiet python -m pytest -q -x 2>&1); then
     echo "Commit blocked: tests failed." >&2
     echo "$out" | tail -25 >&2
     exit 2
+fi
+
+if [ -f frontend/package.json ] && [ -d frontend/node_modules ] && command -v npm >/dev/null 2>&1; then
+    if ! out=$(cd frontend && npm run --silent lint 2>&1 && npm run --silent test -- --run 2>&1); then
+        echo "Commit blocked: frontend lint or tests failed." >&2
+        echo "$out" | tail -25 >&2
+        exit 2
+    fi
 fi
 
 exit 0
