@@ -18,3 +18,10 @@ class ProfileRepository(ScopedRepository[Profile]):
     async def get_by_email(self, email: str) -> Profile | None:
         result = await self.session.execute(self._select(Profile.email == email))
         return result.scalar_one_or_none()
+
+    async def get_first_by_role(self, role: str) -> Profile | None:
+        # Oldest first, so the answer is stable when a role has several users.
+        result = await self.session.execute(
+            self._select(Profile.role == role).order_by(Profile.created_at, Profile.email).limit(1)
+        )
+        return result.scalar_one_or_none()

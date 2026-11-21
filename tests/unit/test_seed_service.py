@@ -45,6 +45,7 @@ async def test_bootstrap_on_an_empty_database_loads_every_file(engine, sessionma
 
     counts = await _counts(engine)
     assert report.loaded is True
+    assert counts["profiles"] == 3 and report.profiles == 3
     assert counts["customers"] == 8
     assert counts["subscriptions"] == 8
     assert counts["workspaces"] == 8

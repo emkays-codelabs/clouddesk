@@ -89,6 +89,7 @@ READS = [
     (customers.WorkspaceRepository, "get_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
     (profiles.ProfileRepository, "get", lambda w: {"id": w.profile}, True),
     (profiles.ProfileRepository, "get_by_email", lambda w: {"email": "sam@x.io"}, True),
+    (profiles.ProfileRepository, "get_first_by_role", lambda w: {"role": "viewer"}, True),
     (tickets.TicketRepository, "get", lambda w: {"id": w.ticket}, True),
     (tickets.TicketRepository, "get_by_number", lambda w: {"ticket_number": "CD-1"}, True),
     (tickets.TicketRepository, "list", lambda w: {}, False),
@@ -121,7 +122,7 @@ READS = [
 
 # Both tenants hold the same natural key, so the demo tenant finds its own row; it must never be
 # the other tenant's (checked by the tenant_id assertion in the test).
-NATURAL_KEY_READS = {"get_by_email", "get_by_number", "get_by_idempotency_key"}
+NATURAL_KEY_READS = {"get_first_by_role", "get_by_email", "get_by_number", "get_by_idempotency_key"}
 
 # Writes: called through the demo tenant with the other tenant's ids; must report "not found".
 WRITES = [

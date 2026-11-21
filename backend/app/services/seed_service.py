@@ -29,10 +29,11 @@ from app.repositories.customers import (
     SubscriptionRepository,
     WorkspaceRepository,
 )
+from app.repositories.profiles import ProfileRepository
 from app.repositories.reference import IncidentRepository, ProductRepository
 from app.repositories.tenants import TenantRepository
 from app.repositories.tickets import TicketMessageRepository, TicketRepository
-from app.schemas.common import Category, Channel, MessageRole, Severity
+from app.schemas.common import Category, Channel, MessageRole, Role, Severity
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,13 @@ Plan = Literal["free", "pro", "business", "enterprise"]
 
 class _Record(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class _Profile(_Record):
+    key: str
+    email: str
+    full_name: str
+    role: Role
 
 
 class _Customer(_Record):
@@ -115,6 +123,7 @@ class _Resolution(_Record):
 
 
 class SampleData(_Record):
+    profiles: list[_Profile]
     customers: list[_Customer]
     subscriptions: list[_Subscription]
     workspaces: list[_Workspace]
@@ -127,6 +136,7 @@ class SampleData(_Record):
 class SeedReport(BaseModel):
     loaded: bool
     reason: str = ""
+    profiles: int = 0
     customers: int = 0
     subscriptions: int = 0
     workspaces: int = 0
@@ -137,6 +147,7 @@ class SeedReport(BaseModel):
 
 
 _FILES: dict[str, type[_Record]] = {
+    "profiles": _Profile,
     "customers": _Customer,
     "subscriptions": _Subscription,
     "workspaces": _Workspace,
@@ -146,6 +157,7 @@ _FILES: dict[str, type[_Record]] = {
     "previous_resolutions": _Resolution,
 }
 _ID_FIELD = {
+    "profiles": "key",
     "customers": "key",
     "subscriptions": "customer_key",
     "workspaces": "customer_key",
@@ -197,8 +209,11 @@ async def _load(session: AsyncSession, data: SampleData) -> SeedReport:
     incidents = IncidentRepository(session)
     tickets = TicketRepository(session)
     messages = TicketMessageRepository(session)
+    profiles = ProfileRepository(session)
     names: dict[str, str] = {}
 
+    for u in data.profiles:
+        await profiles.create(id=_id("profile", u.key), **u.model_dump(exclude={"key"}))
     for c in data.customers:
         names[c.key] = c.name
         await customers.create(id=_id("customer", c.key), **c.model_dump(exclude={"key"}))
@@ -236,6 +251,7 @@ async def _load(session: AsyncSession, data: SampleData) -> SeedReport:
     await session.commit()  # the one commit: a failure above leaves the database untouched
     return SeedReport(
         loaded=True,
+        profiles=len(data.profiles),
         customers=len(data.customers),
         subscriptions=len(data.subscriptions),
         workspaces=len(data.workspaces),

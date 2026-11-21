@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-22 00:56 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -23,10 +23,12 @@ SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk
 ## Auth
 | Method | Path | Body | Response |
 |---|---|---|---|
-| POST | `/auth/demo-login` | `{email?: string, role?: "admin"|"agent"|"viewer"}` | `{access_token, token_type:"bearer", user: User}` (only when `DEMO_MODE=true`) |
+| POST | `/auth/demo-login` | `{email?: string, role?: "admin"|"agent"|"viewer"}` | `{access_token, token_type:"bearer", user: User}` (only when `DEMO_MODE=true`, else **404**) |
 | GET | `/auth/me` | – | `User` |
 
 `User = { id, email, full_name, role, avatar_url? }`
+
+`demo-login` needs `email` or `role` (**422** otherwise). It looks the user up among the seeded profiles (`admin@`, `sam.agent@`, `vic.viewer@clouddesk.demo`); an unknown email, or an email and role that name different users, is **401**. The token lasts 8 hours, `sub` is the profile id, and no server secret is ever returned. `/auth/me` is **401** for a missing, bad or expired token.
 
 ## Dashboard
 `GET /dashboard/summary` → `{ open_tickets, resolved_today, pending_approvals, escalations_open, avg_resolution_minutes, by_severity:{low,medium,high,critical}, by_category:{[category]:number}, recent_tickets: TicketSummary[], agent_activity: WorkflowEvent[] }`
