@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 02:18 +0530_
+_Last updated: 2026-11-22 02:29 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -780,7 +780,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P12-1 · Next.js app shell and navigation | F12 | `feature/frontend-app-shell` | Pending ❌ |
+| P12-1 · Next.js app shell and navigation | F12 | `feature/frontend-app-shell` | Completed ✅ |
 | P12-2 · Typed API client | F12 | `feature/frontend-api-client` | Pending ❌ |
 | P12-3 · Login and role-aware layout | F12, N1 | `feature/frontend-auth-layout` | Pending ❌ |
 | P12-4 · Read-only list pages | F12 | `feature/frontend-read-pages` | Pending ❌ |
@@ -949,7 +949,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 9 | Specialist agents | 8 | 0 |
 | 10 | Workflow graph and trace | 7 | 0 |
 | 11 | Approval and escalation | 6 | 0 |
-| 12 | Console shell | 4 | 0 |
+| 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **82** | **33** |
+| **Total** | | **82** | **34** |
