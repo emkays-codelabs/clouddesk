@@ -94,6 +94,16 @@ def _fresh_settings() -> Iterator[None]:
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def _fresh_redis() -> Iterator[None]:
+    """Each test gets an empty fake Redis, so rate-limit counters never leak between tests."""
+    from app.core.redis import get_redis
+
+    get_redis.cache_clear()
+    yield
+    get_redis.cache_clear()
+
+
 @pytest.fixture
 def client() -> "Iterator[TestClient]":
     """A test client for the real app. The app is imported here so it sees the offline profile."""

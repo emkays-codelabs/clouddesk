@@ -1,6 +1,6 @@
 # Phase 3: system design evolution
 
-> **Status of this phase:** in progress. P3-1 is written and checked locally only (not yet merged when this was written). P3-2 is written and checked locally only. P3-3 and P3-4 have not started, so this document covers only what exists.
+> **Status of this phase:** in progress. P3-1 is written and checked locally only (not yet merged when this was written). P3-2 is written and checked locally only. P3-3 is written and checked locally only. P3-4 has not started, so this document covers only what exists.
 
 ---
 
@@ -39,4 +39,23 @@
 | `/me` returns 401 if the profile is gone | A token for a deleted user is not a credential. |
 | Responses carry only `access_token`, `token_type`, `user` | No server secret can leak by construction; a test checks the configured secrets never appear. |
 
-**Not done.** No login screen (Phase 12). The routes are not yet behind rate limiting or audit (P3-3, P3-4). Demo tokens signed with the shared demo secret are only as strong as that secret.
+**Not done.** No login screen (Phase 12). The routes are not yet behind rate limiting or audit (P3-4 for audit; rate limiting arrived in P3-3, below). Demo tokens signed with the shared demo secret are only as strong as that secret.
+
+---
+
+## P3-3: Redis rate limit
+
+**What changed.** `backend/app/core/redis.py` adds `get_redis()`, a cached async client: real Redis when `REDIS_URL` is set and `USE_FAKE_REDIS` is off, otherwise an in-process fakeredis. `backend/app/middleware/rate_limit.py` is a plain ASGI fixed-window limiter, registered between RequestId and the app, so the order today is CORS, RequestId, RateLimit (Audit joins in P3-4). No new environment variable: `RATE_LIMIT_PER_MINUTE` and `USE_FAKE_REDIS` already existed. `redis` and `fakeredis` are runtime dependencies because the demo runs on fakeredis.
+
+**Decisions.**
+
+| Choice | Reason |
+|---|---|
+| Key `ratelimit:{client}:{minute}`, `INCR` then `EXPIRE` on the first hit | Fixed window; the counter expires by itself. |
+| Client is the socket peer, not `X-Forwarded-For` | A forged header would give a caller a fresh budget. Behind a proxy this needs a trusted-proxy setting (not built). |
+| 429 with `Retry-After` and the request id | RequestId and CORS sit outside, so the headers survive. |
+| `/health*` exempt | Probes must answer when a client is throttled; tested. |
+| Fails open if Redis errors, with a logged error | A limiter outage should not take the API down. |
+| Injectable clock; tests clear the `get_redis` cache | No sleeping; no counter leaks between tests. |
+
+**Not done.** No real Redis server was run. The limit is per client address, not per user. Multi-worker behaviour is correct by design (shared Redis) but untested.
