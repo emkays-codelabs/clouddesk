@@ -101,3 +101,17 @@ class WorkflowEventType(StrEnum):
     approval_resolved = "approval_resolved"
     error = "error"
     workflow_completed = "workflow_completed"
+
+
+class CustomerStatus(StrEnum):
+    active = "active"
+    trial = "trial"
+    past_due = "past_due"
+    churned = "churned"
+
+
+class Plan(StrEnum):
+    free = "free"
+    pro = "pro"
+    business = "business"
+    enterprise = "enterprise"
