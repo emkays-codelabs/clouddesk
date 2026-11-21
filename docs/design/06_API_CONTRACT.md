@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-22 01:37 +0530_
+_Last updated: 2026-11-22 01:51 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -47,7 +47,7 @@ SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk
 | POST | `/tickets/{id}/escalate` | body `{ reason, priority?: "normal"|"urgent" }` → `Escalation` |
 | PATCH | `/tickets/{id}` | body `{ status?, severity?, assigned_to? }` → `Ticket` |
 
-Mutating ticket routes (`POST /tickets`, `/run`, `/reply`, `/request-info`, `/escalate`, and `PATCH`) require role `agent` or `admin`. A `viewer` receives **403**.
+The three action POSTs (`/reply`, `/request-info`, `/escalate`) return **201**; `PATCH` returns **200**; an unknown ticket is **404**. Mutating ticket routes (`POST /tickets`, `/run`, `/reply`, `/request-info`, `/escalate`, and `PATCH`) require role `agent` or `admin`. A `viewer` receives **403**.
 
 Types:
 ```ts
