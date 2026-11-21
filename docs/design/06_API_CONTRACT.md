@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-22 00:56 +0530_
+_Last updated: 2026-11-22 01:24 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -37,7 +37,7 @@ SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/tickets?status=&severity=&search=&page=1&page_size=20` | `{ items: TicketSummary[], total, page, page_size }` |
-| POST | `/tickets` | body `{ customer_id, subject, body, channel?: "email"|"chat"|"web"|"api" }` → `Ticket` (also creates first `ticket_messages` row; does **not** start the workflow) |
+| POST | `/tickets` | body `{ customer_id, subject, body, channel?: "email"|"chat"|"web"|"api" }` (`channel` defaults to `"web"`; `subject` 1–300 characters, `body` non-empty; unknown keys are **422**) → `Ticket` (also creates first `ticket_messages` row; does **not** start the workflow) |
 | GET | `/tickets/{id}` | `TicketDetail` |
 | POST | `/tickets/{id}/run` | starts the LangGraph workflow (background task). **202** `{ workflow_id, status:"running" }`. **409** when the ticket is already `waiting_on_approval` |
 | GET | `/tickets/{id}/workflow` | `WorkflowState` (latest run) |
@@ -55,11 +55,18 @@ type TicketStatus = "new"|"in_progress"|"waiting_on_customer"|"waiting_on_approv
 type Severity = "low"|"medium"|"high"|"critical";
 type Category = "login_issue"|"billing"|"api_failure"|"workspace_permissions"|"storage_quota"|"integration"|"feature_request"|"account"|"security"|"other";
 
-TicketSummary = { id, ticket_number, subject, status, severity, category, customer_id, customer_name, channel, created_at, updated_at, escalation_required:boolean, approval_status: "not_required"|"pending"|"approved"|"rejected" }
+TicketSummary = { id, ticket_number, subject, status, severity: Severity|null, category: Category|null, customer_id, customer_name, channel, created_at, updated_at, escalation_required:boolean, approval_status: "not_required"|"pending"|"approved"|"rejected" }
 Ticket = TicketSummary & { body, assigned_to?, resolved_at?, tags: string[] }
 TicketMessage = { id, ticket_id, role: "customer"|"agent"|"system"|"ai", author_name, body, internal:boolean, attachments: {name,url,size}[], created_at }
 TicketDetail = Ticket & { messages: TicketMessage[], customer: Customer, subscription: Subscription|null, history: TicketSummary[], workflow: WorkflowState|null, resolution_actions: ResolutionAction[], escalation: Escalation|null }
 ```
+
+## Schema source and frontend types
+The Pydantic models for the ticket and customer shapes above live in `backend/app/schemas/`
+(`ticket.py`, `ticket_detail.py`, `customer.py`, `workflow.py`; enums in `common.py`). `TicketDetail.workflow`
+is typed as a minimal `WorkflowState` (ids, status, `current_node`, `completed_nodes`, `errors`, timing) that
+keeps extra keys, until the agent phases define the rest. `frontend/lib/types.ts` will mirror this contract
+when the frontend lands; `frontend/` does not exist yet, so the contract and the schemas are the source today.
 
 ## Workflow state (what the right-hand panel renders)
 ```ts
@@ -108,10 +115,10 @@ WorkflowEvent = { id, workflow_id, ticket_id, event_type: "node_started"|"node_c
 | GET | `/customers/{id}` → `CustomerDetail = Customer & { subscription, workspace, tickets: TicketSummary[], memory: CustomerMemory[] }` |
 
 ```ts
-Customer = { id, name, email, company, plan_name, status: "active"|"trial"|"past_due"|"churned", created_at, region, lifetime_value }
-Subscription = { id, customer_id, plan: "free"|"pro"|"business"|"enterprise", seats, status, renews_at, mrr, storage_quota_gb, storage_used_gb, api_rate_limit }
+Customer = { id, name, email, company, plan_name, status: "active"|"trial"|"past_due"|"churned", created_at, region, lifetime_value }  // company and region may be ""
+Subscription = { id, customer_id, plan: "free"|"pro"|"business"|"enterprise", seats, status: string, renews_at: string|null, mrr, storage_quota_gb, storage_used_gb, api_rate_limit }
 Workspace = { id, customer_id, name, member_count, storage_used_gb, integrations: string[], sso_enabled: boolean }
-CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"troubleshooting"|"note", content, source_ticket_id?, created_at }
+CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"troubleshooting"|"note", content, source_ticket_id?, confidence?: number|null, created_at }
 ```
 
 ## Knowledge base
@@ -130,7 +137,7 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 | GET | `/escalations?status=` → `Escalation[]` |
 | PATCH | `/escalations/{id}` body `{ status: "open"|"acknowledged"|"resolved", note? }` |
 
-`Escalation = { id, ticket_id, ticket_number, reason, priority, status, created_by: "ai"|"human", assigned_team, created_at, resolved_at? }`
+`Escalation = { id, ticket_id, ticket_number, reason, priority, status: "open"|"acknowledged"|"resolved", created_by: string /* "ai" or the acting user */, assigned_team, created_at, resolved_at? }`
 
 ## Agents (observability page)
 `GET /agents` → `{ agents: AgentInfo[], graph: { nodes: {id,label}[], edges: {source,target,label?}[] }, recent_runs: WorkflowState[], stats: { runs_total, runs_completed, runs_failed, avg_duration_ms, total_tokens, total_estimated_cost_usd } }`
