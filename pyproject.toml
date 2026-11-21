@@ -27,6 +27,7 @@ dependencies = [
     "redis>=5.0",
     "sqlalchemy[asyncio]>=2.0",
     "uvicorn>=0.54.0",
+    "qdrant-client>=1.20.0",
 ]
 
 # A service run with uvicorn, not a library: nothing to build or install.
