@@ -1,6 +1,6 @@
 # Phase 4: system design evolution
 
-> **Status of this phase:** in progress. P4-1 and P4-2 are done (implemented and checked locally); P4-3 to P4-5 are not started. Nothing is deployed.
+> **Status of this phase:** in progress. P4-1 to P4-3 are done (implemented and checked locally); P4-4 and P4-5 are not started. Nothing is deployed.
 
 ---
 
@@ -19,3 +19,9 @@
 - New repository methods, all tenant-scoped and added to the isolation test: `CustomerRepository.get_many`, `EscalationRepository.latest_for_ticket`, `ResolutionActionRepository.list_for_ticket`, `TicketRepository.next_ticket_number`.
 - `TicketDetail.workflow` is the latest run's saved state with the run's own columns laid over it; no run exists until `/run` lands, so it is `null` for every ticket today. Seeded tickets have no severity or category, so severity filtering is only exercised after a row is given one.
 - The contract gained the 201, the 404s and the paging bounds. `main.py` grew by two lines, so the Phase 1 line count it quotes was updated.
+
+## P4-3: customer API
+
+- `GET /api/v1/customers` (search, page, page_size) and `GET /api/v1/customers/{id}` (`CustomerDetail`, **404** `Customer not found` when unknown) were added in `backend/app/api/customers.py`, open to any authenticated role. `backend/app/services/customer_service.py` assembles the detail from the existing repositories: customer, latest subscription, latest workspace, up to 10 recent tickets as `TicketSummary` and up to 10 memory notes (newest first). No repository method was added.
+- The service reuses `_to_summary` from `ticket_service`, so a ticket summary has one shape in both places.
+- Checked by `tests/api/test_customers.py`. `main.py` grew by two lines; the Phase 1 line counts were updated.
