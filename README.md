@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-22 02:37 +0530_
+_Last updated: 2026-11-22 02:42 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-22 02:37 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 4 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API), all validated locally, with 35 of 82 tasks done. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 4 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API), all validated locally, with 36 of 82 tasks done. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -27,6 +27,7 @@ named `clouddesk`.
    - [5.2 Install and run](#52-install-and-run)
    - [5.3 Without make](#53-without-make)
    - [5.4 Activate the environment](#54-activate-the-environment)
+   - [5.5 Run with containers](#55-run-with-containers)
 6. [Development](#6-development)
    - [6.1 Everyday commands](#61-everyday-commands)
    - [6.2 Working with Claude Code](#62-working-with-claude-code)
@@ -180,6 +181,16 @@ source .venv/bin/activate
 ```
 
 Keep secrets in a local `.env` file. It is ignored by git. Never commit real keys.
+
+### 5.5 Run with containers
+
+With Docker running, from the repository root:
+
+```bash
+docker compose up --build
+```
+
+The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store). The file is checked statically; it has not been brought up yet.
 
 [↑ Back to top](#clouddesk-ai)
 
