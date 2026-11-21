@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-03 10:29 +0530_
+_Last updated: 2026-11-21 23:49 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -697,8 +697,8 @@ optional and is not a core exit criterion.
   tables in RLS). Treat `database/schema.sql` as the authority once written.
 - Stage 17 (Agentic DevOps) depends on Stages 13–16; treat it as optional for the core Project 1 completion.
 
-**D1 is settled (2026-11-02).** Every data table carries `tenant_id` and the RLS policies are keyed on
-it from P2-1, with one seeded tenant and no tenant-management features (§6). The trigger was that §6
+**D1 is settled (2026-11-02).** Every data table carries `tenant_id` from P2-1 and the RLS policies are keyed on
+it from P2-2, with one seeded tenant and no tenant-management features (§6). The trigger was that §6
 already promised RLS on all data tables while the table list had no column to key a policy on, so the
 spec contradicted itself; and the column is nearly free now and ruinous to retrofit across 16 tables.
 

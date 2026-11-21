@@ -8,6 +8,8 @@
 # A command that merely mentions "git commit" also triggers the checks. That costs a few seconds and
 # never blocks anything that passes, so it is the safe direction to be wrong in.
 #
+# `python -m` avoids the uv script trampoline, which fails on some Windows paths.
+#
 # Only Python exists so far. When frontend/ lands (Phase 12), add `npm run lint` and `npm run test` here.
 payload=$(cat)
 
@@ -26,13 +28,13 @@ cd "$root" || exit 0
 
 # The command may stage and commit in one go (`git add ... && git commit`), in which case nothing is
 # staged yet when this hook runs. Lint the whole tree: ruff is fast and the result is the same.
-if ! out=$(uv run --quiet ruff check . 2>&1); then
+if ! out=$(uv run --quiet python -m ruff check . 2>&1); then
     echo "Commit blocked: ruff check failed." >&2
     echo "$out" | tail -25 >&2
     exit 2
 fi
 
-if ! out=$(uv run --quiet pytest -q -x 2>&1); then
+if ! out=$(uv run --quiet python -m pytest -q -x 2>&1); then
     echo "Commit blocked: tests failed." >&2
     echo "$out" | tail -25 >&2
     exit 2
