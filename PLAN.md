@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-22 02:10 +0530_
+_Last updated: 2026-11-22 03:07 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -142,16 +142,16 @@ decisions D2–D6 in `CLAUDE.md` §20. The chat widget (FR-37) and multi-languag
 | 2 | Persistence and demo data | validated locally |
 | 3 | Identity and request guards | validated locally |
 | 4 | Support API | validated locally |
-| 5 | Knowledge pipeline | not started |
+| 5 | Knowledge pipeline | validated locally |
 | 6 | Tools and mocks | not started |
 | 7 | Rules and guardrails | not started |
 | 8 | Memory | not started |
 | 9 | Specialist agents | not started |
 | 10 | Workflow graph and trace | not started |
 | 11 | Approval and escalation | not started |
-| 12 | Console shell | not started |
+| 12 | Console shell | in progress |
 | 13 | Ticket workflow screen | not started |
-| 14 | Evaluation and delivery | not started |
+| 14 | Evaluation and delivery | in progress |
 
 Stages 13–16 of the course (containers, observability, CI, multi-cloud) are represented inside Phase 14 as files and local validation. Stage 17 stays optional and unbuilt.
 
