@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MAKEFILE = ROOT / "Makefile"
-REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format", "seed"}
+REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format", "seed", "ingest"}
 
 
 def _targets() -> dict[str, list[str]]:

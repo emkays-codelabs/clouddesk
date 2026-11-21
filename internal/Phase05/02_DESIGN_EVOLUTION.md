@@ -1,6 +1,6 @@
 # Phase 5: system design evolution
 
-> **Status of this phase:** in progress. P5-1 to P5-3 are implemented and checked locally; P5-4 is not started. Nothing is deployed, and there is no ingest command or knowledge API yet.
+> **Status of this phase:** in progress. P5-1 to P5-4 are implemented and checked locally. Nothing is deployed, and Qdrant and a real Redis have not been run.
 
 ---
 
@@ -23,3 +23,11 @@ Boundary: `.claude/rules/rag.md` (`paths: rag/**`) and each module docstring sta
 `rag/retriever.py` adds `HybridRetriever(store, embeddings, documents, ...)`. A query is rewritten deterministically into up to three sub-queries (original, stop-word-stripped, longest-words variant; an optional `rewriter` hook can add one). Each sub-query gets a semantic ranking from the vector store and a BM25 ranking (`rank_bm25`); the rankings are fused with reciprocal rank fusion (k=60), reranked by title overlap and a category bonus, optionally reordered by an injected `llm_rerank` hook, and reduced to one hit per article. Modes are `hybrid` (default), `semantic` and `keyword`; `category` is a hard filter unless `strict_category=False`, where it only boosts.
 
 A deterministic sufficiency check (top score at least 0.3 and at least half the query terms found in the top three hits) may run ONE extra ranking pass on the uncovered terms, then stops. Results are cached 300 s under `rag:{mode}:{category}:{top_k}:{query}` through an injected object with `get` and `set(ttl)`; `backend/app/services/retrieval_cache.py` adapts the Redis client, so `rag/` imports nothing from `app`. `chunk_filter` is the hook where P7-2 will drop injected chunks; the default passes everything. Evidence is `{id, title, source, snippet, score, url, article_id}`. hit-rate@3 over 11 queries taken from the demo tickets is 1.0 with fake embeddings. The cache was only exercised with fakeredis; `documents_from_chunks` is the bridge P5-4 ingest will reuse.
+
+---
+
+## P5-4: ingest command and knowledge API
+
+`rag/ingest.py` adds `ingest(store, embeddings, directory, recreate=False)`, returning article and chunk counts (15 and 75 on the demo articles). It is idempotent because chunk ids are stable and the store replaces a document with the same id; `recreate=True` calls the new `VectorStoreService.clear()` (in-memory: empty the dict; Qdrant: delete the collection, recreated on the next write), so stale chunks go too. `rag.ingest` re-exports `get_vector_store` so code outside `rag/` still never names `rag.vector_store`.
+
+`backend/app/services/knowledge_service.py` keeps the in-process article and chunk state, serves `GET /knowledge/articles` (search, category), `GET /knowledge/articles/{id}` (ids are file slugs), `POST /knowledge/search` (retriever plus the Redis cache adapter) and admin-only `POST /knowledge/reindex`, whose `indexed` is the chunk count. The lifespan indexes the knowledge base at startup only when `VECTOR_STORE=memory`; a failure is logged and never stops startup. `make ingest` runs `python -m app.services.knowledge_service` (the CLI lives in `app` because it needs settings, which `rag/` may not import); it fills the configured store, so it is useful against Qdrant, while in-memory it only reports counts. The MFA lockout query returns `mfa-recovery` in the top 3.
