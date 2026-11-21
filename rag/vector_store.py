@@ -1,9 +1,9 @@
 """Store document vectors and search them, behind one protocol.
 
 Does: define `Document`, `SearchHit`, the `VectorStoreService` protocol (add_documents, search,
-delete, count, health), `InMemoryVectorStore` (cosine similarity), `QdrantVectorStore` (imports
-`qdrant_client` lazily, only when first used) and `get_vector_store(settings)`, which picks one from
-`settings.vector_store`. Callers elsewhere only ever see the protocol.
+delete, count, clear, health), `InMemoryVectorStore` (cosine similarity), `QdrantVectorStore`
+(imports `qdrant_client` lazily, only when first used) and `get_vector_store(settings)`, which picks
+one from `settings.vector_store`. Callers elsewhere only ever see the protocol.
 Must NOT: embed text, know about tickets, customers or workflows, import `app.repositories` /
 `app.models`, or import `qdrant_client` at module level.
 """
@@ -39,6 +39,8 @@ class VectorStoreService(Protocol):
     async def delete(self, ids: list[str]) -> None: ...
 
     async def count(self) -> int: ...
+
+    async def clear(self) -> None: ...
 
     async def health(self) -> bool: ...
 
@@ -77,6 +79,9 @@ class InMemoryVectorStore:
 
     async def count(self) -> int:
         return len(self._docs)
+
+    async def clear(self) -> None:
+        self._docs.clear()
 
     async def health(self) -> bool:
         return True
@@ -162,6 +167,11 @@ class QdrantVectorStore:
         if not client.collection_exists(self._collection):
             return 0
         return int(client.count(self._collection, exact=True).count)
+
+    async def clear(self) -> None:
+        client = self._get_client()
+        if client.collection_exists(self._collection):
+            client.delete_collection(self._collection)  # recreated on the next write
 
     async def health(self) -> bool:
         try:

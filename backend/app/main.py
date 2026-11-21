@@ -11,6 +11,7 @@ from app.api.auth import router as auth_router
 from app.api.customers import router as customers_router
 from app.api.dashboard import router as dashboard_router
 from app.api.health import router as health_router
+from app.api.knowledge import router as knowledge_router
 from app.api.settings import router as settings_router
 from app.api.tickets import router as tickets_router
 from app.core.config import get_settings, redact_url
@@ -20,6 +21,7 @@ from app.middleware.audit import AuditMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.request_id import HEADER as REQUEST_ID_HEADER
 from app.middleware.request_id import RequestIdMiddleware
+from app.services.knowledge_service import index_knowledge_base
 from app.services.seed_service import bootstrap_demo_data
 
 logger = logging.getLogger(__name__)
@@ -40,8 +42,22 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
                 "database_url": redact_url(get_settings().database_url),
             },
         )
+    await _index_knowledge()
     yield
     await dispose_engine()
+
+
+async def _index_knowledge() -> None:
+    """Index the articles so search works at once; in-memory store only, never fatal."""
+    if get_settings().vector_store != "memory":
+        return  # a persistent store is filled by `make ingest` or POST /knowledge/reindex
+    try:
+        result = await index_knowledge_base()
+        logger.info(
+            "knowledge indexed", extra={"articles": result.articles, "chunks": result.chunks}
+        )
+    except Exception as exc:
+        logger.error("knowledge indexing failed", extra={"error_type": type(exc).__name__})
 
 
 def create_app() -> FastAPI:
@@ -56,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(settings_router, prefix="/api/v1")
+    app.include_router(knowledge_router, prefix="/api/v1")
 
     # add_middleware wraps outward, so the last one added is outermost. Target order, outermost
     # first, is CORS -> RequestId -> RateLimit -> Audit (N6). A 429 therefore still carries the
