@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 02:29 +0530_
+_Last updated: 2026-11-22 02:37 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -861,7 +861,7 @@ The longest dependency chain is 16 tasks long.
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P14-1 · Evaluation thresholds | F2, F5, F8, F10 | `feature/eval-thresholds` | Pending ❌ |
-| P14-2 · Backend and frontend Dockerfiles | N8 | `feature/docker-images` | Pending ❌ |
+| P14-2 · Backend and frontend Dockerfiles | N8 | `feature/docker-images` | Completed ✅ |
 | P14-3 · Compose stack | N8 | `feature/docker-compose` | Pending ❌ |
 | P14-4 · Terraform and CI scaffolds | N8 | `feature/delivery-terraform-ci` | Pending ❌ |
 | P14-5 · Deployment hygiene tests | N8 | `feature/deployment-hygiene-tests` | Pending ❌ |
@@ -875,7 +875,8 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** The suite passes offline and fails when any threshold is missed.
 
 **P14-2 · Backend and frontend Dockerfiles**
-- **Needs:** `P10-5`
+- **Needs:** `P1-1`, `P12-1`
+- **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built: the Docker daemon was not running, so "both images build and report healthy" is still unproven. The backend Dockerfile copies only the packages that exist today.
 - **Build:** Dockerfiles: the backend is multi-stage `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, built from the repo root; the frontend is `node:22-alpine` with `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
 - **Files:** `backend/Dockerfile`, `frontend/Dockerfile`
 - **Done when:** Both images build and report healthy.
@@ -951,5 +952,5 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 11 | Approval and escalation | 6 | 0 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
-| 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **82** | **34** |
+| 14 | Evaluation and delivery | 5 | 1 |
+| **Total** | | **82** | **35** |
