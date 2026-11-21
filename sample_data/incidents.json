@@ -1,0 +1,27 @@
+[
+  {
+    "key": "inc-sso-001",
+    "title": "SSO login failures for SAML customers",
+    "status": "investigating",
+    "severity": "high",
+    "affected_services": [
+      "sso",
+      "authentication"
+    ],
+    "description": "Customers using SAML single sign-on see login failures after an identity provider certificate rotation. Engineering is investigating.",
+    "started_at": "2026-10-05T07:45:00Z",
+    "resolved_at": null
+  },
+  {
+    "key": "inc-api-002",
+    "title": "Elevated API latency in us-east",
+    "status": "resolved",
+    "severity": "medium",
+    "affected_services": [
+      "api"
+    ],
+    "description": "API latency rose for about 40 minutes because of a saturated cache node. Resolved by replacing the node.",
+    "started_at": "2026-09-28T13:00:00Z",
+    "resolved_at": "2026-09-28T13:40:00Z"
+  }
+]

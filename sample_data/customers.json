@@ -1,0 +1,82 @@
+[
+  {
+    "key": "cust-northwind",
+    "name": "Priya Raman",
+    "email": "priya.raman@northwind.example",
+    "company": "Northwind Logistics",
+    "plan_name": "enterprise",
+    "status": "active",
+    "region": "eu-west",
+    "lifetime_value": 184000.0
+  },
+  {
+    "key": "cust-brightpath",
+    "name": "Marcus Webb",
+    "email": "marcus.webb@brightpath.example",
+    "company": "BrightPath Studio",
+    "plan_name": "business",
+    "status": "active",
+    "region": "us-east",
+    "lifetime_value": 42000.0
+  },
+  {
+    "key": "cust-pixelforge",
+    "name": "Lena Okafor",
+    "email": "lena.okafor@pixelforge.example",
+    "company": "PixelForge Games",
+    "plan_name": "pro",
+    "status": "active",
+    "region": "us-west",
+    "lifetime_value": 9600.0
+  },
+  {
+    "key": "cust-harborlane",
+    "name": "Tomas Reyes",
+    "email": "tomas.reyes@harborlane.example",
+    "company": "HarborLane Foods",
+    "plan_name": "pro",
+    "status": "past_due",
+    "region": "us-east",
+    "lifetime_value": 7200.0
+  },
+  {
+    "key": "cust-quantaleaf",
+    "name": "Dana Whitfield",
+    "email": "dana.whitfield@quantaleaf.example",
+    "company": "Quantaleaf Analytics",
+    "plan_name": "enterprise",
+    "status": "active",
+    "region": "ap-south",
+    "lifetime_value": 236000.0
+  },
+  {
+    "key": "cust-mosaic",
+    "name": "Ines Duarte",
+    "email": "ines.duarte@mosaic.example",
+    "company": "Mosaic Design Co",
+    "plan_name": "business",
+    "status": "active",
+    "region": "eu-central",
+    "lifetime_value": 31500.0
+  },
+  {
+    "key": "cust-oakridge",
+    "name": "Gareth Lim",
+    "email": "gareth.lim@oakridge.example",
+    "company": "Oakridge Legal",
+    "plan_name": "business",
+    "status": "active",
+    "region": "us-east",
+    "lifetime_value": 28800.0
+  },
+  {
+    "key": "cust-juniper",
+    "name": "Aiko Tanaka",
+    "email": "aiko.tanaka@juniper.example",
+    "company": "Juniper Books",
+    "plan_name": "free",
+    "status": "trial",
+    "region": "ap-northeast",
+    "lifetime_value": 0.0
+  }
+]

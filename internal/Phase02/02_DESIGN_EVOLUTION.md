@@ -1,6 +1,6 @@
-# Phase 2: system design evolution (in progress)
+# Phase 2: system design evolution
 
-> **Status:** Phase 2 is not finished. This document covers tasks P2-1, P2-2 and P2-3. Seeding of sample data (P2-4) is planned and does not exist yet.
+> **Status:** All four Phase 2 tasks (P2-1 to P2-4) are built. This document has not yet been consolidated by `/phase-docs 2`, and the phase status tables are still to be updated by the owner.
 
 ---
 
@@ -14,7 +14,7 @@
 
 **SQLite behaviour.** `backend/app/core/database.py` creates the database file's parent directory and turns on `PRAGMA foreign_keys=ON`, so a row with a missing tenant is rejected as Postgres would reject it.
 
-**Planned, not built.** Sample data and the startup hook (P2-4). `asyncpg` is not installed yet. The Postgres DDL, RLS policies and migrations are in the P2-2 section below.
+**Planned, not built.** `asyncpg` is not installed yet. The Postgres DDL, RLS policies and migrations are in the P2-2 section below.
 
 ---
 
@@ -41,3 +41,20 @@
 **Tests, not a database.** `tests/unit/sql_ddl.py` is a small parser for the constrained format and raises on any statement it does not recognise. Tests compare `schema.sql` with the models (tables, columns, types, nullability, defaults, enum values, foreign keys, tenant-first indexes), check RLS on every data table found in `schema.sql`, and check that the migrations in order equal `schema.sql` plus the policies. `test_applied_migrations_are_unchanged` pins the SHA-256 of `0001_initial.sql` (rule 12).
 
 **Limits.** Nothing was applied to a Postgres instance, so syntax and policy behaviour are unproven. Supabase's `service_role` has `BYPASSRLS`, so on Supabase the policies do not constrain a backend using that key; the repository filter stays the boundary. `SET LOCAL app.tenant_id` at runtime and `asyncpg` are planned, not built.
+
+---
+
+## P2-4: sample data and the startup bootstrap
+
+**Added.** `sample_data/` holds seven fictional JSON files: 8 customers (all four plans), one subscription and one workspace per customer, 13 tickets (`CD-1001` to `CD-1013`), 2 incidents (one `investigating` for SSO, one `resolved`), 5 products and 6 previous resolutions. `backend/app/services/seed_service.py` loads them through the repositories. `backend/app/main.py` gains a lifespan, and `make seed` runs the same loader by hand.
+
+**Startup order.** The lifespan runs `create_tables()`, then `bootstrap_demo_data()`, then yields, and `dispose_engine()` on shutdown. A database error at startup is logged as the exception class and a redacted URL, with no traceback, and swallowed, so `/health/ready` can still report `degraded` instead of the process failing to start.
+
+**Gates.** `bootstrap_demo_data()` does nothing unless `DEMO_MODE` is true, and does nothing when the database already has a customer or a ticket. The files are parsed and cross-checked before the first write, so a bad record raises `ValueError` naming it and the database stays empty. If two workers pass the emptiness check together, the unique keys make the second commit fail and that is reported as "not empty".
+
+**One transaction, deterministic ids.** Every row is written through the repositories and committed once. Ids are `uuid5` of the record key under a fixed namespace, so `CD-1002` has the same valid UUID on every machine. Each ticket gets its first customer message, timestamped as the ticket. The loader never names the tenant column; the repositories stamp the demo tenant.
+
+**Not in the database.** `previous_resolutions.json` is validated and left on disk for the Knowledge Agent (Phase 9), because no table holds it and loading it as tickets would break the count of 13. Knowledge articles, demo login profiles and customer memory are other tasks. `make seed` refuses to run when `DEMO_MODE` is false.
+
+**Tested on SQLite only.** No Postgres run exists. See `tests/api/test_startup_seed.py`, `tests/unit/test_seed_service.py` and `tests/unit/test_sample_data.py`.
+

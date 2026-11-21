@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MAKEFILE = ROOT / "Makefile"
-REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format"}
+REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format", "seed"}
 
 
 def _targets() -> dict[str, list[str]]:
@@ -85,3 +85,12 @@ def test_every_recipe_runs_in_cmd_powershell_and_sh_alike():
             assert not any(token in command for token in ("&&", "||", "$(", "`", " rm ", " cp ")), (
                 f"{target}: {line!r} uses shell-only syntax"
             )
+
+
+def test_seed_target_runs_the_seed_service():
+    text = MAKEFILE.read_text(encoding="utf-8")
+    recipe = " ".join(_targets()["seed"])
+
+    assert "uv run python -m app.services.seed_service" in recipe
+    # PYTHONPATH is exported for this target only, as a variable, so no shell syntax is needed.
+    assert re.search(r"^seed:\s*export PYTHONPATH\s*=\s*backend\s*$", text, re.M)
