@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 00:33 +0530_
+_Last updated: 2026-11-22 00:50 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -348,7 +348,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P3-1 · JWT and `require_role` | N1 | `feature/jwt-rbac` | Pending ❌ |
+| P3-1 · JWT and `require_role` | N1 | `feature/jwt-rbac` | Completed ✅ |
 | P3-2 · Demo auth routes and tokens | N1 | `feature/auth-demo-tokens` | Pending ❌ |
 | P3-3 · Redis rate limit | N2 | `feature/rate-limit-redis` | Pending ❌ |
 | P3-4 · Audit middleware and middleware order | N6 | `feature/audit-middleware` | Pending ❌ |
@@ -940,7 +940,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 |-------|------|-------|-----------|
 | 1 | Runtime skeleton | 19 | 19 |
 | 2 | Persistence and demo data | 4 | 4 |
-| 3 | Identity and request guards | 4 | 0 |
+| 3 | Identity and request guards | 4 | 1 |
 | 4 | Support API | 5 | 0 |
 | 5 | Knowledge pipeline | 4 | 0 |
 | 6 | Tools and mocks | 5 | 0 |
@@ -952,4 +952,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 0 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 0 |
-| **Total** | | **82** | **23** |
+| **Total** | | **82** | **24** |

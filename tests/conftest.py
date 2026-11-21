@@ -104,3 +104,24 @@ def client() -> "Iterator[TestClient]":
     # raise_server_exceptions=False so a crashing route returns its real 500 response.
     with TestClient(app_main.create_app(), raise_server_exceptions=False) as test_client:
         yield test_client
+
+
+def _headers_for(role: str, email: str) -> dict[str, str]:
+    from app.core.security import create_access_token
+
+    return {"Authorization": f"Bearer {create_access_token(role, role, email=email)}"}
+
+
+@pytest.fixture
+def agent_headers() -> dict[str, str]:
+    return _headers_for("agent", "sam.agent@clouddesk.demo")
+
+
+@pytest.fixture
+def admin_headers() -> dict[str, str]:
+    return _headers_for("admin", "admin@clouddesk.demo")
+
+
+@pytest.fixture
+def viewer_headers() -> dict[str, str]:
+    return _headers_for("viewer", "vic.viewer@clouddesk.demo")
