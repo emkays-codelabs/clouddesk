@@ -166,6 +166,18 @@ CREATES = {
 }  # fmt: skip
 
 
+# Aggregates return counts, not rows, so they get their own check: the other tenant's data adds 0.
+AGGREGATES = [
+    (tickets.TicketRepository, "count_open", {}),
+    (tickets.TicketRepository, "count_resolved_since", {"since": NOW - timedelta(days=1)}),
+    (tickets.TicketRepository, "count_by_severity", {}),
+    (tickets.TicketRepository, "count_by_category", {}),
+    (tickets.TicketRepository, "resolution_spans", {}),
+    (approvals.ApprovalRepository, "count_pending", {}),
+    (approvals.EscalationRepository, "count_open", {}),
+]
+
+
 @pytest.fixture
 async def worlds(session, tenants):
     mine = await seed_world(session, DEMO_TENANT_ID)
@@ -252,6 +264,7 @@ def test_every_public_repository_method_is_classified():
         | {(c.__name__, m) for c, m, _ in WRITES}
         | CREATES
         | {("TicketRepository", "next_ticket_number")}
+        | {(c.__name__, m) for c, m, _ in AGGREGATES}
     )
     unclassified = []
     for cls in _scoped_classes():
@@ -277,3 +290,37 @@ async def test_ticket_numbering_ignores_another_tenants_tickets(session, worlds)
 
     assert await tickets.TicketRepository(session, DEMO_TENANT_ID).next_ticket_number() == "CD-1001"
     assert await other.next_ticket_number() == "CD-5001"
+
+
+@pytest.mark.parametrize(
+    ("cls", "method", "kwargs"), AGGREGATES, ids=[f"{a[0].__name__}.{a[1]}" for a in AGGREGATES]
+)
+async def test_aggregates_count_only_their_own_tenant(session, worlds, cls, method, kwargs):
+    mine, _ = worlds
+    ticket = await tickets.TicketRepository(session, OTHER_TENANT_ID).get(
+        await _other_ticket_id(session)
+    )
+    ticket.severity, ticket.category = "high", Category.billing
+    ticket.status, ticket.resolved_at = TicketStatus.resolved, NOW
+    await session.commit()
+
+    owner = await getattr(cls(session, OTHER_TENANT_ID), method)(**kwargs)
+    seen = await getattr(cls(session, DEMO_TENANT_ID), method)(**kwargs)
+
+    if method in {"count_pending", "count_open"} and cls is approvals.ApprovalRepository:
+        assert owner == 1 and seen == 1  # one pending approval each: neither sees the other's
+    elif method == "count_open" and cls is approvals.EscalationRepository:
+        assert owner == 1 and seen == 1
+    elif method == "count_open":
+        assert owner == 0 and seen == 1  # their ticket is resolved; mine is still open
+    elif method == "count_resolved_since":
+        assert owner == 1 and seen == 0
+    elif method in {"count_by_severity", "count_by_category"}:
+        assert sum(owner.values()) == 1 and seen == {}
+    else:
+        assert len(owner) == 1 and seen == []
+
+
+async def _other_ticket_id(session) -> str:
+    rows, _ = await tickets.TicketRepository(session, OTHER_TENANT_ID).list()
+    return rows[0].id

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 import sqlalchemy as sa
 
 from app.models.entities import Ticket, TicketMessage
 from app.repositories.base import ScopedRepository, contains_any
-from app.schemas.common import Severity, TicketStatus
+from app.schemas.common import Category, Severity, TicketStatus
 
 TICKET_PREFIX = "CD-"
 FIRST_TICKET_NUMBER = 1001
@@ -65,6 +66,45 @@ class TicketRepository(ScopedRepository[Ticket]):
 
     async def update(self, id: str, **fields: Any) -> Ticket | None:
         return await self._update_where(id, **fields)
+
+    async def _count(self, *criteria: Any) -> int:
+        stmt = (
+            sa.select(sa.func.count())
+            .select_from(Ticket)
+            .where(Ticket.tenant_id == self.tenant_id, *criteria)
+        )
+        return (await self.session.execute(stmt)).scalar_one()
+
+    async def count_open(self) -> int:
+        """Tickets that are neither resolved nor closed."""
+        return await self._count(Ticket.status.not_in([TicketStatus.resolved, TicketStatus.closed]))
+
+    async def count_resolved_since(self, since: datetime) -> int:
+        return await self._count(
+            Ticket.status.in_([TicketStatus.resolved, TicketStatus.closed]),
+            Ticket.resolved_at >= sa.literal(since, Ticket.resolved_at.type),
+        )
+
+    async def _count_by(self, column: Any) -> dict[Any, int]:
+        stmt = (
+            sa.select(column, sa.func.count())
+            .where(Ticket.tenant_id == self.tenant_id, column.is_not(None))
+            .group_by(column)
+        )
+        return {key: n for key, n in (await self.session.execute(stmt)).all()}
+
+    async def count_by_severity(self) -> dict[Severity, int]:
+        return await self._count_by(Ticket.severity)
+
+    async def count_by_category(self) -> dict[Category, int]:
+        return await self._count_by(Ticket.category)
+
+    async def resolution_spans(self) -> list[tuple[datetime, datetime]]:
+        """(created_at, resolved_at) of every ticket that has been resolved."""
+        stmt = sa.select(Ticket.created_at, Ticket.resolved_at).where(
+            Ticket.tenant_id == self.tenant_id, Ticket.resolved_at.is_not(None)
+        )
+        return [(c, r) for c, r in (await self.session.execute(stmt)).all()]
 
 
 class TicketMessageRepository(ScopedRepository[TicketMessage]):
