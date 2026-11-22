@@ -149,3 +149,18 @@ async def test_execute_never_raises_on_unserialisable_args():
     reg, _ = make_registry()
     res = await reg.execute("get_customer", {"customer_id": object()})
     assert isinstance(res.ok, bool)
+
+
+async def test_non_idempotent_tool_runs_every_time():
+    reg, calls = make_registry()
+
+    async def search_docs() -> str:
+        """Ping."""
+        calls.append("ping")
+        return "pong"
+
+    reg.register(search_docs, idempotent=False)
+    first = await reg.execute("search_docs", {})
+    second = await reg.execute("search_docs", {})
+    assert first.ok and second.ok and not second.idempotent
+    assert calls.count("ping") == 2

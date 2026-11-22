@@ -64,3 +64,6 @@ class WorkspaceRepository(ScopedRepository[Workspace]):
             .limit(1)
         )
         return (await self.session.execute(stmt)).scalar_one_or_none()
+
+    async def get(self, id: str) -> Workspace | None:
+        return await self._get(id)

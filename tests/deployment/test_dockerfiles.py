@@ -121,3 +121,11 @@ def test_root_dockerignore_excludes_secrets_and_local_data():
 def test_frontend_dockerignore_excludes_env_and_build_output():
     lines = {ln.strip() for ln in _read("frontend/.dockerignore").splitlines()}
     assert {".env", ".env.*", "node_modules", ".next"} <= lines
+
+
+def test_backend_image_copies_the_integrations_package_the_tools_import():
+    # backend/app/tools imports `integrations`; without this COPY the image fails at import time.
+    copies = [
+        i for i in _instructions(_read("backend/Dockerfile")) if i.upper().startswith("COPY ")
+    ]
+    assert any("integrations/" in c and "./integrations/" in c for c in copies)

@@ -45,7 +45,7 @@ async def seed_world(session, tenant_id):
 
     cust = await r(customers.CustomerRepository).create(name="Ada", email="ada@x.io")
     await r(customers.SubscriptionRepository).create(customer_id=cust.id, plan="pro")
-    await r(customers.WorkspaceRepository).create(customer_id=cust.id, name="HQ")
+    ws = await r(customers.WorkspaceRepository).create(customer_id=cust.id, name="HQ")
     profile = await r(profiles.ProfileRepository).create(email="sam@x.io", full_name="Sam")
     ticket = await r(tickets.TicketRepository).create(
         ticket_number="CD-1", customer_id=cust.id, subject="s", body="b"
@@ -74,7 +74,8 @@ async def seed_world(session, tenant_id):
     )
     await r(audit.AuditLogRepository).append(actor="sam", action="POST /x")
     return SimpleNamespace(
-        customer=cust.id, profile=profile.id, ticket=ticket.id, article=article.id, run=run.id,
+        customer=cust.id, workspace=ws.id, profile=profile.id, ticket=ticket.id,
+        article=article.id, run=run.id,
         action=action.id, approval=approval.id, escalation=esc.id,
     )  # fmt: skip
 
@@ -88,6 +89,7 @@ READS = [
     (customers.CustomerRepository, "list", lambda w: {}, False),
     (customers.SubscriptionRepository, "get_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
     (customers.WorkspaceRepository, "get_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
+    (customers.WorkspaceRepository, "get", lambda w: {"id": w.workspace}, True),
     (profiles.ProfileRepository, "get", lambda w: {"id": w.profile}, True),
     (profiles.ProfileRepository, "get_by_email", lambda w: {"email": "sam@x.io"}, True),
     (profiles.ProfileRepository, "get_first_by_role", lambda w: {"role": "viewer"}, True),

@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MAKEFILE = ROOT / "Makefile"
-REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format", "seed", "ingest"}
+REQUIRED_TARGETS = {"setup", "backend", "test", "lint", "format", "seed", "ingest", "mcp"}
 
 
 def _targets() -> dict[str, list[str]]:
@@ -94,3 +94,9 @@ def test_seed_target_runs_the_seed_service():
     assert "uv run python -m app.services.seed_service" in recipe
     # PYTHONPATH is exported for this target only, as a variable, so no shell syntax is needed.
     assert re.search(r"^seed:\s*export PYTHONPATH\s*=\s*backend\s*$", text, re.M)
+
+
+def test_mcp_target_runs_the_read_only_server_module():
+    recipe = " ".join(_targets()["mcp"])
+
+    assert recipe.startswith("uv run python -m integrations.mcp.server")

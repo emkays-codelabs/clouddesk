@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 08:18 +0530_
+_Last updated: 2026-11-22 08:40 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -477,10 +477,10 @@ The longest dependency chain is 16 tasks long.
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P6-1 · Tool registry and policy | F9 | `feature/tool-registry-policy` | Completed ✅ |
-| P6-2 · Read-only support tools | F4, F5, F7 | `feature/tools-read-only` | Pending ❌ |
-| P6-3 · Approval-gated write tools | F9 | `feature/tools-approval-gated` | Pending ❌ |
-| P6-4 · Mock integrations | — | `feature/integrations-mock` | Pending ❌ |
-| P6-5 · MCP read-only server and `/mcp/tools` | — | `feature/mcp-server` | Pending ❌ |
+| P6-2 · Read-only support tools | F4, F5, F7 | `feature/tools-read-only` | Completed ✅ |
+| P6-3 · Approval-gated write tools | F9 | `feature/tools-approval-gated` | Completed ✅ |
+| P6-4 · Mock integrations | — | `feature/integrations-mock` | Completed ✅ |
+| P6-5 · MCP read-only server and `/mcp/tools` | — | `feature/mcp-server` | Completed ✅ |
 
 #### Task definitions
 
@@ -945,7 +945,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 3 | Identity and request guards | 4 | 4 |
 | 4 | Support API | 5 | 5 |
 | 5 | Knowledge pipeline | 4 | 4 |
-| 6 | Tools and mocks | 5 | 1 |
+| 6 | Tools and mocks | 5 | 5 |
 | 7 | Rules and guardrails | 4 | 0 |
 | 8 | Memory | 3 | 0 |
 | 9 | Specialist agents | 8 | 0 |
@@ -954,4 +954,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **82** | **40** |
+| **Total** | | **82** | **44** |
