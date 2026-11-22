@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-22 08:18 +0530_
+_Last updated: 2026-11-22 08:40 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-22 08:18 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 5 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline), all validated locally, with 40 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 5 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline), all validated locally, with 44 of 82 tasks done. Phases 6, 12 and 14 are in progress. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
