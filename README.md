@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 22:17 +0530_
+_Last updated: 2026-11-27 22:43 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -77,6 +77,8 @@ flowchart LR
     G --> H
     H --> I[Remember]
 ```
+
+![How a ticket is handled](docs/design/diagrams/07-how-a-ticket-is-handled.svg)
 
 ### 1.3 The one design rule
 

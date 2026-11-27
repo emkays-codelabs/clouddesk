@@ -1,6 +1,6 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-27 21:56 +0530_
+_Last updated: 2026-11-27 22:43 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -126,6 +126,8 @@ flowchart TB
   Workflow -->|call_structured| Model
   Workflow -.->|optional traces| Smith
 ```
+
+![System context: the browser, the console, the API, the workflow and the data stores](diagrams/01-system-context.svg)
 
 ---
 
@@ -408,6 +410,8 @@ flowchart LR
   Remember --> Done[END]
 ```
 
+![The support workflow: its steps and routes](diagrams/02-workflow.svg)
+
 ### 3.1 Run, pause, approve, reply
 
 1. The console calls `POST /api/v1/tickets/{id}/run`.
@@ -485,6 +489,8 @@ sequenceDiagram
   UI->>API: POST /tickets/{id}/reply
 ```
 
+![Run, pause, approve and reply, step by step](diagrams/03-run-pause-approve-reply.svg)
+
 ---
 
 ## 4. Knowledge and memory
@@ -547,6 +553,8 @@ erDiagram
   incidents ||--o{ tickets : "may affect"
   support_articles ||--o{ workflow_events : "cited as evidence"
 ```
+
+![The data model: the main tables and how they relate](diagrams/04-data-model.svg)
 
 Every data table also carries `tenant_id` (`String(36)`, not null, indexed, and first in every
 composite index), and row-level security (RLS) is keyed on it: `USING (tenant_id = current_setting('app.tenant_id')::uuid)`,
@@ -638,6 +646,8 @@ flowchart LR
   QdrantC --> Vol
 ```
 
+![The local Docker stack](diagrams/05-local-docker-stack.svg)
+
 Offline tests skip Compose. They use SQLite, fakeredis, the in-memory vector store, the fake LLM, and an in-memory checkpointer. Row-level security is applied to a real Postgres in a separate check, but the API does not yet set `app.tenant_id`, so at runtime the repository filter is the boundary.
 
 ---
@@ -728,6 +738,8 @@ flowchart TB
   ApiTask --> LLMApi[LLM API]
   ApiTask -.-> Logs
 ```
+
+![The Amazon Web Services target](diagrams/06-aws-target.svg)
 
 ### 8.2 Azure
 

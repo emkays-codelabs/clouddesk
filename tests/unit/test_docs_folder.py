@@ -207,3 +207,16 @@ class TestInternalNames:
         assert sorted(padded) == ["Phase01", "Phase02", "Phase10", "Phase14"]
         # Unpadded, Phase10 and Phase14 sort ahead of Phase2, which is the bug the padding prevents.
         assert sorted(unpadded) != ["Phase1", "Phase2", "Phase10", "Phase14"]
+
+
+def test_every_diagram_picture_a_document_embeds_exists():
+    """Markdown image links to the rendered diagrams must resolve (docs/design/diagrams/*.svg)."""
+    link = re.compile(r"!\[[^\]]*\]\(([^)\s]+\.svg)\)")
+    missing = []
+    for path in _tracked_text_files():
+        if path.suffix != ".md":
+            continue
+        for target in link.findall(path.read_text(encoding="utf-8")):
+            if not target.startswith("http") and not (path.parent / target).resolve().exists():
+                missing.append(f"{path.relative_to(ROOT).as_posix()} -> {target}")
+    assert missing == []
