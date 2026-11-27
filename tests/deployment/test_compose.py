@@ -95,9 +95,10 @@ def test_the_backend_runs_the_offline_demo_defaults():
 
 
 def test_host_ports_default_to_8000_and_3000_and_are_compose_only_variables():
-    # Not read by Settings, so they must not be listed in .env.example (test_env_example).
-    assert "BACKEND_PORT" not in (ROOT / ".env.example").read_text(encoding="utf-8")
-    assert "FRONTEND_PORT" not in (ROOT / ".env.example").read_text(encoding="utf-8")
+    # Not read by Settings, so not listed in CLAUDE.md section 10.1 (test_env_settings).
+    spec = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "BACKEND_PORT" not in spec.split("### 10.1")[1].split("### 10.2")[0]
+    assert "FRONTEND_PORT" not in spec.split("### 10.1")[1].split("### 10.2")[0]
     assert "compose-only" in TEXT
 
 

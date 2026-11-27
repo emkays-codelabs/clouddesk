@@ -106,7 +106,7 @@ Think of Phase 2 as building the **records office** behind the front desk Phase 
 ### Sample data and the seed loader
 
 - **Purpose.** Create the demo scenario from CLAUDE.md section 5.
-- **Does.** Reads seven JSON files, checks every record and every link between records before writing anything, then writes it all in one transaction. Ids are derived from names (uuid5), so CD-1002 gets the same id on every computer.
+- **Does.** Reads seven JSON files (eight today: Phase 3 added `profiles.json`, which is now seeded too), checks every record and every link between records before writing anything, then writes it all in one transaction. Ids are derived from names (uuid5), so CD-1002 gets the same id on every computer.
 - **Refuses** to run unless `DEMO_MODE` is true, and refuses when the database already has a customer or a ticket.
 
 ---
@@ -205,7 +205,7 @@ Interview explanation: "One clerk per drawer group, all trained by the same base
 
 ### `sample_data/*.json`
 
-Seven files: `customers.json` (8, all four plans), `subscriptions.json` (8), `workspaces.json` (8), `tickets.json` (13, CD-1001 to CD-1013), `incidents.json` (2), `products.json` (5) and `previous_resolutions.json` (6). All content is fictional. Each ticket carries a `customer_key` that links it to a customer. `previous_resolutions.json` is checked but not loaded into the database, because no table holds it; the Knowledge Agent in Phase 9 will read it from disk.
+Seven files in Phase 2 (`profiles.json`, three demo users, joined in Phase 3): `customers.json` (8, all four plans), `subscriptions.json` (8), `workspaces.json` (8), `tickets.json` (13, CD-1001 to CD-1013), `incidents.json` (2), `products.json` (5) and `previous_resolutions.json` (6). All content is fictional. Each ticket carries a `customer_key` that links it to a customer. `previous_resolutions.json` is checked but not loaded into the database, because no table holds it; the Knowledge Agent in Phase 9 will read it from disk.
 
 ### `backend/app/services/seed_service.py` (296 lines when this phase was written; 312 today)
 
@@ -215,7 +215,7 @@ Seven files: `customers.json` (8, all four plans), `subscriptions.json` (8), `wo
 | Reason for existence | Every developer and every test gets the same demo scenario |
 | Main components | `load_sample_data`, `bootstrap_demo_data`, `SeedReport`, `SEED_NAMESPACE`, strict Pydantic record classes, `main` (the `make seed` entry point) |
 | Inputs | `SAMPLE_DATA_DIR`, `DEMO_MODE` |
-| Processing | Parse every file (unknown fields are errors), cross-check customer links and one subscription and workspace per customer, then ensure the tenant row, check emptiness, write through the repositories and commit once. Each ticket also gets its first customer message dated as the ticket. |
+| Processing | Parse every file (unknown fields are errors; Phase 2 parsed seven files), cross-check customer links and one subscription and workspace per customer, then ensure the tenant row, check emptiness, write through the repositories and commit once. Each ticket also gets its first customer message dated as the ticket. |
 | Outputs | A `SeedReport` (`loaded`, reason, counts) |
 | Dependencies | The repositories, `backend/app/core/database.py`, `backend/app/core/config.py` |
 | Execution point | Startup lifespan and `make seed` |
@@ -359,7 +359,7 @@ These were decisions made while building the phase; each is also recorded in the
 
 **Important decisions.** D1, portable models, the repository-owned filter, the O1 type mapping.
 
-**Limitations that remain.** No Postgres run; no `asyncpg`; no `SET LOCAL` issuer; no API; no seeded profiles, articles or memory; startup failures are logged rather than fatal.
+**Limitations that remain.** No Postgres run; no `asyncpg`; no `SET LOCAL` issuer; no API; no seeded profiles (Phase 3 added three), articles or memory; startup failures are logged rather than fatal.
 
 **Reused or extended later.**
 

@@ -36,7 +36,7 @@ Unchanged: `make setup`, `make backend`, `make test`, `make lint`. For this phas
 
 ## H. Environment variables and secrets
 
-None added; `.env.example` is unchanged. The thresholds (`GROUNDEDNESS_THRESHOLD`, 0.8) are constants in `backend/app/core/output_validation.py`; `CLAUDE.md` section 10.2 lists a setting of that name as a later addition and it is not read from the environment today. The scrubber exists so secrets are kept out of memory notes and replies; it does not manage secrets.
+None added; `.env.example` (removed 2026-11-27) is unchanged. The thresholds (`GROUNDEDNESS_THRESHOLD`, 0.8) are constants in `backend/app/core/output_validation.py`; `CLAUDE.md` section 10.2 lists a setting of that name as a later addition and it is not read from the environment today. The scrubber exists so secrets are kept out of memory notes and replies; it does not manage secrets.
 
 ## I. Persistent storage and data management
 

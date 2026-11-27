@@ -64,12 +64,12 @@ def test_backend_target_serves_the_app_from_the_backend_folder():
     assert "--app-dir backend" in recipe
 
 
-def test_setup_syncs_dependencies_and_creates_env_without_overwriting_an_existing_one():
+def test_setup_syncs_dependencies_and_sets_the_hooks_path_but_copies_no_env_template():
     recipe = "\n".join(_targets()["setup"])
 
     assert "uv sync" in recipe
-    assert ".env.example" in recipe and "'.env'" in recipe
-    assert ".exists()" in recipe  # only copies when .env is missing
+    assert "core.hooksPath .githooks" in recipe
+    assert ".env" not in recipe  # .env is created by hand; there is no committed template
 
 
 def test_every_recipe_runs_in_cmd_powershell_and_sh_alike():

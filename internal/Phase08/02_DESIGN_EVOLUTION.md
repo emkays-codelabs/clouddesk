@@ -1,6 +1,6 @@
 # Phase 8: system design evolution
 
-> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done. In a run made for this document (2026-11-27) the whole suite passed (1103 tests) and `ruff check .` reported no problems. Nothing is deployed, and the work is not committed.
+> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done. In a run made for this document (2026-11-27) the whole suite passed (1103 tests) and `ruff check .` reported no problems. Nothing is deployed. The work was not yet committed when this document was written; it has since merged as pull request #54.
 >
 > **Not built in Phase 8:** no graph node that calls memory, no API route (including erasure), no memory vectors written by the app, no memory summarisation, no per-note expiry, no PII scrub beyond secrets.
 >

@@ -21,7 +21,6 @@ build/
 .env
 .env.*
 *.env
-!.env.example
 secrets.json
 
 # --- IDEs and Workspace Metadata ---
@@ -62,6 +61,19 @@ node_modules/
 out/
 *.tsbuildinfo
 npm-debug.log*
+
+coverage/
+.eslintcache
+
+# --- Docker (personal overrides, for example a different host port) ---
+docker-compose.override.yml
+compose.override.yml
+
+# --- Scratch files and screenshots dropped in the project folder ---
+.tmp*/
+Screenshot*.jpg
+Screenshot*.jpeg
+Screenshot*.png
 
 # --- OS Files ---
 .DS_Store

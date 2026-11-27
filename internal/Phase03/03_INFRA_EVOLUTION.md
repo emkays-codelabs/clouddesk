@@ -52,7 +52,7 @@ flowchart LR
 ### Change 2. Settings that carry secrets (P3-1, P3-2)
 
 - **Added.** `JWT_SECRET` (demo default `change-me-demo-only`), `SUPABASE_JWT_SECRET` (empty by default, wins when set), `DEMO_MODE`. They are held as secret strings and never appear in a response (tested).
-- **No new variable** was introduced by Phase 3; all already existed in `.env.example`.
+- **No new variable** was introduced by Phase 3; all already existed in `.env.example` (removed 2026-11-27).
 
 ### Change 3. The request path got longer (P3-4)
 
@@ -103,7 +103,7 @@ Restarting the server resets all rate-limit counters when the fake is in use. Th
 | `SUPABASE_JWT_SECRET` | same | empty | When set it replaces `JWT_SECRET` |
 | `DEMO_MODE` | `backend/app/api/auth.py` | `true` | Demo login is 404 when false |
 | `REDIS_URL` | `backend/app/core/redis.py` | empty | Empty means fake Redis |
-| `USE_FAKE_REDIS` | same | `true` in `.env.example` | Forces the fake even if a URL is set |
+| `USE_FAKE_REDIS` | same | `true` in `.env.example` (removed 2026-11-27) | Forces the fake even if a URL is set |
 | `RATE_LIMIT_PER_MINUTE` | `backend/app/main.py` | `120` | Per client per minute |
 
 Settings are cached: restart after editing `.env`. Real secrets go only in `.env` (git-ignored). No secret appears in this document.

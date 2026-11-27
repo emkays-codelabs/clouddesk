@@ -1,4 +1,5 @@
-# Make recipes and shell scripts break with CRLF line endings, so pin them to LF on every OS.
+# Make recipes, shell scripts and Dockerfiles break with CRLF line endings, so pin them to LF on every OS.
 Makefile text eol=lf
 *.sh text eol=lf
 .githooks/* text eol=lf
+Dockerfile text eol=lf

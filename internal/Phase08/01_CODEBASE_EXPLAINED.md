@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 8 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done, plus a small container fix. In a run made for this document (2026-11-27) the whole suite passed (1103 tests, 31 of them new or extended in Phase 8) and `ruff check .` was clean. Nothing is committed or deployed from this work yet. Phase 8 has **no language model, no graph node and no API route**: the memory service is a library that Phase 10's nodes will call (planned). Today only tests call it.
+> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done, plus a small container fix. In a run made for this document (2026-11-27) the whole suite passed (1103 tests, 31 of them new or extended in Phase 8) and `ruff check .` was clean. Nothing was committed or deployed when this document was written (the work has since merged as pull request #54, and nothing is deployed). Phase 8 has **no language model, no graph node and no API route**: the memory service is a library that Phase 10's nodes will call (planned). Today only tests call it.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 7 explained](../Phase07/01_CODEBASE_EXPLAINED.md).
 

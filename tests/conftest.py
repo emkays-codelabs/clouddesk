@@ -34,7 +34,7 @@ OFFLINE_ENV = {
     "LANGCHAIN_TRACING_V2": "false",
     "SUPABASE_JWT_SECRET": "",
 }
-os.environ.update(OFFLINE_ENV)
+os.environ.update(OFFLINE_ENV | {"LLM_MODEL": "", "LLM_BASE_URL": ""})  # .env must not leak in
 
 from app.core.config import get_settings  # noqa: E402  (must follow the environment setup above)
 

@@ -2,7 +2,7 @@
 
 > **Read this first.** Phase 4 still has **no Docker, no Docker Compose, no containers, no Postgres server, no real Redis server, no reverse proxy, no continuous-integration pipeline and no deployment**. There is no `Dockerfile` and no Compose file in the repository.
 >
-> Phase 4 adds **no infrastructure and no new environment variable**. It adds six routers to the one existing process and reads settings that already existed. This document says so honestly. Containers appear only as concepts marked planned.
+> Phase 4 adds **no infrastructure and no new environment variable**. It adds five routers to the one existing process and reads settings that already existed. This document says so honestly. Containers appear only as concepts marked planned.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md), [design evolution](./02_DESIGN_EVOLUTION.md), [Phase 3 infrastructure](../Phase03/03_INFRA_EVOLUTION.md).
 >

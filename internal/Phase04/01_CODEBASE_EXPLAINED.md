@@ -82,7 +82,7 @@ Technical terms. **Route**: a URL plus a method that does one job. **Schema**: a
 | `backend/app/repositories/base.py` | `ScopedRepository`: every query carries the tenant filter; `_page` clamps `page_size` to 100 (`MAX_PAGE_SIZE`); `contains_any` does a case-insensitive, wildcard-safe search. Repositories flush and never commit. | "The rule that every query is for this company only." |
 | `backend/app/repositories/tickets.py` | Phase 4 added `next_ticket_number`, `count_open`, `count_resolved_since`, `count_by_severity`, `count_by_category`, `resolution_spans`. | |
 | `backend/app/repositories/customers.py`, `backend/app/repositories/approvals.py`, `backend/app/repositories/workflow.py` | Phase 4 added `CustomerRepository.get_many`, `EscalationRepository.latest_for_ticket` and `count_open`, `ApprovalRepository.count_pending`, `ResolutionActionRepository.list_for_ticket`. | |
-| `backend/app/main.py` | Mounts the six new routers under `/api/v1`. Middleware order is unchanged from Phase 3. | "Where the routes are plugged in." |
+| `backend/app/main.py` | Mounts the five new routers (tickets, customers, dashboard, audit, settings) under `/api/v1`, beside the Phase 3 auth router. Middleware order is unchanged from Phase 3. | "Where the routes are plugged in." |
 | `docs/design/06_API_CONTRACT.md` | The written contract, corrected in P4-1 where the models disagreed with it and extended with status codes in later tasks. | "The agreement the frontend will build against." |
 | `tests/api/conftest.py` | `fresh_db`: a private database for tests that count whole-table rows. | |
 

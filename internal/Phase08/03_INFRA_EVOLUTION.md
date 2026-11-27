@@ -17,7 +17,7 @@ Inherited: `docker-compose.yml` with `frontend`, `backend`, `redis` and `qdrant`
 ## C. Infrastructure evolution
 
 1. **`backend/Dockerfile`** now copies `agents/` and `memory/` beside `rag/` and `integrations/`. `agents/` exists since Phase 7 and `memory/` since this phase; the new adapter `backend/app/services/customer_memory_service.py` imports `memory/`, so the image would have failed at import time without the copy. `tests/deployment/test_dockerfiles.py` gained a check that both COPY lines exist and the folders exist.
-2. **`docker-compose.yml`** host ports are now `${BACKEND_PORT:-8000}:8000` and `${FRONTEND_PORT:-3000}:3000`. The frontend build argument `NEXT_PUBLIC_API_URL` follows the backend port and `CORS_ORIGINS` follows the frontend port. Reason: on the first bring-up, host port 8000 was already taken by another project. `tests/deployment/test_compose.py` was updated to the new strings and checks that the two variables are not in `.env.example`.
+2. **`docker-compose.yml`** host ports are now `${BACKEND_PORT:-8000}:8000` and `${FRONTEND_PORT:-3000}:3000`. The frontend build argument `NEXT_PUBLIC_API_URL` follows the backend port and `CORS_ORIGINS` follows the frontend port. Reason: on the first bring-up, host port 8000 was already taken by another project. `tests/deployment/test_compose.py` was updated to the new strings and checks that the two variables are not in `.env.example` (removed 2026-11-27).
 
 ## D. Docker and container explanation
 
@@ -42,7 +42,7 @@ BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build
 
 ## H. Environment variables and secrets
 
-None added to `Settings` or `.env.example`. `BACKEND_PORT` and `FRONTEND_PORT` are compose-only variables read by Docker Compose, documented in a comment in `docker-compose.yml` and in `README.md` section 5.5. `tests/unit/test_env_example.py` stays green because the code does not read them. No secret is involved.
+None added to `Settings` or `.env.example` (removed 2026-11-27). `BACKEND_PORT` and `FRONTEND_PORT` are compose-only variables read by Docker Compose, documented in a comment in `docker-compose.yml` and in `README.md` section 5.5. `tests/unit/test_env_example.py` stays green because the code does not read them. No secret is involved.
 
 ## I. Persistent storage and data management
 

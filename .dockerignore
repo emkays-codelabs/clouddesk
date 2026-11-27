@@ -1,3 +1,7 @@
+# Build context for backend/Dockerfile (context = repository root). The Dockerfile copies only
+# pyproject.toml, uv.lock, backend/, rag/, agents/, memory/, integrations/, sample_data/ and database/,
+# so everything else here is kept out of the context to keep it small and free of secrets and local data.
+# The frontend image has its own context and its own frontend/.dockerignore.
 .git
 .githooks
 .github
@@ -9,16 +13,18 @@
 .ruff_cache
 node_modules
 **/node_modules
-frontend/.next
+frontend
 data/
 *.db
 .env
 .env.*
-!.env.example
+CLAUDE.local.md
 docs/plans
 internal
 tests
 deployment
+Screenshot*
+.tmp*
 *.tfstate
 *.tfvars
 backend.hcl

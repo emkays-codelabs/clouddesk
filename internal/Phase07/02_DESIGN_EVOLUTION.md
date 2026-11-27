@@ -1,6 +1,6 @@
 # Phase 7: system design evolution
 
-> **Status of this phase:** implemented and checked locally. All four tasks (P7-1 to P7-4) are done. In a run made for this document (2026-11-27) the whole suite passed (1072 tests) and `ruff check .` reported no problems. Nothing is deployed, and the work is not committed.
+> **Status of this phase:** implemented and checked locally. All four tasks (P7-1 to P7-4) are done. In a run made for this document (2026-11-27) the whole suite passed (1072 tests) and `ruff check .` reported no problems. Nothing is deployed. The work was not yet committed when this document was written; it has since merged as pull request #53.
 >
 > **Not built in Phase 7:** no language model, no agent, no graph, no approval service, no judge-model groundedness, no red-team dataset (D6), no `prohibited` tier (D2). The guards are not yet called on the live request path except one retrieval filter.
 >
