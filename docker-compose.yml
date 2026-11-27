@@ -53,9 +53,21 @@ services:
       CHECKPOINT_DB_PATH: /app/data/checkpoints.db
       REDIS_URL: redis://redis:6379/0
       USE_FAKE_REDIS: "false"
-      # Fixed to the offline provider: these values win over .env, so a real provider (for example euron) means
-      # changing this line and adding LLM_API_KEY, which is not set here.
-      LLM_PROVIDER: fake
+      # Model settings come from the host environment or the project's .env (compose substitutes both),
+      # defaulting to the offline profile so a machine without a key still comes up. To run on Euron put
+      # LLM_PROVIDER=euron, EMBEDDING_PROVIDER=euron and LLM_API_KEY in .env; the key is only ever
+      # substituted here, never written. Embeddings change when the provider does: POST /knowledge/reindex.
+      LLM_PROVIDER: ${LLM_PROVIDER:-fake}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-}
+      LLM_MODEL_SMART: ${LLM_MODEL_SMART:-}
+      LLM_MODEL_REASONING: ${LLM_MODEL_REASONING:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fake}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-384}
       # Qdrant is running for later; the default store stays in memory so the demo needs nothing else.
       VECTOR_STORE: memory
       QDRANT_URL: http://qdrant:6333

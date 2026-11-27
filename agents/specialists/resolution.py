@@ -205,6 +205,7 @@ class ResolutionAgent:
                 system=RESOLUTION_SYSTEM,
                 user=user,
                 hints={"summary": f"Resolve: {classification.summary}"},
+                tier="smart",
                 llm=self._llm,
             )
             usage = result.usage

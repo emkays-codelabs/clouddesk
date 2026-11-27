@@ -58,6 +58,6 @@ sections 6 and 20.
 | [0007](0007-workflows-run-in-the-backend-process.md) | Workflows run in the backend process | Accepted | ADR-08, differs |
 | [0008](0008-a-prohibited-risk-tier.md) | A fourth risk tier, `prohibited` | Proposed | D2 |
 | [0009](0009-write-capable-mcp-servers.md) | Write-capable MCP servers | Proposed | D3 |
-| [0010](0010-model-tiering-and-a-gateway.md) | Model tiering behind a gateway | Proposed | D4, ADR-05 |
+| [0010](0010-model-tiering-and-a-gateway.md) | Model tiering: an in-process router, no gateway service | Accepted (limited form) | D4, ADR-05 |
 | [0011](0011-kubernetes-and-helm.md) | Kubernetes and Helm as the parity target | Proposed | D5, ADR-06 |
 | [0012](0012-the-harder-evaluation-bar-and-a-red-team-set.md) | The harder evaluation bar and a red-team set | Proposed | D6 |

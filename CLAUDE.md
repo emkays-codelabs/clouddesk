@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 15:07 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -450,7 +450,9 @@ REDIS_URL               empty → fakeredis  |  redis://redis:6379/0
 USE_FAKE_REDIS          true in tests (docker-compose.yml sets false and a real Redis)
 LLM_PROVIDER            fake (default) | openai | euron (OpenAI-compatible) | anthropic (not implemented)
 LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
-EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS      only the fake embeddings exist today
+LLM_MODEL_FAST, LLM_MODEL_SMART, LLM_MODEL_REASONING   Euron router tiers; each falls back to LLM_MODEL
+EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS      fake (default, tests) | euron
+EMBEDDING_BASE_URL      empty falls back to the LLM base URL
 VECTOR_STORE            memory | qdrant
 QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)
 APPROVAL_REQUIRED_FOR_REFUNDS=true, MAX_REFUND_WITHOUT_APPROVAL=0
@@ -699,7 +701,7 @@ and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and holds each 
 
 The upstream PRD, HLD and LLD are in `docs/` (§1.1); course documents 00 and 04–17 are not. Phase
 boundaries follow the dependency order in this file, not the upstream release plan. Stage 17 is
-optional and is not a core exit criterion. Phase 9 has all 8 tasks done and stays `in progress` until `/phase-docs 9` writes its documents.
+optional and is not a core exit criterion. Phase 9 has all 10 tasks done and stays `in progress` until `/phase-docs 9` writes its documents.
 
 | Phase | Name | Status |
 |---|---|---|

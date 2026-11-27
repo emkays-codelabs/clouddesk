@@ -34,7 +34,19 @@ OFFLINE_ENV = {
     "LANGCHAIN_TRACING_V2": "false",
     "SUPABASE_JWT_SECRET": "",
 }
-os.environ.update(OFFLINE_ENV | {"LLM_MODEL": "", "LLM_BASE_URL": ""})  # .env must not leak in
+# The git-ignored .env of a developer who runs the app on Euron must not leak into a test.
+_BLANKED = {
+    "LLM_MODEL": "",
+    "LLM_BASE_URL": "",
+    "LLM_MODEL_FAST": "",
+    "LLM_MODEL_SMART": "",
+    "LLM_MODEL_REASONING": "",
+    "EMBEDDING_PROVIDER": "fake",
+    "EMBEDDING_MODEL": "",
+    "EMBEDDING_BASE_URL": "",
+    "EMBEDDING_DIMENSIONS": "384",
+}
+os.environ.update(OFFLINE_ENV | _BLANKED)
 
 from app.core.config import get_settings  # noqa: E402  (must follow the environment setup above)
 

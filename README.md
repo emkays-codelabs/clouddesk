@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 15:07 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-27 14:41 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 59 of 82 tasks done. Phase 9 (the specialist agents) has all its tasks done and awaits its four documents; phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 61 of 84 tasks done. Phase 9 (the specialist agents) has all its tasks done and awaits its four documents; phases 12 and 14 are in progress. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -167,7 +167,7 @@ inside the backend rather than a separate gateway service.
 | 13 | Ticket workflow screen | not started |
 | 14 | Evaluation and delivery | in progress |
 
-Phase 9, the specialist agents, is built and checked locally (the six agents and the evaluation dataset; 59 of 82 tasks overall). The task list is in `TASKS.md`.
+Phase 9, the specialist agents, is built and checked locally (the six agents and the evaluation dataset; 61 of 84 tasks overall). The task list is in `TASKS.md`.
 
 [↑ Back to top](#clouddesk-ai)
 

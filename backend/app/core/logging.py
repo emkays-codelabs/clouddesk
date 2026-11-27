@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -18,6 +19,31 @@ def current_request_id() -> str | None:
 
 
 _HANDLER_MARK = "_clouddesk_json_handler"
+
+REDACTED = "***"
+# Keys whose value is a secret: password, secret, api key, authorization, or a lone `token` word
+# (`access_token`, `token`). A count such as `total_tokens` is a number, not a credential.
+_SECRET_KEY = re.compile(
+    r"passw(or)?d|secret|api[_-]?key|authorization|(^|[_\-])token($|[_\-])", re.IGNORECASE
+)
+# Every attribute a bare LogRecord has: anything else on a record came from `extra={...}`.
+_STANDARD_ATTRS = frozenset(logging.LogRecord("", 0, "", 0, "", None, None).__dict__) | {
+    "message",
+    "asctime",
+    "taskName",
+}
+_RESERVED_KEYS = frozenset(
+    {"timestamp", "level", "logger", "message", "request_id", "workflow_id", "exception"}
+)
+
+
+def _redact(key: str, value: object) -> object:
+    """The value to log for `key`: masked when the key looks secret, and inside a dict as well."""
+    if _SECRET_KEY.search(key):
+        return REDACTED
+    if isinstance(value, dict):
+        return {str(k): _redact(str(k), v) for k, v in value.items()}
+    return value
 
 
 @contextmanager
@@ -38,7 +64,11 @@ def log_context(
 
 
 class JsonFormatter(logging.Formatter):
-    """One JSON object per line; request_id and workflow_id are always present (null when unset)."""
+    """One JSON object per line; request_id and workflow_id are always present (null when unset).
+
+    The `extra={...}` fields of a record are added, redacted by key name, JSON-safe through
+    `default=str`; they never override a reserved key.
+    """
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, object] = {
@@ -51,6 +81,11 @@ class JsonFormatter(logging.Formatter):
             "request_id": _request_id.get(),
             "workflow_id": _workflow_id.get(),
         }
+        for key, value in record.__dict__.items():
+            if key in _STANDARD_ATTRS:
+                continue
+            # An extra field can never replace a reserved key; it is kept under a prefixed one.
+            payload[f"extra_{key}" if key in _RESERVED_KEYS else key] = _redact(key, value)
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
         return json.dumps(payload, default=str)

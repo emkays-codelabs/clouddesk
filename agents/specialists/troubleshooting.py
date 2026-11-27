@@ -142,6 +142,7 @@ class TroubleshootingAgent:
                 system=DIAGNOSIS_SYSTEM,
                 user=user,
                 hints={"problem": classification.summary},
+                tier="reasoning",
                 llm=self._llm,
             )
             usage, diagnosis = result.usage, result.output
