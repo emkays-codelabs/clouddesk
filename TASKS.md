@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 10:56 +0530_
+_Last updated: 2026-11-27 11:05 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -601,9 +601,9 @@ The longest dependency chain is 16 tasks long.
 | P9-3 · Customer agent | F4 | `feature/agent-customer` | Completed ✅ |
 | P9-4 · Knowledge agent | F5, F6 | `feature/agent-knowledge` | Completed ✅ |
 | P9-5 · Troubleshooting agent | F7 | `feature/agent-troubleshooting` | Completed ✅ |
-| P9-6 · Resolution agent | F8 | `feature/agent-resolution` | Pending ❌ |
-| P9-7 · Escalation agent | F10 | `feature/agent-escalation` | Pending ❌ |
-| P9-8 · Eval case dataset | F2 | `feature/agent-eval-cases` | Pending ❌ |
+| P9-6 · Resolution agent | F8 | `feature/agent-resolution` | Completed ✅ |
+| P9-7 · Escalation agent | F10 | `feature/agent-escalation` | Completed ✅ |
+| P9-8 · Eval case dataset | F2 | `feature/agent-eval-cases` | Completed ✅ |
 
 #### Task definitions
 
@@ -948,10 +948,10 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 6 | Tools and mocks | 5 | 5 |
 | 7 | Rules and guardrails | 4 | 4 |
 | 8 | Memory | 3 | 3 |
-| 9 | Specialist agents | 8 | 5 |
+| 9 | Specialist agents | 8 | 8 |
 | 10 | Workflow graph and trace | 7 | 0 |
 | 11 | Approval and escalation | 6 | 0 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **82** | **56** |
+| **Total** | | **82** | **59** |
