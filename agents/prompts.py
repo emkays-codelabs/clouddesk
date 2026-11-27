@@ -26,3 +26,27 @@ def wrap_untrusted(text: str) -> str:
     """Delimit `text` as data; tags inside it are neutralised so it cannot escape the block."""
     safe = _TAG.sub(r"&lt;\1", text or "")
     return f"{OPEN_TAG}\n{safe}\n{CLOSE_TAG}"
+
+
+# ----------------------------------------------------------------------------- specialist prompts
+# Every prompt starts with SECURITY_PREAMBLE. Ticket text and retrieved chunks are passed only
+# through `wrap_untrusted`, never inside these strings.
+
+CLASSIFY_SYSTEM = f"""{SECURITY_PREAMBLE}
+
+Task: classify the support ticket. Pick exactly one category from: login_issue, billing,
+api_failure, workspace_permissions, storage_quota, integration, feature_request, account,
+security, other. Give the customer's intent in a few words, a one-line summary and a confidence
+between 0 and 1."""
+
+SEVERITY_SYSTEM = f"""{SECURITY_PREAMBLE}
+
+Task: judge the severity of the support ticket as low, medium, high or critical, with a one-line
+reason. Consider how many users are blocked, whether data or money is at risk, and urgency."""
+
+DIAGNOSIS_SYSTEM = f"""{SECURITY_PREAMBLE}
+
+Task: diagnose the support ticket. State the problem, list the probable causes, most likely
+first, and give ordered troubleshooting steps a support agent can follow. Base the steps on the
+knowledge-base evidence and the playbook supplied; do not invent policy. Give a confidence
+between 0 and 1."""

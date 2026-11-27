@@ -42,6 +42,8 @@ async def test_get_customer_shape(tool_env, seed_id):
     cid = seed_id("customer", "cust-northwind")
     res = await reg.execute("get_customer", {"customer_id": cid})
     assert res.ok
+    created_at = res.data.pop("created_at")
+    assert isinstance(created_at, str)
     assert res.data == {
         "id": cid,
         "name": "Priya Raman",
@@ -94,7 +96,10 @@ async def test_get_ticket_history_excludes_current_and_is_plain_data(tool_env, s
             "status",
             "severity",
             "category",
+            "channel",
+            "escalation_required",
             "created_at",
+            "updated_at",
         }
         assert isinstance(item["created_at"], str)
 
