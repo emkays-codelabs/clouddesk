@@ -66,6 +66,15 @@ npm-debug.log*
 coverage/
 .eslintcache
 
+# --- Test output (Playwright browser tests: reports, traces, screenshots, results) ---
+test-results/
+playwright-report/
+blob-report/
+frontend/test-results/
+frontend/playwright-report/
+frontend/e2e/shots/
+frontend/e2e/last-run.png
+
 # --- Docker (personal overrides, for example a different host port) ---
 docker-compose.override.yml
 compose.override.yml
@@ -76,14 +85,21 @@ Screenshot*.jpg
 Screenshot*.jpeg
 Screenshot*.png
 
+# --- Editor and merge leftovers ---
+*.bak
+*.orig
+*.rej
+
 # --- OS Files ---
 .DS_Store
 Thumbs.db
 
-# --- Local Databases and Runtime Data (demo SQLite, LangGraph checkpoints) ---
+# --- Local Databases and Runtime Data (demo SQLite, LangGraph checkpoints, Postgres dumps) ---
 data/
 *.db
 *.sqlite3
+*.dump
+pgdata/
 
 # --- Terraform (state, plans, and real variable files never get committed) ---
 .terraform/
@@ -92,7 +108,9 @@ data/
 tfplan
 *.tfplan
 terraform.tfvars
+*.auto.tfvars
 backend.hcl
+crash.log
 
 # --- The owner's local prompt note ---
 # A project-agnostic prompt, not CloudDesk documentation, so it is not committed. docs/ holds numbered project documents.
@@ -101,6 +119,3 @@ docs/10_PROMPT_COST.md
 # --- Private interview preparation (see docs/09_PHASE_DOCUMENTATION.md) ---
 # The repository is public. The other documents in each internal/PhaseNN/ folder hold project documentation and are committed.
 internal/Phase*/04_INTERVIEW_QNA.md
-e2e/last-run.png
-test-results/
-frontend/e2e/shots/
