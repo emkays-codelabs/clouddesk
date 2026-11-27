@@ -15,12 +15,12 @@
 
 | Goal | Design response |
 |---|---|
-| Act, not just answer | Agents call governed tools via MCP; policy engine + HITL decides what runs |
+| Act, not just answer | Agents call governed tools via Model Context Protocol (MCP); policy engine + human in the loop (HITL) decides what runs |
 | Safe autonomy | Risk tiers, approval interrupts, guardrails at input/output/action layers |
 | Grounded answers | Hybrid retrieval + reranking + citation-enforced generation |
 | Durable long-running workflows | LangGraph with Postgres checkpointer; background workers |
 | Cloud portability | Containers + Terraform; cloud specifics behind adapter interfaces |
-| Observable & evaluable | OpenTelemetry + LLM tracing + eval pipeline wired into CI |
+| Observable & evaluable | OpenTelemetry + large language model (LLM) tracing + eval pipeline wired into continuous integration (CI) |
 | Cost aware | Model routing, caching, token budgets |
 
 ---
@@ -126,20 +126,20 @@ flowchart TB
 |---|---|---|
 | Next.js Dashboard | Inbox, ticket view, approvals, escalations, analytics, admin | Next.js 15 (App Router), TypeScript, Tailwind, shadcn/ui, TanStack Query |
 | Chat Widget | Customer chat, streaming replies, attachments | React web component, SSE/WebSocket |
-| API Gateway / Ingress | TLS, JWT validation, coarse rate limits, routing | Cloud API gateway / NGINX ingress |
-| Support API | REST endpoints, validation, RBAC, orchestration trigger | FastAPI, Pydantic v2, SQLAlchemy 2 (async) |
-| Realtime Gateway | Push ticket/agent events to UI | FastAPI WebSockets + Redis Pub/Sub |
+| Application programming interface (API) Gateway / Ingress | Transport Layer Security (TLS), JSON Web Token (JWT) validation, coarse rate limits, routing | Cloud API gateway / NGINX ingress |
+| Support API | Representational State Transfer (REST) endpoints, validation, role-based access control (RBAC), orchestration trigger | FastAPI, Pydantic v2, SQLAlchemy 2 (async) |
+| Realtime Gateway | Push ticket/agent events to user interface (UI) | FastAPI WebSockets + Redis Pub/Sub |
 | Channel Adapters | Normalise email/webhook/ticketing input | FastAPI routers + workers |
 | Agent Runtime | Multi-agent graph execution, checkpoints, interrupts | LangGraph, LangChain core |
-| Guardrails Service | Input/output checks (injection, PII, toxicity, groundedness) | Python module + small LLM + Presidio |
+| Guardrails Service | Input/output checks (injection, personally identifiable information (PII), toxicity, groundedness) | Python module + small LLM + Presidio |
 | Policy Engine | Risk-tier decisions for actions | Rules in YAML/OPA-style evaluator |
-| MCP Tool Servers | Typed, permissioned access to back-office systems | MCP Python SDK (streamable HTTP) |
+| MCP Tool Servers | Typed, permissioned access to back-office systems | MCP Python SDK (streamable Hypertext Transfer Protocol (HTTP)) |
 | LLM Gateway | Provider abstraction, routing, retries, failover, cost tracking | LiteLLM (or VexaRoute) |
-| Background Workers | Ingestion, indexing, summaries, evals, SLA timers | Celery / arq on Redis |
+| Background Workers | Ingestion, indexing, summaries, evals, service level agreement timers | Celery / arq on Redis |
 | PostgreSQL | System of record, LangGraph checkpoints, audit, BM25 (optional) | PostgreSQL 16 (+ pgvector option) |
 | Redis | Cache, sessions, rate limiting, queues, short-term memory | Redis 7 |
-| Vector DB | Dense vectors for docs, tickets, resolution cards, memory | Qdrant (default) — pgvector as low-ops option |
-| Object Storage | Raw documents, attachments, exports | S3 / Blob / GCS |
+| Vector database (DB) | Dense vectors for docs, tickets, resolution cards, memory | Qdrant (default) — pgvector as low-ops option |
+| Object Storage | Raw documents, attachments, exports | Simple Storage Service (S3) / Blob / Google Cloud Storage (GCS) |
 
 ---
 
@@ -181,14 +181,14 @@ flowchart TD
 | Agent | Purpose | Inputs | Outputs | Tools |
 |---|---|---|---|---|
 | **Support Supervisor** | Understand, classify, plan route, decide when done | Message, ticket state | `Triage` (intent, category, severity, sentiment, entities), next route | None (LLM only) |
-| **Customer Agent** | Build customer context | Customer ID / email | `CustomerContext` (profile, plan, orders, invoices, open tickets, memory) | crm, billing, orders, ticketing, memory |
-| **Knowledge / RAG Agent** | Retrieve grounded evidence | Query, triage, context | `EvidencePack` (chunks, scores, citations, sufficiency) | knowledge-mcp, vector DB |
+| **Customer Agent** | Build customer context | Customer identifier (ID) / email | `CustomerContext` (profile, plan, orders, invoices, open tickets, memory) | crm, billing, orders, ticketing, memory |
+| **Knowledge / retrieval-augmented generation (RAG) Agent** | Retrieve grounded evidence | Query, triage, context | `EvidencePack` (chunks, scores, citations, sufficiency) | knowledge-mcp, vector DB |
 | **Troubleshooting Agent** | Hypothesise and diagnose | Triage, evidence, context | `Diagnosis` (hypotheses, checks, findings, root cause, confidence) | status, orders, crm (read-only diagnostics) |
 | **Resolution Agent** | Plan resolution, draft reply, request actions | Diagnosis, evidence, policy | `ResolutionPlan` (steps, actions, risk, reply draft) | Write tools (via policy) |
 | **Escalation Agent** | Hand off safely | Full state, reason | `EscalationBrief` (summary, evidence, owner queue, urgency) | ticketing, notifications |
 
 ### 4.3 Routing Rules (Supervisor)
-1. Always run Customer Agent first if customer is identified and context is stale (> 5 min).
+1. Always run Customer Agent first if customer is identified and context is stale (> 5 minutes).
 2. P1, security, legal, fraud, self-harm, or explicit "talk to a human" → Escalation directly.
 3. Informational intent → Knowledge → Resolution (reply only).
 4. Problem intent → Knowledge + Troubleshooting (parallel fan-out) → Resolution.
@@ -233,7 +233,7 @@ Collections: `kb_docs`, `resolved_tickets`, `resolution_cards`, `customer_memory
 
 ## 6. Memory Architecture
 
-| Layer | Scope | Store | TTL | Contents |
+| Layer | Scope | Store | Time to live (TTL) | Contents |
 |---|---|---|---|---|
 | Working memory | One graph run | LangGraph state | Run | Messages, triage, evidence, plan |
 | Conversation memory | Ticket thread | Postgres checkpoints + Redis cache | Ticket lifetime | Full thread, summarised beyond N turns |
@@ -268,7 +268,7 @@ flowchart LR
     CRM & BIL & ORD & TKT & STA --> BO[(Sandbox back-office services / mocks)]
 ```
 
-- Each MCP server declares tools with JSON schemas, a `risk_tier` default and `read_only` flag.
+- Each MCP server declares tools with JavaScript Object Notation (JSON) schemas, a `risk_tier` default and `read_only` flag.
 - Per-agent allow-lists: only Resolution Agent may call write tools.
 - Service-to-service auth: short-lived JWT (client credentials) + mTLS within cluster.
 
@@ -319,12 +319,12 @@ sequenceDiagram
 |---|---|
 | Identity | OIDC (Auth0/Keycloak/Entra ID/Cognito/Identity Platform); JWT access tokens; customers via widget session token |
 | Authorisation | RBAC: `customer`, `agent`, `supervisor`, `admin`, `platform_engineer`, `service`; tenant scoping on every query (row-level security) |
-| API security | Input validation (Pydantic), CORS allow-list, CSRF for cookie flows, request size limits, OWASP API Top 10 |
+| API security | Input validation (Pydantic), Cross-Origin Resource Sharing (CORS) allow-list, cross-site request forgery (CSRF) for cookie flows, request size limits, Open Worldwide Application Security Project (OWASP) API Top 10 |
 | Rate limiting | Edge (gateway) + app-level token-bucket in Redis per tenant/user/IP; LLM token budgets |
-| Secrets | AWS Secrets Manager / Azure Key Vault / GCP Secret Manager via workload identity |
+| Secrets | Amazon Web Services (AWS) Secrets Manager / Azure Key Vault / Google Cloud Platform (GCP) Secret Manager via workload identity |
 | Data | TLS everywhere, encryption at rest (KMS), PII redaction in logs/traces |
-| AI security | Injection classifier, content isolation (untrusted text never treated as instructions), tool allow-lists, arg validation, policy engine |
-| Supply chain | Image scanning (Trivy), SBOM, dependency pinning, signed images |
+| Artificial intelligence (AI) security | Injection classifier, content isolation (untrusted text never treated as instructions), tool allow-lists, arg validation, policy engine |
+| Supply chain | Image scanning (Trivy), software bill of materials (SBOM), dependency pinning, signed images |
 | Audit | Append-only audit log for decisions, actions, approvals, admin changes |
 
 ---
@@ -344,7 +344,7 @@ flowchart LR
 
 - Correlation: `ticket_id`, `run_id`, `trace_id` on every log line and span.
 - Golden signals + AI signals: autonomous rate, escalation rate, groundedness, tool error rate, tokens/cost per ticket, approval latency.
-- Offline evals (golden dataset) in CI; online evals sample 5–10% of traffic with LLM-as-judge + human QA.
+- Offline evals (golden dataset) in CI; online evals sample 5–10% of traffic with LLM-as-judge + human quality assurance (QA).
 
 ---
 
@@ -378,31 +378,31 @@ flowchart TB
     AG --> VDB[(Qdrant on K8s / Qdrant Cloud)]
 ```
 
-Deployment units are identical containers; Kubernetes is the default target for parity. A lighter "serverless containers" profile (ECS Fargate / Azure Container Apps / Cloud Run) is also defined.
+Deployment units are identical containers; Kubernetes is the default target for parity. A lighter "serverless containers" profile (Elastic Container Service (ECS) Fargate / Azure Container Apps / Cloud Run) is also defined.
 
 ### 12.2 Cloud Service Mapping
 
 | Capability | AWS | Azure | GCP |
 |---|---|---|---|
-| Containers (K8s) | EKS | AKS | GKE |
+| Containers (K8s) | Elastic Kubernetes Service (EKS) | Azure Kubernetes Service (AKS) | Google Kubernetes Engine (GKE) |
 | Containers (serverless) | ECS Fargate / App Runner | Azure Container Apps | Cloud Run |
-| Container registry | ECR | ACR | Artifact Registry |
-| PostgreSQL | RDS / Aurora PostgreSQL | Azure Database for PostgreSQL Flexible Server | Cloud SQL for PostgreSQL / AlloyDB |
+| Container registry | Elastic Container Registry (ECR) | Azure Container Registry (ACR) | Artifact Registry |
+| PostgreSQL | Relational Database Service (RDS) / Aurora PostgreSQL | Azure Database for PostgreSQL Flexible Server | Cloud Structured Query Language (SQL) for PostgreSQL / AlloyDB |
 | Redis | ElastiCache for Redis | Azure Cache for Redis / Azure Managed Redis | Memorystore for Redis |
 | Vector DB | Qdrant on EKS · OpenSearch · pgvector | Qdrant on AKS · Azure AI Search · pgvector | Qdrant on GKE · Vertex AI Vector Search · pgvector |
 | Object storage | S3 | Blob Storage | Cloud Storage |
 | LLM (managed) | Bedrock | Azure OpenAI / AI Foundry | Vertex AI |
 | Secrets | Secrets Manager | Key Vault | Secret Manager |
-| Identity (workload) | IRSA / EKS Pod Identity | Workload Identity | Workload Identity |
+| Identity (workload) | IAM Roles for Service Accounts (IRSA) / EKS Pod Identity | Workload Identity | Workload Identity |
 | Identity (users) | Cognito | Entra ID | Identity Platform |
-| API gateway / LB | API Gateway / ALB | API Management / App Gateway | API Gateway / Cloud Load Balancing |
-| WAF / CDN | AWS WAF + CloudFront | Front Door + WAF | Cloud Armor + Cloud CDN |
-| Queue (optional) | SQS | Service Bus | Pub/Sub |
-| Email | SES | Azure Communication Services | SendGrid (marketplace) |
+| API gateway / load balancer (LB) | API Gateway / Application Load Balancer (ALB) | API Management / App Gateway | API Gateway / Cloud Load Balancing |
+| Web application firewall (WAF) / Content delivery network (CDN) | AWS WAF + CloudFront | Front Door + WAF | Cloud Armor + Cloud CDN |
+| Queue (optional) | Simple Queue Service (SQS) | Service Bus | Pub/Sub |
+| Email | Simple Email Service (SES) | Azure Communication Services | SendGrid (marketplace) |
 | Logs / metrics | CloudWatch | Azure Monitor / Log Analytics | Cloud Logging / Monitoring |
 | Tracing | X-Ray (via OTel) | Application Insights | Cloud Trace |
-| IaC state | S3 + DynamoDB lock | Storage Account | GCS bucket |
-| DNS / TLS | Route 53 + ACM | Azure DNS + Key Vault certs | Cloud DNS + Certificate Manager |
+| Infrastructure as code (IaC) state | S3 + DynamoDB lock | Storage Account | GCS bucket |
+| Domain Name System (DNS) / TLS | Route 53 + AWS Certificate Manager (ACM) | Azure DNS + Key Vault certs | Cloud DNS + Certificate Manager |
 
 ### 12.3 Environments
 `local` (Docker Compose) → `dev` → `staging` → `prod` per cloud. Promotion by Git tag; same image digest across clouds.
@@ -428,19 +428,19 @@ flowchart LR
 
 | Concern | Approach |
 |---|---|
-| Burst traffic | API stateless, HPA on CPU/RPS; agent runs queued in Redis; workers scale on queue depth (KEDA) |
+| Burst traffic | API stateless, Horizontal Pod Autoscaler (HPA) on CPU/RPS; agent runs queued in Redis; workers scale on queue depth (KEDA) |
 | Long-running runs | Checkpointed graphs; resumable after pod restarts |
-| LLM latency | Streaming, parallel fan-out, small models for triage, semantic cache for FAQs |
+| LLM latency | Streaming, parallel fan-out, small models for triage, semantic cache for frequently asked questionss (FAQs) |
 | Provider failure | Gateway failover chain; circuit breaker; degrade to human handoff |
 | DB load | Read replicas for analytics; connection pooling (PgBouncer) |
 | Vector DB | Sharded/replicated collections; payload index on `tenant_id` |
-| DR | PITR backups for Postgres; vector index rebuildable from Postgres + object storage; RPO 15 min / RTO 1 h |
+| Disaster recovery (DR) | Point-in-time recovery (PITR) backups for Postgres; vector index rebuildable from Postgres + object storage; recovery point objective (RPO) 15 minutes / recovery time objective (RTO) 1 h |
 
 ---
 
 ## 14. Key Architecture Decisions (summary)
 
-| ADR | Decision | Rationale |
+| Architecture decision record (ADR) | Decision | Rationale |
 |---|---|---|
 | ADR-01 | LangGraph supervisor pattern | Explicit control flow, checkpoints, interrupts for HITL |
 | ADR-02 | MCP for all tool access | Standard, typed, permissioned; reusable across agents/apps |

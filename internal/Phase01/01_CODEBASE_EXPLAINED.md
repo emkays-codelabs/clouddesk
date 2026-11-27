@@ -2,11 +2,11 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 1 of CloudDesk, meant to be spoken aloud to recruiters, hiring managers and interview boards. It describes only what exists in the repository today. Where something is planned for a later phase, it says so.
 >
-> **Status of this phase:** implemented and checked locally (97 tests pass, lint is clean). Nothing is deployed. Phase 1 has **no database, no AI model, no login and no web screens**. Those arrive in later phases.
+> **Status of this phase:** implemented and checked locally (97 tests pass, lint is clean). Nothing is deployed. Phase 1 has **no database, no artificial intelligence (AI) model, no login and no web screens**. Those arrive in later phases.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md) and [infrastructure evolution](./03_INFRA_EVOLUTION.md).
 >
-> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the application programming interface (API) title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
@@ -20,8 +20,8 @@
 
 - starts on a developer's machine with no internet and no API key,
 - answers three "are you healthy?" questions (`/health`, `/health/live`, `/health/ready`),
-- stamps every reply with a request ID so a problem can be traced,
-- writes each log line as one structured JSON record that carries that ID,
+- stamps every reply with a request identifier (ID) so a problem can be traced,
+- writes each log line as one structured JavaScript Object Notation (JSON) record that carries that ID,
 - reads all its settings from one place and hides secrets when settings are shown.
 
 **What problem it solves.** A project like this fails in predictable, expensive ways: nobody can tell whether the service is alive, a bug cannot be traced through the logs, a password appears in a log file, or a test quietly calls a paid service. Phase 1 closes each of those before any real feature exists.
@@ -79,7 +79,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 - **Purpose.** Build the whole service in one function, so a test can build a fresh copy.
 - **Receives.** Settings.
-- **Does.** Switches on logging, registers the health routes, and fits two layers around them: the request-ID layer and the CORS layer.
+- **Does.** Switches on logging, registers the health routes, and fits two layers around them: the request-ID layer and the Cross-Origin Resource Sharing (CORS) layer.
 - **Produces.** A ready-to-run FastAPI application.
 - **Talks to.** Settings, logging, the health routes, both middleware layers.
 
@@ -152,7 +152,7 @@ The order matters. Each `add_middleware` call wraps the previous layers, so the 
 | Execution point | The first call to `get_settings()`, then cached |
 | Interview explanation | "One typed object for every setting. Secrets are hidden whenever it is printed." |
 
-Secrets are stored as `SecretStr`. When settings are shown, secrets become `***` (or empty if unset), and a password inside a connection URL is masked while the user and host remain. Code that genuinely needs a secret reads the attribute directly.
+Secrets are stored as `SecretStr`. When settings are shown, secrets become `***` (or empty if unset), and a password inside a connection uniform resource locator (URL) is masked while the user and host remain. Code that genuinely needs a secret reads the attribute directly.
 
 ### `backend/app/core/logging.py` (109 lines)
 
@@ -173,16 +173,16 @@ Secrets are stored as `SecretStr`. When settings are shown, secrets become `***`
 
 | Item | Explanation |
 |---|---|
-| Responsibility | Attach an `X-Request-ID` to every HTTP response and to the logs |
+| Responsibility | Attach an `X-Request-ID` to every Hypertext Transfer Protocol (HTTP) response and to the logs |
 | Main components | `RequestIdMiddleware`, `_resolve_request_id()`, the `_SAFE_ID` pattern |
 | Inputs | The incoming request's headers |
-| Processing | Validates a supplied ID with a full-match pattern, otherwise creates a UUID. Wraps the response so the header is added. Catches unhandled errors. |
+| Processing | Validates a supplied ID with a full-match pattern, otherwise creates a universally unique identifier (UUID). Wraps the response so the header is added. Catches unhandled errors. |
 | Outputs | The same response with the header added, or a clean 500 reply |
 | Dependencies | `backend/app/core/logging.py` |
 | Execution point | On every HTTP request |
 | Interview explanation | "A tracking number on every reply, so a problem can be followed from the customer's screen to the log." |
 
-It is written as plain ASGI rather than the convenient `BaseHTTPMiddleware`. The code's own comment explains why: the framework's built-in 500 handler sits *outside* ordinary middleware, so the convenient version would miss the header on a crash.
+It is written as plain Asynchronous Server Gateway Interface (ASGI) rather than the convenient `BaseHTTPMiddleware`. The code's own comment explains why: the framework's built-in 500 handler sits *outside* ordinary middleware, so the convenient version would miss the header on a crash.
 
 ### `backend/app/api/health.py` (43 lines) and `backend/app/schemas/health.py` (24 lines)
 

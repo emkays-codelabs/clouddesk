@@ -2,11 +2,11 @@
 
 > **Read this first.** Phase 1 has **no Docker, no Docker Compose, no containers, no database, no cache, no reverse proxy, no continuous-integration pipeline and no deployment**. I checked: there is no Dockerfile, no Compose file, no `.dockerignore`, no `.github/workflows` folder and no `deployment` folder.
 >
-> What Phase 1 *does* have is one local Python process, started with one command, configured from the environment. This document explains that honestly, and it explains the container ideas the spec asks about only as concepts, clearly marked as planned for a later phase. Nothing below claims a container exists.
+> What Phase 1 *does* have is one local Python process, started with one command, configured from the environment. This document explains that honestly, and it explains the container ideas the specification asks about only as concepts, clearly marked as planned for a later phase. Nothing below claims a container exists.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md) and [system design evolution](./02_DESIGN_EVOLUTION.md).
 >
-> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the application programming interface (API) title ("CloudDesk artificial intelligence (AI) API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
@@ -18,7 +18,7 @@
 | What runs in Docker containers? | Nothing |
 | What is externally hosted? | Nothing. The offline profile needs no outside service. |
 | How is it started? | `make backend`, which runs `uv run uvicorn app.main:app --app-dir backend --reload --port 8000` |
-| How do components communicate? | A client calls the process over HTTP on the same machine. Inside the process, plain function calls. |
+| How do components communicate? | A client calls the process over Hypertext Transfer Protocol (HTTP) on the same machine. Inside the process, plain function calls. |
 | How is configuration supplied? | Environment variables, plus an optional `.env` file copied from `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) by `make setup` |
 | How is it stopped? | Press Ctrl+C in the terminal that is running it |
 
@@ -47,7 +47,7 @@ flowchart LR
 
 | Step | What existed before | What changed | Why | Verified how |
 |---|---|---|---|---|
-| P1-1 settings and logging | Nothing | Settings read the environment; logs go to standard output as JSON | Everything later needs configuration and diagnosable output | 29 tests |
+| P1-1 settings and logging | Nothing | Settings read the environment; logs go to standard output as JavaScript Object Notation (JSON) | Everything later needs configuration and diagnosable output | 29 tests |
 | P1-3 test harness | Nothing | Tests run with a fixed offline environment, a throwaway database path in a temporary folder, and outside network blocked | Tests must never touch the internet or a real key | 24 tests |
 | P1-2 the service | No process to run | One uvicorn process listening on a port, with three health routes | A platform needs something to probe | 28 tests, and a live run for this document |
 | P1-4 Makefile and `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) | Commands known only to the author | Five `make` targets and a documented variable list | One obvious way to start, test and lint | 9 and 7 tests; `make test`, `make lint` and `make backend` were run for this document |
@@ -58,7 +58,7 @@ flowchart LR
 
 ## D. Docker and container explanation
 
-**There are no containers in Phase 1, so there is no Compose service to describe.** To keep the spec's questions answerable, here is the one runtime component that exists, described with the same fields:
+**There are no containers in Phase 1, so there is no Compose service to describe.** To keep the specification's questions answerable, here is the one runtime component that exists, described with the same fields:
 
 | Field | The local service process |
 |---|---|
@@ -155,7 +155,7 @@ The 27 variables are listed in `.env.example` (removed, then re-created 2026-11-
 | `CORS_ORIGINS` | Yes | Browser origins allowed to call the service. Default `http://localhost:3000`. |
 | `DATABASE_URL` | Yes (readiness check) | Database address. Its scheme is checked, no connection is made. |
 | `REDIS_URL`, `USE_FAKE_REDIS` | Yes (readiness check) | Cache address; blank or fake means an in-memory stand-in |
-| `VECTOR_STORE`, `QDRANT_URL` | Yes (readiness check) | Which store; Qdrant needs a URL |
+| `VECTOR_STORE`, `QDRANT_URL` | Yes (readiness check) | Which store; Qdrant needs a uniform resource locator (URL) |
 | `LLM_PROVIDER`, `LLM_API_KEY` | Yes (readiness check) | A real provider needs a key; `fake` needs none |
 | `DEMO_MODE`, `JWT_SECRET`, `SUPABASE_JWT_SECRET`, `CHECKPOINT_DB_PATH`, `LLM_MODEL`, `EMBEDDING_*`, `QDRANT_API_KEY`, `QDRANT_COLLECTION`, `APPROVAL_REQUIRED_FOR_REFUNDS`, `MAX_REFUND_WITHOUT_APPROVAL`, `TOOL_TIMEOUT_SECONDS`, `RATE_LIMIT_PER_MINUTE`, `SAMPLE_DATA_DIR`, `LANGCHAIN_*` | No | Declared for later phases |
 
@@ -192,7 +192,7 @@ The test harness points `DATABASE_URL` at a SQLite file in a temporary folder. N
 | Readiness versus "the process is running" | They differ, and I verified it: with the vector store set to Qdrant and no URL, the process ran and answered `/health/live` with 200 while `/health/ready` answered **503**, naming the setting. |
 | Restart policy | None. No supervisor restarts a stopped process. |
 | Timeouts | None configured |
-| Failure propagation | A crashing route returns a clean 500 with a request ID. It does not stop the process. |
+| Failure propagation | A crashing route returns a clean 500 with a request identifier (ID). It does not stop the process. |
 | Recovery | Manual: restart the command |
 
 **Recommended, not implemented:** a supervisor or container restart policy, and a platform probe wired to `/health/live` and `/health/ready`.
@@ -213,7 +213,7 @@ A real log line from this phase's run, shortened:
 
 | Symptom | Likely cause | Command and what it shows |
 |---|---|---|
-| "Address already in use" on start | Another process holds port 8000 | `netstat -ano \| findstr :8000` shows a LISTENING row and the owning PID |
+| "Address already in use" on start | Another process holds port 8000 | `netstat -ano \| findstr :8000` shows a LISTENING row and the owning process identifier (PID) |
 | The service answers but `/health/ready` is 503 | A setting is wrong | `curl http://127.0.0.1:8000/health/ready`: each check's `detail` names the setting |
 | The service will not start | An invalid value, such as an unknown `VECTOR_STORE` | The start-up error names the field |
 | `make: command not found` | `make` is not installed | Install it, or run the `uv` commands directly |
@@ -256,12 +256,12 @@ Run on 2026-11-02 while writing this document. Where I could not check something
 | The required port is reachable | **Verified** | `GET http://127.0.0.1:8000/health/live` returned 200 `{"status":"alive"}` with an `X-Request-ID` |
 | Health routes | **Verified** | `/health` 200, `/health/live` 200, `/health/ready` 200, each with a request ID |
 | Readiness degrades on a bad setting | **Verified** | 503 with the setting named, while `/health/live` stayed 200 |
-| A safe request ID is echoed, an unsafe one replaced | **Verified** | `abc-123` echoed; an ID with spaces and a slash replaced by a UUID |
-| CORS | **Verified** | The console origin got `allow-origin` and `expose-headers: X-Request-ID`; an unknown origin got none |
+| A safe request ID is echoed, an unsafe one replaced | **Verified** | `abc-123` echoed; an ID with spaces and a slash replaced by a universally unique identifier (UUID) |
+| Cross-Origin Resource Sharing (CORS) | **Verified** | The console origin got `allow-origin` and `expose-headers: X-Request-ID`; an unknown origin got none |
 | Logs are JSON and carry both IDs | **Verified** | 13 log lines, all with `request_id` and `workflow_id` |
 | `make test`, `make lint` | **Verified** | Exit 0 on 2026-11-03; 346 passed (97 for Phase 1; 220 when first written); "All checks passed!" |
 | The server stops cleanly | **Verified with a caveat** | A tree kill frees the port; stopping only the `uv` wrapper does not |
-| Internal DNS resolution | Not applicable | No other services |
+| Internal Domain Name System (DNS) resolution | Not applicable | No other services |
 | Application-to-database connectivity | Not applicable | No database client |
 | Persistent storage behaviour | Not applicable | Nothing is stored |
 | External integrations | Not applicable | None configured |

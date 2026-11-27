@@ -10,7 +10,7 @@
 
 ## A. Executive summary
 
-**Say it aloud.** "Before any AI model is allowed to touch a support ticket, I wrote the rules that must not depend on the AI. A set of plain, tested functions decides which tickets must go to a human team, how urgent a ticket is at minimum, whether a piece of text is trying to trick the assistant, whether a draft reply leaks something it should not, and whether a text contains a card number or a password. The AI will later add judgement only in the grey areas."
+**Say it aloud.** "Before any artificial intelligence (AI) model is allowed to touch a support ticket, I wrote the rules that must not depend on the AI. A set of plain, tested functions decides which tickets must go to a human team, how urgent a ticket is at minimum, whether a piece of text is trying to trick the assistant, whether a draft reply leaks something it should not, and whether a text contains a card number or a password. The AI will later add judgement only in the grey areas."
 
 - **What the phase accomplished.** Four safety building blocks: policy rules (`agents/rules.py`), prompt-injection defence (`agents/prompts.py` and `backend/app/core/injection_guard.py`), customer-output validation (`backend/app/core/output_validation.py`) and a secret scrubber (`backend/app/core/scrub.py`).
 - **Problem solved.** A model can be argued out of a rule, or talked into exporting records by text inside a ticket. Policy must therefore live in code, where it can be tested without a model (ADR-0003, `docs/adr/0003-policy-decided-by-rules-not-the-model.md`).
@@ -42,11 +42,11 @@ Layer rule: `agents/` holds the rules and prompts; `backend/app/core/` holds the
 
 | File | What it does | Main parts | Interview line |
 |---|---|---|---|
-| `agents/__init__.py` | Creates the `agents/` package and states its rules (no SQL, not imported by core) | docstring | "The home of agent logic; today only rules and prompts." |
+| `agents/__init__.py` | Creates the `agents/` package and states its rules (no Structured Query Language (SQL), not imported by core) | docstring | "The home of agent logic; today only rules and prompts." |
 | `agents/rules.py` | Pure policy | `rule_category` (weighted keyword rules over the 10 categories, ties go to the safer reading), `rule_severity` (returns the higher of the rule floor and the model severity, with a reason and a `raised` flag), `ESCALATION_RULES` (six rules: security incident, data loss, account deletion, payment dispute, legal, enterprise outage, the last only for the enterprise plan), `matching_escalation_rules`, `rule_escalation` | "Words in, decision out. No model, no database." |
 | `agents/prompts.py` | Shared prompt pieces | `SECURITY_PREAMBLE`, `wrap_untrusted` (puts text between `<untrusted_content>` tags and escapes any such tag already inside it) | "A label that says: everything inside is data." |
 | `backend/app/core/injection_guard.py` | Attack detection | `INJECTION_PATTERNS` (ignore-instructions, export-all-records, reveal-system-prompt, role-override, tool-call smuggling, delimiter escape), `scan_for_injection`, `drop_injected_chunks` (the retriever hook; returns True to keep a chunk) | "A tripwire for known attack phrases." |
-| `backend/app/core/scrub.py` | Secret removal | `SECRET_PATTERNS` (jwt, bearer token, AWS key, `sk-` key, password, card number), `luhn_valid`, `scrub`, `find_secrets` | "Black-marker pen for secrets; clean text is untouched." |
+| `backend/app/core/scrub.py` | Secret removal | `SECRET_PATTERNS` (jwt, bearer token, Amazon Web Services (AWS) key, `sk-` key, password, card number), `luhn_valid`, `scrub`, `find_secrets` | "Black-marker pen for secrets; clean text is untouched." |
 | `backend/app/core/output_validation.py` | Reply gate | `validate_customer_output`, `GROUNDEDNESS_THRESHOLD` (0.8), `INTERNAL_URL_PATTERNS`, `groundedness`, `should_revise`, `should_escalate`, `next_step` | "Last check before the customer sees anything." |
 | `backend/app/services/knowledge_service.py` | Changed: `CHUNK_FILTER = drop_injected_chunks` is passed to `HybridRetriever` | one constant and one argument | "Plugs the tripwire into search." |
 | `rag/retriever.py` | Relied on, not changed: its `chunk_filter` hook screens chunks before ranking, for both the vector and the keyword path | `_keep` | "Search was built with a slot for this." |
@@ -98,7 +98,7 @@ Worked example, `CD-1005` ("Suspicious logins, possible breach"): `rule_category
 - **Groundedness by token overlap, not a judge model.** Offline, free and testable. Weakness: it can pass a reply that reuses the right words with a wrong meaning, and it can fail an honest paraphrase. A judge model is a future recommendation.
 - **Leaks are not revised.** A groundedness miss gets one revise; a secret, internal link or other customer's data escalates at once.
 - **P7-4 before P7-3.** Output validation imports the secret patterns, so the scrub was built first. This differs from the task order and is recorded in `MEMORY.md`.
-- **`CD-1001` is not escalated by rule.** The enterprise-outage rule needs explicit outage words; an SSO failure is raised to `high` severity but left to the model and to Phase 9 (the active-incident check). This is a judgement call, not a spec quote.
+- **`CD-1001` is not escalated by rule.** The enterprise-outage rule needs explicit outage words; an single sign-on (SSO) failure is raised to `high` severity but left to the model and to Phase 9 (the active-incident check). This is a judgement call, not a specification quote.
 
 ## H. Error handling and failure scenarios
 
@@ -114,8 +114,8 @@ Worked example, `CD-1005` ("Suspicious logins, possible breach"): `rule_category
 |---|---|---|
 | `tests/unit/test_rules.py` | 28 | Every demo ticket has the expected category, escalation team and severity floor; severity never falls; the rule table names a team per area; legal and enterprise-outage cases |
 | `tests/unit/test_injection.py` | 22 | Each attack family is flagged; `CD-1013` is flagged and wrapped; no other demo ticket and none of the 15 knowledge articles is flagged; closing tags are neutralised; a poisoned chunk is dropped from evidence; the service wires the guard |
-| `tests/unit/test_scrub.py` | 24 | Cards (Luhn), keys, tokens, passwords, JWTs removed; clean text and non-card numbers unchanged; idempotent |
-| `tests/unit/test_output_validation.py` | 24 | Internal URLs, secrets and other customers' data blocked as risk `high`; unsupported claims score under 0.8; revise once then escalate |
+| `tests/unit/test_scrub.py` | 24 | Cards (Luhn), keys, tokens, passwords, JavaScript Object Notation (JSON) Web Tokens (JWTs) removed; clean text and non-card numbers unchanged; idempotent |
+| `tests/unit/test_output_validation.py` | 24 | Internal uniform resource locators (URLs), secrets and other customers' data blocked as risk `high`; unsupported claims score under 0.8; revise once then escalate |
 
 Run: `uv run python -m pytest -q` (or `.venv/Scripts/python.exe -m pytest -q`). Result on 2026-11-27: 1072 passed; `ruff check .` and `ruff format --check .` clean. Each task had one deliberate break that turned a test red and was restored. Untested: behaviour against real model output, real tickets beyond the 13, and any live graph.
 

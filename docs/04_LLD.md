@@ -17,14 +17,14 @@
 | Language | Python 3.12 (backend), TypeScript 5.x (frontend) |
 | Backend | FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2.x (async) + asyncpg, Alembic |
 | Agents | LangGraph (+ `langgraph-checkpoint-postgres`), langchain-core |
-| MCP | `mcp` Python SDK (FastMCP, streamable HTTP transport) |
-| LLM gateway | LiteLLM (proxy or SDK) — swappable for VexaRoute |
-| Vector DB | Qdrant (dense + sparse vectors); pgvector adapter |
+| Model Context Protocol (MCP) | `mcp` Python SDK (FastMCP, streamable Hypertext Transfer Protocol (HTTP) transport) |
+| Large language model (LLM) gateway | LiteLLM (proxy or SDK) — swappable for VexaRoute |
+| Vector database (DB) | Qdrant (dense + sparse vectors); pgvector adapter |
 | Embeddings / rerank | Configurable: `text-embedding-3-large` / `bge-m3`; reranker `bge-reranker-v2-m3` or Cohere Rerank |
 | Guardrails | Presidio (PII), custom injection classifier (small LLM + heuristics), output groundedness judge |
 | Workers | arq (async Redis queue) — Celery alternative |
 | Cache / limits | Redis 7 |
-| Auth | OIDC + JWT (python-jose / authlib), Keycloak for local |
+| Auth | OpenID Connect (OIDC) + JWT (python-jose / authlib), Keycloak for local |
 | Frontend | Next.js 15 App Router, Tailwind, shadcn/ui, TanStack Query, Zustand, next-auth |
 | Observability | OpenTelemetry SDK, Langfuse, Prometheus client, structlog |
 | Testing | pytest, pytest-asyncio, httpx, testcontainers, Playwright, RAGAS/DeepEval-style evals |
@@ -346,7 +346,7 @@ CREATE TABLE audit_log (
 -- append-only: revoke UPDATE/DELETE from app role
 ```
 
-**Row-Level Security:** enable RLS on all tenant tables with `USING (tenant_id = current_setting('app.tenant_id')::uuid)`; the API sets `SET LOCAL app.tenant_id` per transaction.
+**Row-Level Security:** enable row-level security (RLS) on all tenant tables with `USING (tenant_id = current_setting('app.tenant_id')::uuid)`; the API sets `SET LOCAL app.tenant_id` per transaction.
 
 LangGraph checkpoints use the library-managed tables (`checkpoints`, `checkpoint_writes`, `checkpoint_blobs`) in a dedicated `langgraph` schema.
 
@@ -359,16 +359,16 @@ LangGraph checkpoints use the library-managed tables (`checkpoints`, `checkpoint
 | `resolution_cards` | dense, sparse | tenant_id, card_id, category, status=approved |
 | `customer_memory` | dense | tenant_id, customer_id, kind |
 
-Point ID = chunk/card/memory UUID → Postgres row is the source of truth; index is rebuildable.
+Point identifier (ID) = chunk/card/memory universally unique identifier (UUID) → Postgres row is the source of truth; index is rebuildable.
 
 ### 3.4 Redis Key Design
 
-| Key | Type | TTL | Purpose |
+| Key | Type | Time to live (TTL) | Purpose |
 |---|---|---|---|
 | `rl:{tenant}:{user\|ip}:{route}` | string/counter | window | Token-bucket rate limiting |
 | `tok:{tenant}:{yyyymmdd}` | hash | 48 h | LLM token/cost budget |
 | `sess:widget:{sid}` | hash | 24 h | Widget session → customer/ticket |
-| `ctx:customer:{tenant}:{cid}` | JSON | 5 min | Customer context cache |
+| `ctx:customer:{tenant}:{cid}` | JavaScript Object Notation (JSON) | 5 minutes | Customer context cache |
 | `sem:faq:{tenant}:{hash}` | JSON | 1 h | Semantic answer cache (low-risk informational only) |
 | `emb:{model}:{sha}` | bytes | 7 d | Embedding cache |
 | `lock:run:{ticket_id}` | string | 120 s | One active graph run per ticket |
@@ -379,7 +379,7 @@ Point ID = chunk/card/memory UUID → Postgres row is the source of truth; index
 
 ## 4. API Design (FastAPI, `/api/v1`)
 
-All responses JSON; errors use RFC 9457 Problem Details. Every request carries `X-Request-ID`; responses include `traceparent`.
+All responses JSON; errors use Request for Comments (RFC) 9457 Problem Details. Every request carries `X-Request-ID`; responses include `traceparent`.
 
 ### 4.1 Endpoints
 
@@ -388,7 +388,7 @@ All responses JSON; errors use RFC 9457 Problem Details. Every request carries `
 | POST | `/widget/sessions` | public (site key) | Create widget session → short-lived customer token |
 | POST | `/conversations` | customer, agent | Create ticket + first message |
 | POST | `/conversations/{ticket_id}/messages` | customer, agent | Add message; triggers agent run (202) |
-| GET | `/conversations/{ticket_id}/stream` | customer, agent | SSE stream of AI tokens/events |
+| GET | `/conversations/{ticket_id}/stream` | customer, agent | Server-sent events (SSE) stream of artificial intelligence (AI) tokens/events |
 | GET | `/tickets` | agent+ | List/filter tickets (cursor pagination) |
 | GET | `/tickets/{id}` | agent+ | Ticket detail incl. messages, summary |
 | GET | `/tickets/{id}/runs` | agent+ | Agent runs + steps timeline |
@@ -397,7 +397,7 @@ All responses JSON; errors use RFC 9457 Problem Details. Every request carries `
 | GET | `/approvals?status=pending` | agent, supervisor | Approval queue (filtered by required_role) |
 | POST | `/approvals/{id}/decision` | agent, supervisor | Approve / reject / edit |
 | GET | `/escalations` | agent+ | Escalation queue |
-| POST | `/tickets/{id}/feedback` | customer, agent | CSAT / labels |
+| POST | `/tickets/{id}/feedback` | customer, agent | Customer satisfaction score / labels |
 | GET | `/customers/{id}/memory` | supervisor+ | View memory |
 | DELETE | `/customers/{id}/memory` | admin, customer(self) | Erase memory |
 | POST | `/admin/knowledge-sources` | admin | Add source |
@@ -405,11 +405,11 @@ All responses JSON; errors use RFC 9457 Problem Details. Every request carries `
 | GET/PUT | `/admin/policies` | admin | View/update action policies (versioned) |
 | GET/PUT | `/admin/tools` | admin | Tool registry, allow-lists |
 | GET/PUT | `/admin/tenant` | admin | Autonomy mode, thresholds |
-| GET | `/analytics/overview` | supervisor+ | KPIs |
+| GET | `/analytics/overview` | supervisor+ | Key performance indicators (KPIs) |
 | POST | `/channels/email/inbound` | service (HMAC) | Inbound email webhook |
 | POST | `/channels/ticketing/webhook` | service (HMAC) | Ticketing system webhook |
 | GET | `/healthz`, `/readyz` | public | Probes |
-| WS | `/ws` | agent+ | Dashboard realtime events |
+| WebSocket (WS) | `/ws` | agent+ | Dashboard realtime events |
 
 ### 4.2 Example Contracts
 
@@ -446,7 +446,7 @@ class ApprovalDecision(BaseModel):
 ## 5. Authentication & Authorisation
 
 ### 5.1 Flows
-- **Staff (dashboard):** OIDC Authorization Code + PKCE via next-auth → access token (JWT, 15 min) sent as Bearer to API; refresh handled by next-auth.
+- **Staff (dashboard):** OIDC Authorization Code + Proof Key for Code Exchange (PKCE) via next-auth → access token (JWT, 15 minutes) sent as Bearer to API; refresh handled by next-auth.
 - **Customers (widget):** site key + origin check → `POST /widget/sessions` → signed customer JWT (scope `customer`, `tid`, `cid`, 24 h). Optional verified identity via HMAC of user id from the host app.
 - **Services / MCP:** OAuth2 client credentials → JWT with `aud=mcp:{server}` and `scope=tools:read|tools:write`.
 
@@ -492,11 +492,11 @@ async def decide(approval_id: UUID, body: ApprovalDecision,
 
 | Scope | Limit |
 |---|---|
-| Widget per IP | 30 req/min |
+| Widget per Internet Protocol (IP) | 30 req/min |
 | Customer messages per ticket | 10 msg/min |
 | Staff API per user | 600 req/min |
 | Admin reindex | 5/hour |
-| LLM tokens per tenant | daily budget (e.g. 5M) with 80% alert, 100% → copilot-only mode |
+| LLM tokens per tenant | daily budget (for example, 5M) with 80% alert, 100% → copilot-only mode |
 
 ```python
 class RateLimitMiddleware:
@@ -724,7 +724,7 @@ async def knowledge_agent_node(s: TicketState) -> dict:
 ```
 
 - **Chunking:** Markdown/HTML heading-aware splitter, target 600 tokens, 80 overlap; tables kept whole; each chunk prefixed with `title > section path` (contextual header).
-- **Hybrid:** Qdrant `query_points` with prefetch (dense + sparse) and RRF fusion server-side; client-side RRF fallback for pgvector (`tsvector` + `vector`).
+- **Hybrid:** Qdrant `query_points` with prefetch (dense + sparse) and reciprocal rank fusion (RRF) fusion server-side; client-side RRF fallback for pgvector (`tsvector` + `vector`).
 - **Rerank:** cross-encoder; drop below score 0.2.
 - **Freshness boost:** `score *= 1 + 0.05 * recency_bucket` for tickets/cards.
 
@@ -769,7 +769,7 @@ tool: crm.reset_password_link
 default_tier: low
 ```
 
-Evaluation uses a safe expression evaluator (e.g. `simpleeval` with whitelisted names). Tenant `autonomy_mode` overrides: `copilot` → every action `pending_approval`(and never auto-send replies); `supervised` → `low` becomes `medium`.
+Evaluation uses a safe expression evaluator (for example, `simpleeval` with whitelisted names). Tenant `autonomy_mode` overrides: `copilot` → every action `pending_approval`(and never auto-send replies); `supervised` → `low` becomes `medium`.
 
 ```python
 async def policy_gate_node(s: TicketState) -> Command | dict:
@@ -819,13 +819,13 @@ async def execute_actions_node(s: TicketState) -> dict:
 ### 7.10 Escalation Agent
 - Produces `EscalationBrief`, sets ticket `status=escalated`, `ai_handled=false`.
 - Queue routing table: `security → security`, `billing & amount>300 → billing`, `outage → engineering`, default `l2`.
-- Sends holding reply to customer (template, no speculative content) + SLA timer job.
+- Sends holding reply to customer (template, no speculative content) + service level agreement timer job.
 
 ### 7.11 Memory Write-back
 1. Summarise thread → `ticket_summaries` (on resolve/escalate).
 2. Extract `MemoryFact[]` (kind, content, confidence); keep confidence ≥ 0.7; skip blocked PII categories (payment data, government IDs, health).
 3. Upsert into `customer_memory` + embed into Qdrant `customer_memory`.
-4. If resolved with CSAT ≥ 4 or agent-labelled "good", enqueue `distil_resolution_card` job (card created as `draft`, needs admin approval before indexing).
+4. If resolved with customer satisfaction score ≥ 4 or agent-labelled "good", enqueue `distil_resolution_card` job (card created as `draft`, needs admin approval before indexing).
 
 ---
 
@@ -903,7 +903,7 @@ embedding: { model: "openai/text-embedding-3-large", dims: 3072 }
 rerank:    { model: "bge-reranker-v2-m3", endpoint: "http://reranker:8080" }
 limits: { request_timeout_s: 30, max_retries: 2, circuit_breaker: { failures: 5, window_s: 60 } }
 ```
-(Model names are placeholders; set per cloud — e.g. Bedrock on AWS, Azure OpenAI on Azure, Vertex on GCP.)
+(Model names are placeholders; set per cloud — for example, Bedrock on Amazon Web Services (AWS), Azure OpenAI on Azure, Vertex on Google Cloud Platform (GCP).)
 
 Every call records `tenant_id, run_id, node, model, tokens_in/out, latency, cost` → `agent_steps` + Langfuse + Redis budget.
 
@@ -944,12 +944,12 @@ Jobs are idempotent; retries with exponential backoff (max 5); dead-letter list 
 ```
 
 ### 12.2 Key Components
-`TicketTimeline` (node-by-node steps with latency/tokens), `EvidencePanel` (citations → source preview), `ActionCard` (proposed/approved/executed states), `ApprovalDiff`, `RiskBadge`, `KPIStatCards`, `ChatWidget` (Web Component built from React, Shadow DOM, SSE).
+`TicketTimeline` (node-by-node steps with latency/tokens), `EvidencePanel` (citations → source preview), `ActionCard` (proposed/approved/executed states), `ApprovalDiff`, `RiskBadge`, `KPIStatCards`, `ChatWidget` (Web Component built from React, Shadow Document Object Model (DOM), SSE).
 
 ### 12.3 State & Data
 - TanStack Query for server state; WS events invalidate query keys (`['ticket', id]`, `['approvals']`).
 - Optimistic updates on approval decisions with rollback.
-- Role-aware UI via session claims; server is still the authority.
+- Role-aware user interface (UI) via session claims; server is still the authority.
 
 ---
 
@@ -972,7 +972,7 @@ Jobs are idempotent; retries with exponential backoff (max 5); dead-letter list 
 | `acsrp_guardrail_blocks_total{stage,flag}` | counter |
 | `acsrp_retrieval_latency_seconds` | histogram |
 
-- **Alerts:** error rate > 2% (5 min), P95 run latency > 30 s, tool failure rate > 5%, LLM provider circuit open, approvals pending > 30 min, budget 80%, DLQ non-empty, groundedness online score < 0.85 (1 h).
+- **Alerts:** error rate > 2% (5 minutes), 95th percentile (P95) run latency > 30 s, tool failure rate > 5%, LLM provider circuit open, approvals pending > 30 minutes, budget 80%, dead-letter queue (DLQ) non-empty, groundedness online score < 0.85 (1 h).
 
 ---
 
@@ -985,25 +985,25 @@ Jobs are idempotent; retries with exponential backoff (max 5); dead-letter list 
 | Contract | MCP tool schemas, API OpenAPI snapshot | schemathesis, pytest |
 | Integration | API + Postgres + Redis + Qdrant + mock LLM | testcontainers |
 | Graph tests | Deterministic runs with scripted fake LLM | LangGraph + FakeListChatModel |
-| E2E | Widget → resolution; approval flow | Playwright |
+| End-to-end (E2E) | Widget → resolution; approval flow | Playwright |
 | Load | 1k concurrent chats | k6 / Locust |
 
 ### 14.2 AI Evaluation Datasets (`evals/`)
 | Dataset | Size | Measures |
 |---|---|---|
 | `triage_golden.jsonl` | 500 | category/severity/intent accuracy |
-| `retrieval_golden.jsonl` | 300 queries + relevant chunk ids | Recall@10, nDCG@5, MRR |
+| `retrieval_golden.jsonl` | 300 queries + relevant chunk ids | Recall@10, nDCG@5, Monthly recurring revenue (MRR) |
 | `resolution_golden.jsonl` | 200 end-to-end scenarios | correct tool/args, faithfulness, answer relevance, resolution correctness |
 | `escalation_cases.jsonl` | 150 | escalation precision/recall |
 | `redteam_injection.jsonl` | 200 | injection-to-action success = 0, data leakage = 0 |
 
-CI gate (fail build if): triage acc < 0.90, Recall@10 < 0.90, faithfulness < 0.92, tool-call correctness < 0.95, escalation recall < 0.98, any red-team success.
+Continuous integration (CI) gate (fail build if): triage acc < 0.90, Recall@10 < 0.90, faithfulness < 0.92, tool-call correctness < 0.95, escalation recall < 0.98, any red-team success.
 
 ---
 
 ## 15. Configuration
 
-12-factor; `pydantic-settings` with env prefix `ACSRP_`.
+12-factor; `pydantic-settings` with environment prefix `ACSRP_`.
 
 ```python
 class Settings(BaseSettings):
@@ -1025,7 +1025,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="ACSRP_")
 ```
 
-Cloud adapters (`ObjectStore`, `SecretProvider`, `EmailSender`) selected by `cloud` setting; secrets mounted via CSI driver / workload identity, never baked into images.
+Cloud adapters (`ObjectStore`, `SecretProvider`, `EmailSender`) selected by `cloud` setting; secrets mounted via Container Storage Interface (CSI) driver / workload identity, never baked into images.
 
 ---
 
@@ -1041,7 +1041,7 @@ Cloud adapters (`ObjectStore`, `SecretProvider`, `EmailSender`) selected by `clo
 | `acsrp-web` | node:22-alpine → standalone output | 3000 |
 | `reranker` | text-embeddings-inference | 8080 |
 
-Non-root user, read-only root FS, health checks, SBOM via Syft, scanned with Trivy, signed with Cosign.
+Non-root user, read-only root file system (FS), health checks, software bill of materials (SBOM) via Syft, scanned with Trivy, signed with Cosign.
 
 ### 16.2 Local Compose (excerpt)
 
@@ -1091,18 +1091,18 @@ output "registry_url"      { value = module.platform.registry_url }
 
 | Module piece | AWS | Azure | GCP |
 |---|---|---|---|
-| network | VPC, 3 private + 3 public subnets, NAT | VNet, subnets, NAT Gateway | VPC, subnets, Cloud NAT |
-| k8s | EKS + managed node groups, Pod Identity | AKS + Workload Identity | GKE (Autopilot or Standard) + WI |
-| postgres | RDS PostgreSQL Multi-AZ | Postgres Flexible Server (zone-redundant) | Cloud SQL (regional HA) |
+| network | Virtual private cloud (VPC), 3 private + 3 public subnets, network address translation (NAT) | VNet, subnets, NAT Gateway | VPC, subnets, Cloud NAT |
+| Kubernetes | Elastic Kubernetes Service (EKS) + managed node groups, Pod Identity | Azure Kubernetes Service (AKS) + Workload Identity | GKE (Autopilot or Standard) + WI |
+| postgres | Relational Database Service (RDS) PostgreSQL Multi-AZ | Postgres Flexible Server (zone-redundant) | Cloud SQL (regional high availability (HA)) |
 | redis | ElastiCache replication group | Azure Cache/Managed Redis | Memorystore Standard |
-| storage | S3 + KMS | Storage Account + Blob | GCS + CMEK |
+| storage | Simple Storage Service (S3) + Key Management Service (KMS) | Storage Account + Blob | Google Cloud Storage (GCS) + customer-managed encryption keys (CMEK) |
 | secrets | Secrets Manager + External Secrets | Key Vault + CSI | Secret Manager + External Secrets |
-| registry | ECR | ACR | Artifact Registry |
-| edge | ALB + WAF + CloudFront | App Gateway/Front Door + WAF | Global LB + Cloud Armor |
+| registry | Elastic Container Registry (ECR) | Azure Container Registry (ACR) | Artifact Registry |
+| edge | Application Load Balancer (ALB) + web application firewall (WAF) + CloudFront | App Gateway/Front Door + WAF | Global load balancer (LB) + Cloud Armor |
 | observability | CloudWatch, AMP/AMG optional | Azure Monitor, App Insights | Cloud Monitoring/Logging/Trace |
 
 ### 17.3 Helm Chart (`infra/helm/acsrp`)
-- Deployments: `api` (HPA 2–20), `agents` (KEDA on queue length 1–30), `workers`, `mcp-*`, `web`, `reranker`, `otel-collector`; StatefulSet `qdrant` (3 replicas) unless managed.
+- Deployments: `api` (Horizontal Pod Autoscaler (HPA) 2–20), `agents` (Kubernetes Event-driven Autoscaling (KEDA) on queue length 1–30), `workers`, `mcp-*`, `web`, `reranker`, `otel-collector`; StatefulSet `qdrant` (3 replicas) unless managed.
 - `values-aws.yaml`, `values-azure.yaml`, `values-gcp.yaml` set ingress class, service-account annotations, storage class.
 - PodDisruptionBudgets, NetworkPolicies (default deny; explicit allows), resource requests/limits, liveness/readiness probes.
 - Alembic migrations as a pre-upgrade Helm hook Job.
@@ -1147,11 +1147,11 @@ Error codes (Problem Details `type`): `validation_error`, `unauthorized`, `forbi
 
 ## 20. Security Implementation Checklist
 
-- [ ] JWT validation: issuer, audience, exp, nbf, JWKS caching with rotation
+- [ ] JWT validation: issuer, audience, exp, nbf, JSON Web Key Set (JWKS) caching with rotation
 - [ ] RLS enabled on all tenant tables; integration test proves cross-tenant isolation
-- [ ] CORS allow-list per tenant widget origins; CSP on web app
-- [ ] Webhooks verified by HMAC + timestamp (5 min skew)
-- [ ] Upload limits (25 MB), MIME sniffing, malware scan hook for attachments
+- [ ] Cross-Origin Resource Sharing (CORS) allow-list per tenant widget origins; Content Security Policy (CSP) on web app
+- [ ] Webhooks verified by HMAC + timestamp (5 minutes skew)
+- [ ] Upload limits (25 MB), Multipurpose Internet Mail Extensions (MIME) sniffing, malware scan hook for attachments
 - [ ] Secrets only from secret manager; no secrets in logs (redaction test)
 - [ ] MCP servers reachable only from agent-runtime (NetworkPolicy) and require scoped JWTs
 - [ ] Write tools callable only by Resolution node; enforced in registry, not prompt
@@ -1162,7 +1162,7 @@ Error codes (Problem Details `type`): `validation_error`, `unauthorized`, `forbi
 
 ## 21. Traceability (PRD → LLD)
 
-| PRD Req | LLD Section |
+| Product requirements document (PRD) Req | LLD Section |
 |---|---|
 | FR-01–05 | §4 API, §7.3 supervisor, §11 channel jobs |
 | FR-06–11 | §3.3, §7.5 |

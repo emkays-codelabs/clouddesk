@@ -12,7 +12,7 @@ The new code is plain Python modules imported inside the existing backend proces
 
 ## B. Initial infrastructure design
 
-Inherited from Phase 6: a local `uvicorn` process serving the API on port 8000, SQLite in `data/support.db`, fakeredis and an in-memory vector store; `docker-compose.yml` and the Dockerfiles exist but were never built or run.
+Inherited from Phase 6: a local `uvicorn` process serving the application programming interface (API) on port 8000, SQLite in `data/support.db`, fakeredis and an in-memory vector store; `docker-compose.yml` and the Dockerfiles exist but were never built or run.
 
 ## C. Infrastructure evolution
 

@@ -9,7 +9,7 @@ maxTurns: 120
 
 You own the tests. Edit only files under `tests/` unless the plan says otherwise.
 
-1. Tests run fully offline, with no API key and no network. `tests/conftest.py` sets the environment
+1. Tests run fully offline, with no application programming interface (API) key and no network. `tests/conftest.py` sets the environment
    before the app imports and blocks non-loopback sockets. Do not weaken it.
 2. Async tests need no marker: `asyncio_mode = "auto"` and one session-scoped loop are set in
    `pyproject.toml`. Never add `@pytest.mark.asyncio` with a different scope.

@@ -2,7 +2,7 @@
 
 > **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done. In a run made for this document (2026-11-27) the whole suite passed (1103 tests) and `ruff check .` reported no problems. Nothing is deployed. The work was not yet committed when this document was written; it has since merged as pull request #54.
 >
-> **Not built in Phase 8:** no graph node that calls memory, no API route (including erasure), no memory vectors written by the app, no memory summarisation, no per-note expiry, no PII scrub beyond secrets.
+> **Not built in Phase 8:** no graph node that calls memory, no application programming interface (API) route (including erasure), no memory vectors written by the app, no memory summarisation, no per-note expiry, no personally identifiable information (PII) scrub beyond secrets.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 7 design evolution](../Phase07/02_DESIGN_EVOLUTION.md).
 >
@@ -37,7 +37,7 @@ Limitations: nothing enforced a floor, a dedup rule, a cap or erasure; the scrub
 
 - **Original design.** Redis was used for the rate limit and the retrieval cache only.
 - **Motivation.** The architecture names conversation and workflow state as short-term memory with a 24-hour life.
-- **Introduced.** `memory/short_term.py`: `ShortTermMemory` (conversation as a Redis list, state as JSON, TTL refreshed on write), `RetrievalCache`, `cache_key`.
+- **Introduced.** `memory/short_term.py`: `ShortTermMemory` (conversation as a Redis list, state as JavaScript Object Notation (JSON), time to live (TTL) refreshed on write), `RetrievalCache`, `cache_key`.
 - **Boundary.** The client is an argument; `memory/` imports nothing from the app.
 - **Trade-off.** The retriever's cache key is defined in `rag/retriever.py` and repeated here; a test asserts they match. The app still caches through `backend/app/services/retrieval_cache.py`.
 - **Verified.** `tests/unit/test_short_term.py` (8 tests); a break that changed the TTL went red.

@@ -46,7 +46,7 @@ flowchart LR
 - **Before.** No cache and no counters.
 - **Added.** `backend/app/core/redis.py` builds one async client per process. It is fakeredis unless `REDIS_URL` is set and `USE_FAKE_REDIS` is false. Packages `redis` and `fakeredis` are runtime dependencies in `pyproject.toml`.
 - **Why.** The demo and tests must run offline; production needs a shared store so several workers share one budget.
-- **Communication.** In the default mode, none (same process memory). With a real URL, a TCP connection to Redis (never exercised).
+- **Communication.** In the default mode, none (same process memory). With a real uniform resource locator (URL), a Transmission Control Protocol (TCP) connection to Redis (never exercised).
 - **Verified.** `tests/api/test_rate_limit.py` (fake client used and cached when the URL is empty; counting, reset, outage behaviour with a failing client). A real server was not run.
 
 ### Change 2. Settings that carry secrets (P3-1, P3-2)
@@ -121,7 +121,7 @@ The audit rows live in the same SQLite file as everything else. Redis counters a
 
 ## K. Observability and troubleshooting
 
-JSON logs on standard output carry `request_id`. Relevant messages: "rate limiter unavailable" and "audit write failed", each with `error_type`. No metrics, tracing or dashboards.
+JavaScript Object Notation (JSON) logs on standard output carry `request_id`. Relevant messages: "rate limiter unavailable" and "audit write failed", each with `error_type`. No metrics, tracing or dashboards.
 
 | Symptom | Check |
 |---|---|
@@ -161,4 +161,4 @@ No containers, networks, volumes or monitoring components exist.
 | Real Redis server | **Not run** |
 | Real Supabase token | **Not tried** |
 | `make backend` started by hand for this document | **Not run** |
-| Docker, networks, DNS, container health checks, volumes, backups | Do not exist |
+| Docker, networks, Domain Name System (DNS), container health checks, volumes, backups | Do not exist |

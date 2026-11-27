@@ -13,8 +13,8 @@
 | Item | Content |
 |---|---|
 | Objective | Give the service an identity (who is calling, what may they do) and three guards on every request: a request id, a rate limit and an audit trail |
-| Initial state | Phase 2: one FastAPI process, SQLite, repositories, demo data; only health routes; middleware CORS and request id |
-| Requirements addressed | N1 (JWT auth), N2 (rate limiting), N6 (audit of state-changing requests); N3 (request id) is inherited from Phase 1 and now sits in the final order |
+| Initial state | Phase 2: one FastAPI process, SQLite, repositories, demo data; only health routes; middleware Cross-Origin Resource Sharing (CORS) and request id |
+| Requirements addressed | N1 (JSON Web Token (JWT) auth), N2 (rate limiting), N6 (audit of state-changing requests); N3 (request id) is inherited from Phase 1 and now sits in the final order |
 | Major additions | `backend/app/core/security.py`, `backend/app/api/auth.py`, `backend/app/services/auth_service.py`, `backend/app/core/redis.py`, `backend/app/middleware/rate_limit.py`, `backend/app/middleware/audit.py`, `sample_data/profiles.json` |
 | Important design changes | The middleware stack grew from two to four layers with a fixed order; the seed gained a third kind of data (profiles); the service gained its first optional dependency, a Redis client (fake by default) |
 | Final capabilities | A demo user can obtain a token, `GET /api/v1/auth/me` returns who they are, any future route can demand a minimum role, every client is throttled, every non-read request is written to `audit_logs` |
@@ -41,7 +41,7 @@ Limitations at the start: no way to identify a caller, no limit on request volum
 ### C1. P3-1: JWT and `require_role`
 
 - **Before.** No concept of a user.
-- **Change.** `backend/app/core/security.py` validates HS256 tokens with PyJWT and exposes `get_current_user` and `require_role(minimum)`, a dependency factory over the ranking viewer 1 < agent 2 < admin 3. `Settings.effective_jwt_secret` returns the Supabase secret when set, else `JWT_SECRET`. No new environment variable.
+- **Change.** `backend/app/core/security.py` validates hash-based message authentication code (HMAC) with SHA-256 (HS256) tokens with PyJWT and exposes `get_current_user` and `require_role(minimum)`, a dependency factory over the ranking viewer 1 < agent 2 < admin 3. `Settings.effective_jwt_secret` returns the Supabase secret when set, else `JWT_SECRET`. No new environment variable.
 - **Effect on existing parts.** None; nothing was protected because no `/api/v1` route existed. The module imports only the settings module, so `core` stays free of the agent layer.
 - **Verified.** `tests/api/test_auth.py` on a throwaway app: missing, garbage, expired, no-expiry, no-subject, unknown-role, wrong-secret and `alg: none` tokens are 401; role ladder gives 403 or 200.
 - **Not done.** A real Supabase token was never tried.
@@ -57,7 +57,7 @@ Limitations at the start: no way to identify a caller, no limit on request volum
 ### C3. P3-3: Redis rate limit
 
 - **Before.** Unlimited requests.
-- **Change.** `backend/app/core/redis.py` (`get_redis`) and `backend/app/middleware/rate_limit.py`, a plain ASGI fixed-window limiter, registered between RequestId and the app. `redis` and `fakeredis` became runtime dependencies because the demo runs on fakeredis.
+- **Change.** `backend/app/core/redis.py` (`get_redis`) and `backend/app/middleware/rate_limit.py`, a plain Asynchronous Server Gateway Interface (ASGI) fixed-window limiter, registered between RequestId and the app. `redis` and `fakeredis` became runtime dependencies because the demo runs on fakeredis.
 - **Verified.** `tests/api/test_rate_limit.py` with an injected clock: 429 with `Retry-After` and request id, window reset, per-client counting, health exemption, fail-open on Redis error, configured limit read from settings, fake client cached.
 - **Not done.** No real Redis server was run.
 
@@ -100,9 +100,9 @@ flowchart TD
     AUD -->|"decode_token, never raises"| SEC
 ```
 
-Layer responsibilities: the router validates and maps errors to HTTP; `auth_service` decides who may log in and builds the token; repositories hold all SQL and the tenant filter; `backend/app/core/security.py` owns the token format and the role ladder; middleware owns cross-cutting concerns.
+Layer responsibilities: the router validates and maps errors to Hypertext Transfer Protocol (HTTP); `auth_service` decides who may log in and builds the token; repositories hold all Structured Query Language (SQL) and the tenant filter; `backend/app/core/security.py` owns the token format and the role ladder; middleware owns cross-cutting concerns.
 
-Security boundaries: the token signature (server secret), the role ladder, the per-client budget, the tenant filter in repositories. Observability: JSON logs with the request id, and the audit table.
+Security boundaries: the token signature (server secret), the role ladder, the per-client budget, the tenant filter in repositories. Observability: JavaScript Object Notation (JSON) logs with the request id, and the audit table.
 
 ---
 
@@ -138,13 +138,13 @@ Errors: unknown user gives 401 "Unknown demo user"; demo mode off gives 404; a b
 
 | Decision | Context | Alternatives | Rationale | Benefits | Trade-offs | Status |
 |---|---|---|---|---|---|---|
-| HS256 with an algorithm pinned to HS256; `exp`, `sub` required; unknown role refused | A token must not be trusted on its own say-so | Accept the header's algorithm; RS256 | Supabase shares an HS secret; pinning blocks `alg: none` | Small, testable | A shared secret signs and verifies | Implemented |
+| HS256 with an algorithm pinned to HS256; `exp`, `sub` required; unknown role refused | A token must not be trusted on its own say-so | Accept the header's algorithm; RSA signature with SHA-256 (RS256) | Supabase shares an HS secret; pinning blocks `alg: none` | Small, testable | A shared secret signs and verifies | Implemented |
 | One 401 message for every bad token | Do not teach an attacker why | Distinct messages | Less information leaked | Simple | Harder to debug for a legitimate caller | Implemented |
 | 401 versus 403 | Separate identity from permission | One status | Standard meaning | Clear client behaviour | None notable | Implemented |
 | Demo login returns 404 when `DEMO_MODE` is false | The route is demo-only | 403 | The route appears not to exist | No hint it exists | Not distinguishable from a typo | Implemented |
 | Fixed window, key `ratelimit:{client}:{minute}` | N2 needs a limit with little code | Sliding window, token bucket | `INCR` then `EXPIRE` on first hit; counter expires by itself | Cheap, shared across workers | Up to double the limit across a window boundary | Implemented |
 | Client is the socket peer, not `X-Forwarded-For` | A forged header would give a fresh budget | Trust the header | Safe without a proxy | Not spoofable | Behind a proxy every caller looks like the proxy; a trusted-proxy setting is not built | Implemented |
-| Limiter fails open | A limiter outage should not take the API down | Fail closed | Availability first | API stays up | No limit during a Redis outage | Implemented |
+| Limiter fails open | A limiter outage should not take the application programming interface (API) down | Fail closed | Availability first | API stays up | No limit during a Redis outage | Implemented |
 | Fake Redis by default | Demo and tests need no server | Require Redis | Offline first | Zero setup | Counters live in one process and vanish on restart | Implemented |
 | Audit innermost, written after the response, errors swallowed | A throttled request is not a state change; auditing must not break a request | Audit outermost; write before | Sees the bound request id; never turns success into failure | Simple | A crash between response and write loses the row | Implemented |
 | Audit reads only the Authorization header | No secret or ticket text in the log | Log the body | Safety | No leak by construction | Less forensic detail | Implemented |

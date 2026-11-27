@@ -25,11 +25,11 @@ Unchanged apart from the copied folders. The backend image still runs as a non-r
 
 ## E. Docker networking
 
-Container-to-container traffic is unchanged: `frontend` to `backend` to `redis` and `qdrant` by service name inside the compose network. Only the host side of the two published ports can now change. Because the browser (not the container) calls the API, `NEXT_PUBLIC_API_URL` must use the published host port; it is inlined at build time, so the frontend image must be rebuilt after changing `BACKEND_PORT`.
+Container-to-container traffic is unchanged: `frontend` to `backend` to `redis` and `qdrant` by service name inside the compose network. Only the host side of the two published ports can now change. Because the browser (not the container) calls the application programming interface (API), `NEXT_PUBLIC_API_URL` must use the published host port; it is inlined at build time, so the frontend image must be rebuilt after changing `BACKEND_PORT`.
 
 ## F. Component wiring and routing
 
-No new route. Memory is not reachable over HTTP. `docker compose config` with `BACKEND_PORT=18000 FRONTEND_PORT=13000` showed the published ports, the API URL and the CORS origin following the variables.
+No new route. Memory is not reachable over Hypertext Transfer Protocol (HTTP). `docker compose config` with `BACKEND_PORT=18000 FRONTEND_PORT=13000` showed the published ports, the API uniform resource locator (URL) and the Cross-Origin Resource Sharing (CORS) origin following the variables.
 
 ## G. Lifecycle commands
 
@@ -72,7 +72,7 @@ flowchart LR
 
 | Check | Status |
 |---|---|
-| Stack built and brought up in Docker, 2026-11-27 | Backend, frontend, redis, qdrant healthy; `/health/ready` ready with real Redis; demo login, 13 tickets, an MFA knowledge search and frontend `/dashboard` returned 200; ran on port 18000 through an override because 8000 was busy |
+| Stack built and brought up in Docker, 2026-11-27 | Backend, frontend, redis, qdrant healthy; `/health/ready` ready with real Redis; demo login, 13 tickets, an multi-factor authentication (MFA) knowledge search and frontend `/dashboard` returned 200; ran on port 18000 through an override because 8000 was busy |
 | `docker compose config -q` after the port change | Passed |
 | Image rebuilt with the `agents/` and `memory/` COPY lines | **Not run** |
 | Compose with `BACKEND_PORT` and `FRONTEND_PORT` set, brought up | **Not run** |

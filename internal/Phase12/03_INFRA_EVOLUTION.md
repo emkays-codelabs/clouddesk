@@ -20,7 +20,7 @@ Three stages (deps, builder, runner). `NEXT_PUBLIC_API_URL` is a build argument.
 
 ## E. Networking
 
-The browser, not the container, calls the backend, so the URL is the host port (`http://localhost:${BACKEND_PORT:-8000}`). Here the backend ran on 18000 because 8000 was in use.
+The browser, not the container, calls the backend, so the uniform resource locator (URL) is the host port (`http://localhost:${BACKEND_PORT:-8000}`). Here the backend ran on 18000 because 8000 was in use.
 
 ## F. Wiring
 
@@ -32,7 +32,7 @@ The browser, not the container, calls the backend, so the URL is the host port (
 
 ## H. Environment variables
 
-`NEXT_PUBLIC_API_URL` and the optional `NEXT_PUBLIC_USD_INR` display rate (default 85, an estimate used only for showing cost in INR).
+`NEXT_PUBLIC_API_URL` and the optional `NEXT_PUBLIC_USD_INR` display rate (default 85, an estimate used only for showing cost in Indian rupees (INR)).
 
 ## I. Persistent storage
 

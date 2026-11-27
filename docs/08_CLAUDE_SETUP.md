@@ -33,7 +33,7 @@ Apply these between sessions: `CLAUDE.md` is read once at session start, so an e
    > runs `Explore` and `log-triage`. Finish one task before starting another, keep one session per topic,
    > and do not switch models mid-task. The full rules are in `.claude/rules/cost-and-delegation.md`.
 
-3. **Add a chunking row to the section 1.1 comparison table.** The upstream LLD sizes chunks at 600 tokens
+3. **Add a chunking row to the section 1.1 comparison table.** The upstream low-level design (LLD) sizes chunks at 600 tokens
    with an 80-token overlap and keeps tables whole; CloudDesk uses 900 characters with 150 overlap
    (section 8). It is a deliberate v1 choice that the table does not yet list.
 
@@ -79,16 +79,16 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
 
 | The prompt says | The docs say | What was done |
 |---|---|---|
-| Editing CLAUDE.md, rules, agents or settings mid-session invalidates the cache | CLAUDE.md is read once at start, so an edit neither breaks the cache nor applies. Skills, agents and hooks append and never invalidate. Settings hot-reload. Model switches, MCP changes and denying a whole tool do invalidate. | The cost rule states the real triggers |
+| Editing CLAUDE.md, rules, agents or settings mid-session invalidates the cache | CLAUDE.md is read once at start, so an edit neither breaks the cache nor applies. Skills, agents and hooks append and never invalidate. Settings hot-reload. Model switches, Model Context Protocol (MCP) changes and denying a whole tool do invalidate. | The cost rule states the real triggers |
 | `Agent(opus-consultant)` restricts what a subagent may spawn | The type list is ignored inside a subagent definition | Agents list plain `Agent`; the restriction is written in their instructions |
 | A forked skill returns its result | Forked skills run in the background by default | Every forked skill sets `background: false` |
-| Subagents share the TTL decision | Subagents get five minutes unless `subagentPromptCacheTtl` is set (v2.1.242 or later) | Left unset; see section 7 |
+| Subagents share the time to live (TTL) decision | Subagents get five minutes unless `subagentPromptCacheTtl` is set (v2.1.242 or later) | Left unset; see section 7 |
 | `omitClaudeMd` is usable | Documented, but needs v2.1.271 or later | Set on `log-triage` and marked unverified |
 
 ## 7. Caching
 
 - **Platform:** first-party API (no Vertex, Bedrock or Foundry variable set).
-- **Claude Code version:** the CLI on this PATH reports 2.1.104. The session that applied this setup is a
+- **Claude Code version:** the command-line interface (CLI) on this PATH reports 2.1.104. The session that applied this setup is a
   different build and its version could not be read from here. Run `claude --version` or `/status` where
   you launch it. Several keys below are version-gated.
 - **Model ids pinned:** `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`.
@@ -169,7 +169,7 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
 |---|---|
 | `env` keys: the three model pins, `CLAUDE_CODE_SUBAGENT_MODEL`, `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (v2.1.217 or later) | documented, untested here |
 | `effort` agent field | documented, untested |
-| Hook JSON format and exit code 2 | documented; the script's logic was run by hand, a live session was not. The hook runs `python -m ruff check .`, `python -m pytest -q -x` and, when `frontend/node_modules` exists, the frontend lint and tests (`python -m` avoids the uv trampoline); any failure exits 2 |
+| Hook JavaScript Object Notation (JSON) format and exit code 2 | documented; the script's logic was run by hand, a live session was not. The hook runs `python -m ruff check .`, `python -m pytest -q -x` and, when `frontend/node_modules` exists, the frontend lint and tests (`python -m` avoids the uv trampoline); any failure exits 2 |
 | `omitClaudeMd` | needs v2.1.271 or later; unverified |
 | `Agent` tool in a subagent's `tools` | documented; unverified that `implementer` can spawn `opus-consultant` |
 | Unscoped rule `cost-and-delegation.md` loads every session | unverified |

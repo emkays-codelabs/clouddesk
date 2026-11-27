@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 3 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. In a run made for this document (2026-11-22) the whole suite passed (708 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 3 has **no ticket API, no login screen, no AI model, no Docker and no real Redis or Supabase run**.
+> **Status of this phase:** implemented and checked locally. In a run made for this document (2026-11-22) the whole suite passed (708 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 3 has **no ticket application programming interface (API), no login screen, no artificial intelligence (AI) model, no Docker and no real Redis or Supabase run**.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 2 explained](../Phase02/01_CODEBASE_EXPLAINED.md).
 
@@ -57,7 +57,7 @@ Analogy: a building with a reception desk. The desk issues badges (login), the d
 | Audit middleware | The guest book | Every non-read request | A row in `audit_logs` | No record of changes (N6) |
 | Request id middleware (Phase 1) | The tracking number | Every request | `X-Request-ID` on the response and in logs | The audit row and logs could not be tied to a request |
 
-Technical terms. **JWT** (JSON Web Token): a small text that carries claims (who, role, expiry) and a signature made with a secret; anyone with the secret can check it was not altered. **Middleware**: code that wraps every request. **Fixed window**: counting requests per calendar minute.
+Technical terms. **JWT** (JavaScript Object Notation (JSON) Web Token): a small text that carries claims (who, role, expiry) and a signature made with a secret; anyone with the secret can check it was not altered. **Middleware**: code that wraps every request. **Fixed window**: counting requests per calendar minute.
 
 ---
 
@@ -65,9 +65,9 @@ Technical terms. **JWT** (JSON Web Token): a small text that carries claims (who
 
 | File | Responsibility and key parts | Inputs, outputs | Interview explanation |
 |---|---|---|---|
-| `backend/app/core/security.py` | `create_access_token`, `decode_token`, `Principal`, `get_current_user`, `require_role`, `ROLE_RANK`. HS256 only; `exp` and `sub` required; unknown role refused. One 401 text for any bad token. | In: bearer header. Out: `Principal` or 401/403 | "The only place that knows what a valid token is." |
+| `backend/app/core/security.py` | `create_access_token`, `decode_token`, `Principal`, `get_current_user`, `require_role`, `ROLE_RANK`. Hash-based message authentication code (HMAC) with SHA-256 (HS256) only; `exp` and `sub` required; unknown role refused. One 401 text for any bad token. | In: bearer header. Out: `Principal` or 401/403 | "The only place that knows what a valid token is." |
 | `backend/app/core/config.py` | `effective_jwt_secret` (Supabase secret if set, else `JWT_SECRET`), `redis_url`, `use_fake_redis`, `rate_limit_per_minute`, `demo_mode` | Environment | "One place for every setting." |
-| `backend/app/api/auth.py` | `demo_login` (404 if not demo mode, 401 for unknown user) and `me` | HTTP bodies | "Thin routes; rules live in the service." |
+| `backend/app/api/auth.py` | `demo_login` (404 if not demo mode, 401 for unknown user) and `me` | Hypertext Transfer Protocol (HTTP) bodies | "Thin routes; rules live in the service." |
 | `backend/app/schemas/auth.py` | `DemoLoginRequest` (needs email or role, extra fields refused), `User`, `TokenResponse` | JSON | "The shape of what goes in and out." |
 | `backend/app/services/auth_service.py` | `demo_login` looks up the profile by email or by first of a role; a mismatch raises `DemoLoginRefused`; `get_user` | Session, email, role | "Decides who may sign in." |
 | `backend/app/repositories/profiles.py` | `ProfileRepository`, including `get_first_by_role` | Session | "Database questions about users, tenant filter included." |
@@ -77,7 +77,7 @@ Technical terms. **JWT** (JSON Web Token): a small text that carries claims (who
 | `backend/app/middleware/audit.py` | `AuditMiddleware`: skips GET, HEAD, OPTIONS; actor from a valid token else `anonymous`; resource type and id from the path; status code in `details`; write failure logged and swallowed | Request scope, response status | "The guest book." |
 | `backend/app/repositories/audit.py` | `AuditLogRepository.append` and `list` | Fields | "The only code that writes audit rows." |
 | `backend/app/middleware/request_id.py` | Phase 1 file; binds the id that audit reads | Header | "The tracking number." |
-| `backend/app/main.py` | Mounts the auth router at `/api/v1` and registers middleware in order: CORS, RequestId, RateLimit, Audit (outermost first) | App | "Where the order is decided." |
+| `backend/app/main.py` | Mounts the auth router at `/api/v1` and registers middleware in order: Cross-Origin Resource Sharing (CORS), RequestId, RateLimit, Audit (outermost first) | App | "Where the order is decided." |
 | `tests/api/test_auth.py`, `tests/api/test_auth_routes.py`, `tests/api/test_rate_limit.py`, `tests/api/test_audit.py` | See section I | | |
 
 ---
@@ -172,7 +172,7 @@ Results from this session: 708 passed, ruff clean. Untested: real Redis, real Su
 
 **Non-technical.** "Visitors get a time-limited pass that says what they may do. A counter stops anyone flooding the system, and a logbook records every change and who made it."
 
-**Architect.** "HS256 JWT, algorithm pinned, `exp` and `sub` required, role from a claim; `require_role` as a dependency factory; plain ASGI middleware; Redis `INCR`/`EXPIRE` fixed window keyed on the socket peer; audit via the repository, after the response, errors swallowed. Known gaps: no revocation, per-address not per-user limits, audit not transactional with the request."
+**Architect.** "HS256 JWT, algorithm pinned, `exp` and `sub` required, role from a claim; `require_role` as a dependency factory; plain Asynchronous Server Gateway Interface (ASGI) middleware; Redis `INCR`/`EXPIRE` fixed window keyed on the socket peer; audit via the repository, after the response, errors swallowed. Known gaps: no revocation, per-address not per-user limits, audit not transactional with the request."
 
 ---
 

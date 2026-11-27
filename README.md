@@ -1,10 +1,10 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 21:45 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
-> CloudDesk AI is an AI-Powered Customer Support & Ticket Investigation Platform. A ticket arrives,
+> CloudDesk artificial intelligence (AI) is an AI-Powered Customer Support & Ticket Investigation Platform. A ticket arrives,
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
@@ -16,7 +16,7 @@ Designing Intelligent Systems That Last.
 
 🌐 https://saffronyx.in
 
-**Status**: All 14 phases and all 84 tasks are done and validated locally: the backend, the six-agent LangGraph workflow with human approval, the console and landing page, the evaluation thresholds, Docker and Compose, and validated (never applied) Terraform for AWS, Azure and GCP. Not done: any real cloud deployment, any GitHub Actions run, Postgres and RLS against a live database, the approval timeout and the PRD items listed in `CLAUDE.md` section 20. **Version**: 0.1.0
+**Status**: All 14 phases and all 84 tasks are done and validated locally: the backend, the six-agent LangGraph workflow with human approval, the console and landing page, the evaluation thresholds, Docker and Compose, and validated (never applied) Terraform for Amazon Web Services (AWS), Azure and Google Cloud Platform (GCP). Not done: any real cloud deployment, any GitHub Actions run, Postgres and row-level security (RLS) against a live database, the approval timeout and the product requirements document (PRD) items listed in `CLAUDE.md` section 20. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -47,7 +47,7 @@ named `clouddesk`.
 
 CloudDesk AI is built for support agents, not for customers. It is shown here working for a fictional
 software company, also called CloudDesk, which sells team collaboration, cloud file storage, billing,
-workspaces and API access.
+workspaces and application programming interface (API) access.
 
 ### 1.1 What it does
 
@@ -90,23 +90,23 @@ Phases 1 to 8 are complete and validated locally, and Phase 9 is built and await
 answers requests. What exists today:
 
 - **Service basics:** health routes (`/health`, `/health/live`, `/health/ready`), an `X-Request-ID` on every
-  response and log line, redacted settings and JSON logging.
+  response and log line, redacted settings and JavaScript Object Notation (JSON) logging.
 - **Data:** SQLAlchemy models for 17 tables, tenant-scoped repositories, the Postgres schema, row-level
-  security policies and a first migration (the SQL is text-checked only, never run against Postgres), and demo
+  security policies and a first migration (the Structured Query Language (SQL) is text-checked only, never run against Postgres), and demo
   data: 13 tickets and 8 customers.
-- **Identity and guards:** JWT sign-in for three demo users (viewer, agent, admin), role checks, a Redis rate
+- **Identity and guards:** JSON Web Token (JWT) sign-in for three demo users (viewer, agent, admin), role checks, a Redis rate
   limit and an audit log of every non-GET request.
 - **Support API:** create, list and read tickets and customers, reply, request information, escalate and update
   a ticket, plus the dashboard summary, audit and settings views.
 - **Knowledge:** 15 fictional articles, a chunker, a vector store (in memory, with a Qdrant option), hybrid
   retrieval (semantic plus BM25) and search and reindex routes.
 - **Tools:** a tool registry with approval, timeout, idempotency and provenance checks, mock integrations
-  (nothing real is sent or refunded), read and write tools, and a read-only MCP server.
+  (nothing real is sent or refunded), read and write tools, and a read-only Model Context Protocol (MCP) server.
 - **Guardrails:** policy rules for escalation and severity, prompt-injection defence, customer-output
   validation and a secret scrubber.
 - **Memory:** short-term memory in Redis and long-term customer memory in the database, with duplicate
   skipping, a confidence floor and erasure.
-- **Console shell:** a Next.js app with navigation, a small UI kit and placeholder pages. It has no real screens
+- **Console shell:** a Next.js app with navigation, a small user interface (UI) kit and placeholder pages. It has no real screens
   yet and has not been opened in a browser.
 - **Containers:** Dockerfiles for the backend and frontend and a Compose stack. On 2026-11-27 the stack was built
   and brought up once (see `MEMORY.md`).
@@ -219,7 +219,7 @@ The stack is `frontend` (:3000) to `backend` (:8000) to `postgres`, `redis` and 
 
 Check a running stack with `BASE_URL=http://localhost:8000 make smoke`, and drive it in a visible browser with `cd frontend && npm run e2e` (Playwright). `make terraform-validate` checks the AWS, Azure and GCP Terraform offline; nothing is applied.
 
-If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_PORT` (default 3000) set the host side of each mapping, the browser-facing API URL and the allowed CORS origin:
+If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_PORT` (default 3000) set the host side of each mapping, the browser-facing API uniform resource locator (URL) and the allowed Cross-Origin Resource Sharing (CORS) origin:
 
 ```bash
 BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build
@@ -288,6 +288,7 @@ request also updates `TASKS.md`. The full flow is in [`docs/07_GIT_WORKFLOW.md`]
 | The business case, product, high-level and low-level design | `docs/01` to `docs/04` |
 | How to use the console, from sign-in to resolution | [`docs/11_USER_GUIDE.md`](docs/11_USER_GUIDE.md) |
 | Git and GitHub flow | `docs/07_GIT_WORKFLOW.md` |
+| Every abbreviation written out | [`docs/12_GLOSSARY.md`](docs/12_GLOSSARY.md) |
 | The system diagrams and the API contract | `docs/design/` |
 | Why an architecture choice was made | `docs/adr/` |
 | Documents written for each finished phase | `internal/` |

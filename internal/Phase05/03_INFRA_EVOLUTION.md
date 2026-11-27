@@ -78,7 +78,7 @@ All from `docker-compose.yml`. **Not executed.**
 | Service | Image or build | Purpose | Ports | Volumes | Dependencies | Health check |
 |---|---|---|---|---|---|---|
 | `redis` | `redis:7-alpine`, started with append-only persistence | Cache and rate-limit store | None published | `redis-data` at `/data` | None | `redis-cli ping`, every 10 s |
-| `qdrant` | `qdrant/qdrant:v1.12.4` | Vector database; **unused by default** | None published | `qdrant-storage` at `/qdrant/storage` | None | Opens a TCP connection to port 6333 with bash (the image has no curl) |
+| `qdrant` | `qdrant/qdrant:v1.12.4` | Vector database; **unused by default** | None published | `qdrant-storage` at `/qdrant/storage` | None | Opens a Transmission Control Protocol (TCP) connection to port 6333 with bash (the image has no curl) |
 | `backend` | Built from `backend/Dockerfile`, context is the repository root | FastAPI service | `8000:8000` | `backend-data` at `/app/data` | `redis` and `qdrant` healthy | Python script calling `/health/live`, every 30 s |
 | `frontend` | Built from `frontend/Dockerfile` | Next.js shell | `3000:3000` | None | `backend` healthy | `wget` to `/api/health` |
 
@@ -98,7 +98,7 @@ By Compose defaults (nothing is declared explicitly): one project network is cre
 | Host-published port | `8000:8000`, `3000:3000` | What your browser reaches at `localhost` |
 | Port another container uses | `redis:6379`, `qdrant:6333` | Reached through the Docker network by service name |
 
-`redis` and `qdrant` publish nothing, so they are reachable only from other containers. `localhost` inside the backend container means the backend itself, not Redis. The frontend is built with `NEXT_PUBLIC_API_URL=http://localhost:8000`, because the browser, not the container, calls the API. **None of this was observed**; it is read from the configuration.
+`redis` and `qdrant` publish nothing, so they are reachable only from other containers. `localhost` inside the backend container means the backend itself, not Redis. The frontend is built with `NEXT_PUBLIC_API_URL=http://localhost:8000`, because the browser, not the container, calls the application programming interface (API). **None of this was observed**; it is read from the configuration.
 
 ---
 
@@ -191,7 +191,7 @@ Backup and restore are **not implemented** for any of these. Removing a containe
 
 ## K. Observability and troubleshooting
 
-- Logs: JSON with request id. Startup logs `knowledge indexed` with article and chunk counts, or `knowledge indexing failed` with the error class.
+- Logs: JavaScript Object Notation (JSON) with request id. Startup logs `knowledge indexed` with article and chunk counts, or `knowledge indexing failed` with the error class.
 - Health endpoints: `/health/live`, `/health/ready`.
 - No metrics, dashboards or tracing exist for retrieval; `took_ms` is returned by the search route.
 
@@ -232,7 +232,7 @@ flowchart TB
 | `make ingest` prints 15 articles and 75 chunks | Recorded in `MEMORY.md` from the task run; not repeated here |
 | Compose file and Dockerfiles parse and follow rules (non-root user, health check, services) | Checked by `tests/deployment/test_compose.py` and `tests/deployment/test_dockerfiles.py`, included in the passing run; this is a text check, not a build |
 | Images build | **Not verified**: the Docker daemon was down |
-| Containers start, health checks pass, service-name DNS works | **Not verified** |
+| Containers start, health checks pass, service-name Domain Name System (DNS) works | **Not verified** |
 | Backend to real Redis, backend to Qdrant | **Not verified** |
 | Volume persistence, backup, restore | **Not verified, backup not built** |
 | Cloud deployment | None |

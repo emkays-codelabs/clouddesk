@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 6 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. All five tasks (P6-1 to P6-5) are done: P6-1 merged as pull request #50, and P6-2 to P6-5 landed together in pull request #51 by a decision to save agent usage. In a run made for this document (2026-11-22) the whole suite passed (974 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 6 has **no language model, no agents, no workflow, no approval screen, and no real outside system**. Tools are exercised only by tests and by one read-only HTTP listing. The MCP stdio server and `make mcp` were not run end to end for this document.
+> **Status of this phase:** implemented and checked locally. All five tasks (P6-1 to P6-5) are done: P6-1 merged as pull request #50, and P6-2 to P6-5 landed together in pull request #51 by a decision to save agent usage. In a run made for this document (2026-11-22) the whole suite passed (974 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 6 has **no language model, no agents, no workflow, no approval screen, and no real outside system**. Tools are exercised only by tests and by one read-only Hypertext Transfer Protocol (HTTP) listing. The Model Context Protocol (MCP) stdio server and `make mcp` were not run end to end for this document.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 5 explained](../Phase05/01_CODEBASE_EXPLAINED.md).
 
@@ -12,7 +12,7 @@
 
 **The 30-second version, ready to say out loud:**
 
-"After Phase 5 the platform could find the right help article, but it still could not do anything. Phase 6 builds the hands, and the safety rules for the hands. There are nine tools: five that only look things up, and four that change something. Every tool call goes through one gatekeeper. The gatekeeper refuses a refund unless a human has approved it, refuses numbers that came from the customer's message rather than from our records, makes sure the same refund never happens twice, and checks that a change really took effect before saying it is done. The outside world, billing and email, is faked so nothing real can happen. No AI is involved yet; this phase builds the controlled toolbox the AI will later use."
+"After Phase 5 the platform could find the right help article, but it still could not do anything. Phase 6 builds the hands, and the safety rules for the hands. There are nine tools: five that only look things up, and four that change something. Every tool call goes through one gatekeeper. The gatekeeper refuses a refund unless a human has approved it, refuses numbers that came from the customer's message rather than from our records, makes sure the same refund never happens twice, and checks that a change really took effect before saying it is done. The outside world, billing and email, is faked so nothing real can happen. No artificial intelligence (AI) is involved yet; this phase builds the controlled toolbox the AI will later use."
 
 **What the phase accomplished.**
 

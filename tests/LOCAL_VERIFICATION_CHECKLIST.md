@@ -1,6 +1,6 @@
 # CloudDesk: local testing and verification checklist
 
-Before deploying CloudDesk to any cloud, run a complete local verification cycle covering the frontend, backend, database, AI workflow, permissions, safety controls and Docker infrastructure.
+Before deploying CloudDesk to any cloud, run a complete local verification cycle covering the frontend, backend, database, artificial intelligence (AI) workflow, permissions, safety controls and Docker infrastructure.
 
 Many automated tests already pass, but the final console restyle needs browser visual verification, and some infrastructure and database testing (live PostgreSQL and row-level security) is still unverified. Run the tests in the order given in section 15.
 
@@ -14,7 +14,7 @@ Many automated tests already pass, but the final console restyle needs browser v
 - [ ] Database connection works.
 - [ ] Redis connection works, if required.
 - [ ] Vector database or retrieval infrastructure works.
-- [ ] LLM provider configuration is valid.
+- [ ] large language model (LLM) provider configuration is valid.
 - [ ] Euron model connectivity works.
 - [ ] Environment variables are loaded correctly.
 - [ ] No secrets are exposed in frontend logs.
@@ -33,10 +33,10 @@ docker compose logs frontend --tail=100
 
 - [ ] All backend unit tests pass.
 - [ ] Integration tests pass.
-- [ ] API tests pass.
+- [ ] application programming interface (API) tests pass.
 - [ ] Database tests pass.
 - [ ] Authentication tests pass.
-- [ ] Authorization and RBAC tests pass.
+- [ ] Authorization and role-based access control (RBAC) tests pass.
 - [ ] Workflow tests pass.
 - [ ] Error-handling tests pass.
 - [ ] No test failures or unexpected skips.
@@ -62,7 +62,7 @@ Browser visual testing: open the application in a real browser and inspect every
 |---|---|
 | Landing page | Layout, responsive design, links, call to action, footer |
 | Login | Layout, demo users, sign-in behaviour |
-| Dashboard | KPI cards, ticket counts, status information |
+| Dashboard | Key performance indicator (KPI) cards, ticket counts, status information |
 | Tickets | List, search, filtering, ticket navigation |
 | Ticket detail | Three-column layout and content rendering |
 | Approvals | Pending requests and approve/reject controls |
@@ -166,7 +166,7 @@ Run workflows against several different types of ticket, not just one successful
 - [ ] Workflow completes, and the result persists after a page refresh.
 - [ ] The workflow cannot be run concurrently by accident.
 
-**B. API technical issue** ("Our integration is receiving HTTP 429 errors.")
+**B. API technical issue** ("Our integration is receiving Hypertext Transfer Protocol (HTTP) 429 errors.")
 
 - [ ] Correct technical classification.
 - [ ] Relevant API and rate-limit articles retrieved.
@@ -180,7 +180,7 @@ Run workflows against several different types of ticket, not just one successful
 - [ ] Risk is assessed correctly.
 - [ ] The refund is not executed automatically.
 - [ ] An approval request is created.
-- [ ] The INR amount displays correctly.
+- [ ] The Indian rupees (INR) amount displays correctly.
 - [ ] The approval panel contains the required information.
 - [ ] The ticket enters the pending-approval state.
 
@@ -296,7 +296,7 @@ Normal operation:
 - [ ] Model connection works and the correct model and provider are selected.
 - [ ] Workflow generation succeeds, and structured outputs are valid and parseable.
 - [ ] Token usage is captured and estimated cost is calculated.
-- [ ] USD and INR cost display together.
+- [ ] United States dollars (USD) and INR cost display together.
 
 Failure scenarios (simulate or test):
 
@@ -349,7 +349,7 @@ Database integrity:
 - [ ] Migrations work.
 - [ ] The backup and restore process is documented and tested, if applicable.
 
-PostgreSQL and row-level security: live PostgreSQL and RLS checks are unverified in the completion report, so treat them as additional verification, not as completed testing.
+PostgreSQL and row-level security: live PostgreSQL and row-level security (RLS) checks are unverified in the completion report, so treat them as additional verification, not as completed testing.
 
 - [ ] PostgreSQL connection works.
 - [ ] Schema migrations run.
@@ -380,7 +380,7 @@ Security:
 - [ ] No cross-customer information leakage.
 - [ ] No secrets returned in API responses.
 - [ ] No dangerous actions through direct API calls.
-- [ ] CORS configured appropriately.
+- [ ] Cross-Origin Resource Sharing (CORS) configured appropriately.
 - [ ] Input validation protects the backend.
 
 ## 13. Performance and reliability
@@ -388,7 +388,7 @@ Security:
 A baseline is enough for a local portfolio project.
 
 - [ ] The landing page, login page, dashboard, ticket list and ticket detail load without excessive delay.
-- [ ] The workflow starts without the UI freezing, and its progress is visible.
+- [ ] The workflow starts without the user interface (UI) freezing, and its progress is visible.
 - [ ] Large ticket lists do not break the interface.
 - [ ] Search remains responsive.
 - [ ] Concurrent workflow requests behave correctly.
@@ -396,7 +396,7 @@ A baseline is enough for a local portfolio project.
 - [ ] Memory usage remains reasonable.
 - [ ] Containers do not leak or restart repeatedly.
 
-Browser and UX reliability:
+Browser and user experience (UX) reliability:
 
 - [ ] Loading indicators appear.
 - [ ] Users cannot accidentally submit twice.
@@ -434,7 +434,7 @@ Mandatory before calling CloudDesk locally verified:
 | 6 | Ticket lifecycle | Critical |
 | 7 | AI workflow scenarios | Critical |
 | 8 | Approval and safety controls | Critical |
-| 9 | RAG and grounding | Critical |
+| 9 | Retrieval-augmented generation (RAG) and grounding | Critical |
 | 10 | Euron integration | Critical |
 | 11 | Database persistence and restart | Critical |
 | 12 | Browser visual verification of all pages | Critical |
@@ -473,7 +473,7 @@ CloudDesk is locally verified only when:
 
 Do not start by changing code. First perform a read-only local verification audit: run the existing tests, inspect the application in the browser, identify failures and report the evidence.
 
-**Task: complete local verification and QA audit of CloudDesk after all 14 phases and 84 tasks.**
+**Task: complete local verification and quality assurance (QA) audit of CloudDesk after all 14 phases and 84 tasks.**
 
 Objective: determine whether the application works correctly locally and is ready for the next release-readiness stage. This is a verification task, not a feature-development task.
 

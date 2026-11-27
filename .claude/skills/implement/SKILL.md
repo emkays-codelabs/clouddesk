@@ -5,7 +5,7 @@ context: fork
 agent: implementer
 background: false
 disable-model-invocation: true
-argument-hint: "[plan path, e.g. docs/plans/p2-1.md]"
+argument-hint: "[plan path, for example, docs/plans/p2-1.md]"
 ---
 
 Execute this approved plan: $ARGUMENTS

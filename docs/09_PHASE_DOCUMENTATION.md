@@ -85,7 +85,7 @@ Some participants may not have a software engineering background.
 
 Therefore, the document must explain the system in simple, natural language without losing technical accuracy.
 
-The document must be understandable to someone who has basic computer knowledge but may not understand programming, APIs, databases, distributed systems, Docker, or AI architecture.
+The document must be understandable to someone who has basic computer knowledge but may not understand programming, application programming interfaces (APIs), databases, distributed systems, Docker, or artificial intelligence (AI) architecture.
 
 ## 3.2 Mandatory contents
 
@@ -189,7 +189,7 @@ Explain the relevant technical concepts introduced in this phase.
 
 Depending on the actual implementation, these may include:
 
-- API and HTTP request/response cycles.
+- API and Hypertext Transfer Protocol (HTTP) request/response cycles.
 - Backend and frontend responsibilities.
 - Database operations and transactions.
 - Authentication and authorization.
@@ -557,7 +557,7 @@ Explain:
 - How frontend-to-backend communication works.
 - How backend-to-database communication works.
 - How external APIs are reached.
-- How DNS, port mapping, and network isolation affect the system.
+- How Domain Name System (DNS), port mapping, and network isolation affect the system.
 
 Clarify the difference between:
 
@@ -874,7 +874,7 @@ Include these topics only where they apply to the actual implementation.
 
 Potential topics include:
 
-- LLM integration.
+- large language model (LLM) integration.
 - Prompt design.
 - Retrieval-Augmented Generation.
 - Embedding models.

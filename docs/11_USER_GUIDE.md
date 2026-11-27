@@ -13,7 +13,7 @@ CloudDesk reads a support ticket, investigates it (customer, help articles, like
 - CloudDesk must be running, and you need its address (on a local machine, `http://localhost:3000`).
 - The demo environment must contain the sample tickets and help articles. The ticket numbers used below (CD-1001 to CD-1013) are **sample tickets supplied by the demo environment**; another environment will not have them.
 - The three demo users (Sam, Admin, Vic) are built in.
-- Running the AI workflow needs the configured model service to be reachable. If it is not, a run fails and the ticket is handed to a person (section 9).
+- Running the artificial intelligence (AI) workflow needs the configured model service to be reachable. If it is not, a run fails and the ticket is handed to a person (section 9).
 
 ## 3. Open CloudDesk and sign in
 
@@ -35,7 +35,7 @@ CloudDesk reads a support ticket, investigates it (customer, help articles, like
 | Customers | A list of customers; open one to see its subscription, workspace, tickets and "What we remember" (the safe notes saved from earlier tickets). |
 | Knowledge | The help articles CloudDesk uses as evidence. Search them here. |
 | Escalations | Tickets handed to a specialist team, and why. |
-| Agents | The six AI agents and run statistics, with cost in USD and INR. |
+| Agents | The six AI agents and run statistics, with cost in United States dollars (USD) and Indian rupees (INR). |
 | Audit | A record of who changed what. |
 | Settings | Read-only view of the approval rules. |
 
@@ -44,7 +44,7 @@ CloudDesk reads a support ticket, investigates it (customer, help articles, like
 1. Open **Tickets** and click a ticket, for example **CD-1010** (a simple feature request).
 2. The ticket page has three columns:
    - **Left:** the conversation and a **Reply** box with **Send reply**, **Request info** and **Escalate**. The box grows as you type, up to a maximum height.
-   - **Middle:** the **Customer**: company, plan, account status, seats, storage, customer since, region, customer ID and a count of earlier tickets. Click the name for full details.
+   - **Middle:** the **Customer**: company, plan, account status, seats, storage, customer since, region, customer identifier (ID) and a count of earlier tickets. Click the name for full details.
    - **Right:** **AI workflow**. Its status, progress bar and the **Run AI workflow** button stay at the top while you scroll the page.
 3. Click **Run AI workflow**. A message says "Workflow started." The button then reads **Workflow running…** and is disabled until the run ends; afterwards it reads **Run workflow again**. A second run cannot start while one is live.
 4. Watch the steps tick over. The platform has twelve possible steps: understand ticket, classify severity, customer context, knowledge retrieval, troubleshooting, resolution planning, risk check, human approval, execute resolution, escalation, ticket summary and memory update. **A single run uses only some of them**: it takes either human approval, execute or escalation depending on the risk check. The home page describes the same journey as ten stages (intake to memory); those are the same work grouped for readers, and the twelve steps here are what the platform actually runs.

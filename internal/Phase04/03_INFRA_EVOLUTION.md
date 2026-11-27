@@ -47,7 +47,7 @@ flowchart LR
 - **Before.** The process served health and auth routes.
 - **Added.** Five routers mounted in `backend/app/main.py` under `/api/v1`: tickets, customers, dashboard, audit, settings. No new port, process, package or file on disk.
 - **Communication.** Unchanged: client to uvicorn on `localhost:8000`, through four middleware, to the router, to SQLite.
-- **Verified.** The API tests in `tests/api/` call every route through the test client. The server was not started by hand for this document.
+- **Verified.** The application programming interface (API) tests in `tests/api/` call every route through the test client. The server was not started by hand for this document.
 
 ### Change 2. Database access grew (P4-2 to P4-5)
 
@@ -57,7 +57,7 @@ flowchart LR
 
 ### Change 3. A route that reports configuration (P4-5)
 
-`GET /api/v1/settings` reads the cached settings and reports booleans and names (`demo_mode`, `environment`, provider names, `api_key_configured`, `redis` as `fake` or `real`, `database` as `sqlite` or `postgres`, `vector_store`, approval policy). It never returns a key, URL or password (tested in `tests/api/test_settings_api.py`).
+`GET /api/v1/settings` reads the cached settings and reports booleans and names (`demo_mode`, `environment`, provider names, `api_key_configured`, `redis` as `fake` or `real`, `database` as `sqlite` or `postgres`, `vector_store`, approval policy). It never returns a key, uniform resource locator (URL) or password (tested in `tests/api/test_settings_api.py`).
 
 ```mermaid
 flowchart LR
@@ -82,7 +82,7 @@ Not applicable. Planned and untested: inside a container `localhost` is the cont
 
 ## F. Component wiring and routing
 
-Browser or curl to `localhost:8000`, four middleware, router, service, repository, SQLite file. CORS allows the origins in `CORS_ORIGINS`; no browser frontend exists yet, so the CORS path was exercised only by tests. A reverse proxy does not exist; the rate limiter reads the socket peer, so behind one every caller would look like the proxy (Phase 3 limitation, still true).
+Browser or curl to `localhost:8000`, four middleware, router, service, repository, SQLite file. Cross-Origin Resource Sharing (CORS) allows the origins in `CORS_ORIGINS`; no browser frontend exists yet, so the CORS path was exercised only by tests. A reverse proxy does not exist; the rate limiter reads the socket peer, so behind one every caller would look like the proxy (Phase 3 limitation, still true).
 
 ## G. Lifecycle commands
 
@@ -123,7 +123,7 @@ All rows, including tickets created by the new routes, live in the same SQLite f
 
 ## K. Observability and troubleshooting
 
-JSON logs on standard output carry `request_id`. The audit table records every non-read request and is now readable at `GET /api/v1/audit` (filters `actor`, `action`). No metrics, tracing or dashboards beyond the summary route.
+JavaScript Object Notation (JSON) logs on standard output carry `request_id`. The audit table records every non-read request and is now readable at `GET /api/v1/audit` (filters `actor`, `action`). No metrics, tracing or dashboards beyond the summary route.
 
 | Symptom | Check |
 |---|---|
@@ -164,4 +164,4 @@ No containers, networks, volumes or monitoring components exist.
 | `make backend` started by hand for this document | **Not run** |
 | Real Postgres, real Redis | **Not run** |
 | Concurrent writers on SQLite | **Not tested** |
-| Docker, networks, DNS, container health checks, volumes, backups | Do not exist |
+| Docker, networks, Domain Name System (DNS), container health checks, volumes, backups | Do not exist |

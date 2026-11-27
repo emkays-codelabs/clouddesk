@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 2 of CloudDesk, meant to be spoken aloud to recruiters, hiring managers and interview boards. It describes only what exists in the repository today. Where something is planned for a later phase, it says so.
 >
-> **Status of this phase:** implemented and checked locally. In a run made for this document (2026-11-22) the whole suite passed (659 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 2 has **no ticket API, no login, no AI model, no Docker and no Postgres run**. The data layer is used only by tests, by `make seed` and by the startup code.
+> **Status of this phase:** implemented and checked locally. In a run made for this document (2026-11-22) the whole suite passed (659 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 2 has **no ticket application programming interface (API), no login, no artificial intelligence (AI) model, no Docker and no Postgres run**. The data layer is used only by tests, by `make seed` and by the startup code.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md) and the local-only interview Q&A, `04_INTERVIEW_QNA.md`. Phase 1 is explained in [the Phase 1 codebase document](../Phase01/01_CODEBASE_EXPLAINED.md).
 
@@ -16,7 +16,7 @@
 
 **What the phase accomplished.**
 
-- A data model: 17 tables (customers, subscriptions, tickets, messages, approvals and so on) described once in Python and once in Postgres SQL, with tests that keep the two in step.
+- A data model: 17 tables (customers, subscriptions, tickets, messages, approvals and so on) described once in Python and once in Postgres Structured Query Language (SQL), with tests that keep the two in step.
 - A "repository layer": the only code allowed to talk to the database, which automatically adds a tenant filter to every question it asks.
 - Postgres security rules (row-level security) written as SQL, so the cloud database can enforce the same separation.
 - A demo scenario: 8 fictional customers and 13 tickets, loaded on first start, once.
@@ -30,7 +30,7 @@
 | | Before Phase 2 | After Phase 2 |
 |---|---|---|
 | Where is data kept? | Nowhere | A SQLite file in `data/` for the demo; Postgres SQL written for the cloud |
-| Can the service hold a ticket? | No | Yes, through `TicketRepository` (no HTTP route yet) |
+| Can the service hold a ticket? | No | Yes, through `TicketRepository` (no Hypertext Transfer Protocol (HTTP) route yet) |
 | Is there demo content? | No | 8 customers, 13 tickets, 2 incidents, 5 products on first start |
 | Is tenant separation enforced? | Only promised in a document | By a column on every table, a filter in one base class, and SQL policies; tested with two tenants |
 | What does startup do? | Builds the app | Also creates tables and seeds data |
@@ -81,7 +81,7 @@ Think of Phase 2 as building the **records office** behind the front desk Phase 
 
 - **Purpose.** Describe 17 tables: `tenants` plus 16 data tables (profiles, customers, subscriptions, workspaces, products, tickets, ticket messages, support articles, incidents, workflow runs, workflow events, resolution actions, approval requests, escalations, customer memory, audit logs).
 - **Receives / produces.** No input; it is a description. SQLAlchemy turns it into `CREATE TABLE` statements.
-- **Portable on purpose.** Ids are 36-character text (a UUID written out), lists are stored as JSON, and fixed lists are stored as text with a rule that only the allowed words are accepted. That is why the same description works on SQLite and Postgres.
+- **Portable on purpose.** Ids are 36-character text (a universally unique identifier (UUID) written out), lists are stored as JavaScript Object Notation (JSON), and fixed lists are stored as text with a rule that only the allowed words are accepted. That is why the same description works on SQLite and Postgres.
 - **The tenant column.** *Tenant* means one customer organisation of the product. Every data table has a `tenant_id` that cannot be empty. Think of it as the organisation's name stamped on every page of every file.
 
 ### Engine and sessions
@@ -120,7 +120,7 @@ Paths are relative to the project root. Line counts are from the files as they s
 | Item | Explanation |
 |---|---|
 | Responsibility | The single definition of the shared vocabulary |
-| Reason for existence | CLAUDE.md says a new category or status is added here first, so models, API and UI cannot disagree |
+| Reason for existence | CLAUDE.md says a new category or status is added here first, so models, API and user interface (UI) cannot disagree |
 | Main components | `Category`, `TicketStatus`, `Severity`, `Channel`, `Role`, `MemoryType`, `ApprovalStatus`, `ResolutionActionStatus`, `EscalationStatus`, `WorkflowStatus`, `MessageRole`, `WorkflowEventType` |
 | Inputs | None |
 | Processing | Declares enums |
@@ -153,7 +153,7 @@ Paths are relative to the project root. Line counts are from the files as they s
 | Reason for existence | One place decides how the database is opened |
 | Main components | `get_engine`, `get_sessionmaker`, `get_session`, `create_tables`, `dispose_engine` |
 | Inputs | `DATABASE_URL` from the settings |
-| Processing | Caches one engine per URL. For SQLite it creates the parent folder and runs `PRAGMA foreign_keys=ON` on each new connection. |
+| Processing | Caches one engine per uniform resource locator (URL). For SQLite it creates the parent folder and runs `PRAGMA foreign_keys=ON` on each new connection. |
 | Outputs | An async engine, sessions, created tables |
 | Dependencies | `backend/app/core/config.py`, `backend/app/models/entities.py` |
 | Execution point | The app lifespan; `get_session` is ready for request-scoped use in Phase 4 |
@@ -297,7 +297,7 @@ sequenceDiagram
 
 These were decisions made while building the phase; each is also recorded in the [design evolution document](./02_DESIGN_EVOLUTION.md), section F.
 
-- **One model for two databases.** Gives an offline demo. Costs native enums and JSONB.
+- **One model for two databases.** Gives an offline demo. Costs native enums and JSON binary (JSONB).
 - **Tenant column from day one (D1).** Cheap now, expensive later. Costs a column everywhere.
 - **Filter in the repository only.** One place to audit. A method that skips `_select()` would leak, so tests scan for that.
 - **Postgres id type differs from the model's (O1).** The SQL uses `uuid` and the models use text. When a real `asyncpg` connection exists, a type decorator will be needed. That is planned, not built.
@@ -353,7 +353,7 @@ These were decisions made while building the phase; each is also recorded in the
 
 ## K. Key takeaways and next-phase dependencies
 
-**What was implemented.** Vocabulary, 17 models, engine and sessions, the repository layer, Postgres DDL with RLS and a pinned first migration, seven sample data files and a startup seed.
+**What was implemented.** Vocabulary, 17 models, engine and sessions, the repository layer, Postgres data definition language (DDL) with RLS and a pinned first migration, seven sample data files and a startup seed.
 
 **Understand before explaining it.** The tenant column and where the filter lives; flush versus commit; why models and SQL differ on ids; why the seed uses deterministic ids and an emptiness gate.
 

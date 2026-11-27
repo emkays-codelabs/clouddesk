@@ -12,7 +12,7 @@ Support teams cannot let software move money unattended. The platform proposes, 
 
 ## C. Architecture in simple language
 
-The graph's `human_approval` node calls `interrupt()`. The service layer then creates an `approval_requests` row and sets the ticket to `waiting_on_approval`. An agent approves or rejects through the API; the service resumes the same run. Escalations are rows in `escalations`, created by the escalation node through the `create_escalation` tool.
+The graph's `human_approval` node calls `interrupt()`. The service layer then creates an `approval_requests` row and sets the ticket to `waiting_on_approval`. An agent approves or rejects through the application programming interface (API); the service resumes the same run. Escalations are rows in `escalations`, created by the escalation node through the `create_escalation` tool.
 
 ## D. File-by-file
 
@@ -47,7 +47,7 @@ A second run on a waiting ticket is 409. Resuming a run that is not paused is 40
 
 ## I. Testing
 
-`tests/workflow/test_graph_run.py` covers pause, approve-once, reject, policy escalation, injection containment and RBAC. Not tested: an approval nobody decides (no timeout exists).
+`tests/workflow/test_graph_run.py` covers pause, approve-once, reject, policy escalation, injection containment and role-based access control (RBAC). Not tested: an approval nobody decides (no timeout exists).
 
 ## J. Interview-ready explanation
 

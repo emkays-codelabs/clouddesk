@@ -1,12 +1,12 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 16:38 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
 ## Goal
 
-Ship an agent console where a support agent opens a CloudDesk ticket, runs one workflow, inspects every step, and approves anything that spends money or changes an account. The same codebase runs offline with no API key.
+Ship an agent console where a support agent opens a CloudDesk ticket, runs one workflow, inspects every step, and approves anything that spends money or changes an account. The same codebase runs offline with no application programming interface (API) key.
 
 ## Users
 
@@ -30,13 +30,13 @@ Ship an agent console where a support agent opens a CloudDesk ticket, runs one w
 
 ### Functional
 
-| ID | The system shall | Proven by | Phase |
+| Identifier (ID) | The system shall | Proven by | Phase |
 |---|---|---|---|
 | F1 | Create a ticket from email, chat, web, or API via `POST /api/v1/tickets` | API ticket-create test | 4 |
 | F2 | Classify the ticket into one of the ten categories and write a one-line summary | Supervisor agent test; classification accuracy ≥ 0.80 | 9, 14 |
 | F3 | Assign severity `low`/`medium`/`high`/`critical` with a reason; rules may only raise it | Rules test; `CD-1010` stays low | 7, 9 |
 | F4 | Load customer, subscription, workspace, previous tickets, and up to 10 memory notes | Customer agent test | 4, 8, 9 |
-| F5 | Attach cited evidence from hybrid retrieval, reranked, one hit per article | RAG tests; hit-rate@3 ≥ 0.75 | 5, 9, 14 |
+| F5 | Attach cited evidence from hybrid retrieval, reranked, one hit per article | Retrieval-augmented generation (RAG) tests; hit-rate@3 ≥ 0.75 | 5, 9, 14 |
 | F6 | Attach similar previously resolved cases | `KnowledgeAgent.similar_cases` test | 5, 9 |
 | F7 | Produce probable causes and numbered troubleshooting steps | Troubleshooting agent test | 9 |
 | F8 | Produce a resolution plan: summary, customer reply, internal notes, and actions | Resolution agent test; grounding rate ≥ 0.90 | 9, 14 |
@@ -58,7 +58,7 @@ Ship an agent console where a support agent opens a CloudDesk ticket, runs one w
 | N5 | Validate customer-facing output before a reply is shown | Guardrail unit test; failed validation raises risk to `high` | 7 |
 | N6 | Audit every non-GET request | Audit middleware test | 3 |
 | N7 | Keep secrets out of memory notes | Scrub test with card, key, and password fixtures | 7, 8 |
-| N8 | Build as containers that can be deployed to AWS, Azure, and GCP | Dockerfile and compose tests; Terraform validate | 14 |
+| N8 | Build as containers that can be deployed to Amazon Web Services (AWS), Azure, and Google Cloud Platform (GCP) | Dockerfile and compose tests; Terraform validate | 14 |
 
 ### Quality bar
 
@@ -74,7 +74,7 @@ Pytest uses `asyncio_mode = "auto"` and `loop_scope = "session"`. Do not add `@p
 
 ## Upstream traceability
 
-`CLAUDE.md` §1.1 explains the relationship: the upstream PRD (`docs/02_PRD.md`) and BRD (`docs/01_BRD.md`) specify **ACSRP**, the full
+`CLAUDE.md` §1.1 explains the relationship: the upstream PRD (`docs/02_PRD.md`) and BRD (`docs/01_BRD.md`) specify **Autonomous Customer Support and Resolution Platform (ACSRP)**, the full
 multi-tenant product, with requirements FR-01–42 and NFR-01–16. The catalogue above is CloudDesk's v1
 subset. This table is the map, so a reader can tell a deliberate omission from an oversight.
 
@@ -113,13 +113,13 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | FR-05 | Ask clarifying questions, at most 2 turns, then hand off | No node and no requirement. The upstream graph has a `clarify` node; CloudDesk's does not. |
 | FR-21 | An approver may **edit** the arguments before approving | `docs/design/06_API_CONTRACT.md` offers approve and reject only. |
 | FR-29, FR-07 | Distil resolutions into reviewed **resolution cards** and index them | The learning loop (upstream journey J5; FR-29 is a Should). F6 retrieves past tickets but nothing distils them. |
-| FR-30 | Capture CSAT and agent feedback, linked to traces | No `feedback` table, route or requirement. The eval suite has no outcome signal without it. |
-| FR-35 | Analytics: autonomous rate, first response time, MTTR, CSAT, cost, escalation reasons | `GET /dashboard/summary` returns counts only. These are the PRD's business objectives BO-1 to BO-7. |
+| FR-30 | Capture customer satisfaction score and agent feedback, linked to traces | No `feedback` table, route or requirement. The eval suite has no outcome signal without it. |
+| FR-35 | Analytics: autonomous rate, first response time, mean time to resolution, customer satisfaction score, cost, escalation reasons | `GET /dashboard/summary` returns counts only. These are the PRD's business objectives BO-1 to BO-7. |
 | FR-39 | Upload or connect knowledge sources, with scheduled re-index | P5-4 reindexes files already on disk; there is no upload path or schedule. |
-| NFR-09 | PII detection and redaction in **logs and traces** | N7 covers memory notes only. JSON logs are not redacted. |
-| NFR-10 | LLM token budgets per tenant | N2 limits requests, not tokens. The PRD names cost runaway as a risk. |
+| NFR-09 | Personally identifiable information (PII) detection and redaction in **logs and traces** | N7 covers memory notes only. JavaScript Object Notation (JSON) logs are not redacted. |
+| NFR-10 | Large language model (LLM) token budgets per tenant | N2 limits requests, not tokens. The PRD names cost runaway as a risk. |
 | NFR-01–04 | Latency and scale targets | No performance requirement or test. |
-| NFR-15, NFR-16 | ≥ 80% coverage on core services; WCAG 2.1 AA | Neither is measured. |
+| NFR-15, NFR-16 | ≥ 80% coverage on core services; Web Content Accessibility Guidelines (WCAG) 2.1 AA | Neither is measured. |
 | FR-36 | Admin: knowledge sources, ingestion jobs, policies, tool registry, users and roles | `GET /settings` is read-only; nothing edits sources, policies, tools or users. |
 | FR-41 | Feature flags per tenant: copilot, supervised or autonomous | `AUTONOMY_MODE` is listed in `CLAUDE.md` §10.2 as a later setting; no requirement, task or test. |
 | NFR-05 | 99.9% availability; a human-handoff mode if the model provider fails | No handoff mode and no availability target. |
@@ -127,7 +127,7 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13). Routing is decision D4 (ADR-0010), resolved in a limited form on 2026-11-27: an in-process router in `backend/app/core` over three Euron tiers, with a fallback chain and a circuit breaker, no gateway service. Planned and not built; `MEMORY.md` records it. |
 
 Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a
-`prohibited` risk tier, MCP write servers, Kubernetes and the harder eval bar remain open as decisions
+`prohibited` risk tier, Model Context Protocol (MCP) write servers, Kubernetes and the harder eval bar remain open as decisions
 D2, D3, D5 and D6 in `CLAUDE.md` §20; model tiering (D4) is resolved in a limited form (NFR-13 above). The chat widget (FR-37) and multi-language support are non-goals in
 `CLAUDE.md` §1.
 
@@ -153,12 +153,12 @@ D2, D3, D5 and D6 in `CLAUDE.md` §20; model tiering (D4) is resolved in a limit
 | 13 | Ticket workflow screen | validated locally |
 | 14 | Evaluation and delivery | validated locally |
 
-Stages 13–16 of the course (containers, observability, CI, multi-cloud) are represented inside Phase 14 as files and local validation. Stage 17 stays optional and unbuilt.
+Stages 13–16 of the course (containers, observability, continuous integration (CI), multi-cloud) are represented inside Phase 14 as files and local validation. Stage 17 stays optional and unbuilt.
 
 ## Request path the plan must preserve
 
 1. `POST /api/v1/tickets/{id}/run` returns **202** `{workflow_id}`.
-2. A background task runs the graph. After every node, state is saved. The UI polls `/workflow` every 2 seconds.
+2. A background task runs the graph. After every node, state is saved. The user interface (UI) polls `/workflow` every 2 seconds.
 3. `human_approval` interrupts. The service writes `approval_requests` and sets the ticket to `waiting_on_approval`.
 4. `POST /approvals/{id}/approve` or reject resumes the graph.
 5. The tail is `execute_resolution` → `ticket_summary` → `memory_update` → END.
@@ -189,7 +189,7 @@ Stages 13–16 of the course (containers, observability, CI, multi-cloud) are re
 
 - The requirement id is named in the test.
 - The layer rules in `CLAUDE.md` §4.2 hold.
-- Contract, backend schema, and `frontend/lib/types.ts` match if the HTTP shape changed.
+- Contract, backend schema, and `frontend/lib/types.ts` match if the Hypertext Transfer Protocol (HTTP) shape changed.
 - Offline tests for that area pass.
 - The honest status in `MEMORY.md` is still true.
 - The task's row in `TASKS.md` is set to Completed ✅ and its Progress summary updated, in the same pull request.
@@ -210,7 +210,7 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Files.** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/` (`config`, `logging`, `readiness`), `backend/app/middleware/request_id.py`, `pyproject.toml`, `Makefile`, `tests/conftest.py`, `tests/api/test_health.py`, `tests/unit/`.
 
-**Tests.** `/health` and `/health/live` respond without I/O. Every response carries `X-Request-ID`. Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment. The test harness sets the offline env vars before importing the app.
+**Tests.** `/health` and `/health/live` respond without I/O. Every response carries `X-Request-ID`. Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment. The test harness sets the offline environment variables before importing the app.
 
 **Demo checkpoint.** `make backend` serves `/health/live`. `make demo` is not available yet.
 
@@ -228,7 +228,7 @@ Tasks: `TASKS.md`, Phase 2.
 
 **Files.** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `backend/app/services/seed_service.py`, `backend/app/repositories/`, `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/`, `sample_data/*.json`, `sample_data/knowledge_base/*.md`, seed bootstrap in the lifespan.
 
-**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows. Every data table has a not-null `tenant_id` and an RLS policy keyed on it, and a cross-tenant read returns nothing (D1).
+**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows. Every data table has a not-null `tenant_id` and an row-level security (RLS) policy keyed on it, and a cross-tenant read returns nothing (D1).
 
 **Demo checkpoint.** `make seed` loads sample data. Ticket `CD-1002` and customer records are readable from the database.
 
@@ -248,7 +248,7 @@ Tasks: `TASKS.md`, Phase 3.
 
 **Demo checkpoint.** Demo login issues an 8-hour token for the three demo users.
 
-**Exit.** Middleware order is CORS → RequestId → RateLimit → Audit. No service-role secret is returned to the client.
+**Exit.** Middleware order is Cross-Origin Resource Sharing (CORS) → RequestId → RateLimit → Audit. No service-role secret is returned to the client.
 
 ### Phase 4 — Support API
 
@@ -276,9 +276,9 @@ Tasks: `TASKS.md`, Phase 5.
 
 **Files.** `rag/__init__.py`, `rag/chunking.py`, `rag/embeddings.py`, `rag/vector_store.py`, `rag/retriever.py`, `rag/ingest.py`, `.claude/rules/rag.md`, `make ingest`, knowledge search and admin reindex routes. Dependencies (`pyyaml`, `qdrant-client`, `rank_bm25`) arrive with the task that needs each.
 
-**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, RRF, rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection. Ingest is idempotent: a second run leaves the chunk count unchanged. Each `rag/` module says what it must not do, and `rag/` imports nothing about tickets.
+**Tests.** `tests/rag/` covers ingest count, the expected article for the key queries, `hybrid` / `semantic` / `keyword`, cache, reciprocal rank fusion (RRF), rerank, and filters. Chunks are heading-split, then 900/150, and prefixed with `"{title} - {heading}"`. Reindex is admin-only and recreates the collection. Ingest is idempotent: a second run leaves the chunk count unchanged. Each `rag/` module says what it must not do, and `rag/` imports nothing about tickets.
 
-**Demo checkpoint.** `make ingest` reports the article and chunk counts. A query for the MFA recovery article returns `CD-1012`’s expected article in the top 3.
+**Demo checkpoint.** `make ingest` reports the article and chunk counts. A query for the multi-factor authentication (MFA) recovery article returns `CD-1012`’s expected article in the top 3.
 
 **Exit.** Retrieval hit-rate@3 is measured, even if the full eval suite waits for Phase 14. Customer-facing policy claims have an article to cite. Query rewrite and the sufficiency check are in place (upstream FR-09), and the retry loop is bounded at one extra retrieval.
 
@@ -308,7 +308,7 @@ Tasks: `TASKS.md`, Phase 7.
 
 **Files.** `agents/rules.py`, `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`), `backend/app/core/output_validation.py` (`validate_customer_output`), `backend/app/core/scrub.py` (`scrub`).
 
-**Tests.** Category and severity rules. Severity never lowers a model score. Escalation rules match dispute, deletion, security, data loss, legal, and enterprise outage, each with a named team. `CD-1013` is flagged and wrapped as data. Output validation rejects internal URLs, secrets, and another customer’s data, and that failure is defined as risk `high`. `scrub` removes card numbers, API keys, and passwords.
+**Tests.** Category and severity rules. Severity never lowers a model score. Escalation rules match dispute, deletion, security, data loss, legal, and enterprise outage, each with a named team. `CD-1013` is flagged and wrapped as data. Output validation rejects internal uniform resource locators (URLs), secrets, and another customer’s data, and that failure is defined as risk `high`. `scrub` removes card numbers, API keys, and passwords.
 
 **Demo checkpoint.** A unit run of the escalation rules on `CD-1005`, `CD-1006`, `CD-1009`, and `CD-1011` returns escalation required without a model call.
 
@@ -324,7 +324,7 @@ Tasks: `TASKS.md`, Phase 8.
 
 **Files.** `memory/short_term.py`, `memory/long_term.py`, `memory/memory_service.py`. The graph nodes that call the service (`customer_context` recall and `memory_update`) are built in Phase 10.
 
-**Tests.** Recall returns at most 10 notes. `record_resolution` writes a past issue, the first three troubleshooting steps, and a resolution note. Exact duplicates are skipped. Card numbers, API keys, passwords, and raw ticket bodies are absent from `customer_memory`. Retrieval cache keys match `rag:{mode}:{category}:{top_k}:{query}` and expire in 300 seconds. Short-term TTL is 24 hours. Tests use fakeredis.
+**Tests.** Recall returns at most 10 notes. `record_resolution` writes a past issue, the first three troubleshooting steps, and a resolution note. Exact duplicates are skipped. Card numbers, API keys, passwords, and raw ticket bodies are absent from `customer_memory`. Retrieval cache keys match `rag:{mode}:{category}:{top_k}:{query}` and expire in 300 seconds. Short-term time to live (TTL) is 24 hours. Tests use fakeredis.
 
 **Demo checkpoint.** Calling `record_resolution` twice with the same resolution leaves one resolution note. The end-to-end version, running `CD-1002` through approval twice, is the Phase 11 demo checkpoint.
 
@@ -344,7 +344,7 @@ Tasks: `TASKS.md`, Phase 9.
 
 **Demo checkpoint.** Each specialist can be invoked on `CD-1002` and `CD-1010` offline. `CD-1010` remains low severity.
 
-**Exit.** No specialist writes SQL. No specialist calls a tool except through `ToolRegistry`. Eval cases use a valid `expected_category`.
+**Exit.** No specialist writes Structured Query Language (SQL). No specialist calls a tool except through `ToolRegistry`. Eval cases use a valid `expected_category`.
 
 ### Phase 10 — Workflow graph and trace
 

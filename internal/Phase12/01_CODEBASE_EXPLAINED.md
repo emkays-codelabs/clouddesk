@@ -4,11 +4,11 @@
 
 ## A. Executive summary
 
-Phase 12 builds the signed-in console: an app shell, a typed API client, role-aware login and the list pages. It also carries the public landing page.
+Phase 12 builds the signed-in console: an app shell, a typed application programming interface (API) client, role-aware login and the list pages. It also carries the public landing page.
 
 ## B. Business problem and solution
 
-Support agents need one place to see tickets, customers, knowledge, escalations, approvals and audit, and to sign in with the right role. The console reads the same REST API a script would.
+Support agents need one place to see tickets, customers, knowledge, escalations, approvals and audit, and to sign in with the right role. The console reads the same Representational State Transfer (REST) API a script would.
 
 ## C. Architecture in simple language
 
@@ -22,7 +22,7 @@ The browser calls the backend only through `frontend/lib/api.ts`. `frontend/lib/
 | `frontend/lib/types.ts` | Types mirroring `docs/design/06_API_CONTRACT.md`. |
 | `frontend/lib/auth.tsx` | `AuthProvider`, `useAuth`, role helpers. |
 | `frontend/lib/hooks.ts` | `usePolling` and fetch hooks. |
-| `frontend/lib/format.ts` | Dates, money (INR) and model cost in USD and INR. |
+| `frontend/lib/format.ts` | Dates, money (INR) and model cost in United States dollars (USD) and INR. |
 | `frontend/components/layout/AppShell.tsx` | Sidebar, header, Home link, redirect without a session. |
 | `frontend/components/ui/` | Button, Card, DataState, StatusPill, KPIStatCards, RiskBadge and others. |
 | `frontend/app/login/page.tsx` | Demo-user sign-in. |
@@ -35,7 +35,7 @@ Open `/`, choose Sign in, pick a demo user, receive a token, land on `/dashboard
 
 ## F. Concepts
 
-Role-aware UI: a viewer sees disabled action buttons. `NEXT_PUBLIC_*` values are inlined at build time, so the image is rebuilt per environment.
+Role-aware user interface (UI): a viewer sees disabled action buttons. `NEXT_PUBLIC_*` values are inlined at build time, so the image is rebuilt per environment.
 
 ## G. Decisions
 

@@ -15,7 +15,7 @@
 | Item | Content |
 |---|---|
 | Objective | Make policy and safety deterministic before any specialist calls a model. |
-| Initial state | Phase 6: tools behind a registry, mocks, read-only MCP. No rule decided what a ticket is, no text was screened, no reply was validated. |
+| Initial state | Phase 6: tools behind a registry, mocks, read-only Model Context Protocol (MCP). No rule decided what a ticket is, no text was screened, no reply was validated. |
 | Requirements addressed | F3 (severity rules), F10 (escalation table), N4 (injection), N5 (output validation), N7 (scrub); `CLAUDE.md` sections 7.2 and 9; ADR-0003. |
 | Major additions | `agents/` package (`agents/rules.py`, `agents/prompts.py`), three modules in `backend/app/core/`, one retrieval wiring. |
 | Final capability | Tested decisions for all 13 demo tickets, an attack detector, a delimiter that cannot be escaped, a reply gate with a revise-once policy, and a secret scrubber. |
@@ -59,7 +59,7 @@ Limitations: nothing decides policy cases; the retriever's `chunk_filter` hook w
 
 ### C4. P7-3: customer output validation
 
-- **Introduced.** `backend/app/core/output_validation.py`: internal URL patterns (localhost, loopback, private ranges, `*.internal`, `*.local`, `kb://`), secret check through `find_secrets`, other-customer terms from the context, claim-level groundedness, `GROUNDEDNESS_THRESHOLD = 0.8`, and `next_step` (send, revise once, escalate; hard failures never revise).
+- **Introduced.** `backend/app/core/output_validation.py`: internal uniform resource locator (URL) patterns (localhost, loopback, private ranges, `*.internal`, `*.local`, `kb://`), secret check through `find_secrets`, other-customer terms from the context, claim-level groundedness, `GROUNDEDNESS_THRESHOLD = 0.8`, and `next_step` (send, revise once, escalate; hard failures never revise).
 - **Trade-off.** Overlap scoring is crude; a judge model is a recommendation, not built.
 - **Verified.** `tests/unit/test_output_validation.py` (24 tests); disabling the groundedness check turned three tests red.
 

@@ -15,7 +15,7 @@ so the specification contradicted itself.
 
 Every data table has a not-null, indexed `tenant_id` (`String(36)`), and it is the first column of every
 composite index. Row-level security is keyed on it. One tenant row is seeded, and v1 builds no tenant
-features: no tenant CRUD, per-tenant routing, budgets or console switching. Repositories are the only place
+features: no tenant create, read, update and delete (CRUD), per-tenant routing, budgets or console switching. Repositories are the only place
 the tenant filter lives.
 
 ## Consequences

@@ -14,7 +14,7 @@
 
 | Item | Content |
 |---|---|
-| Objective | Give the platform a way to find the knowledge-base articles that answer a question, with evidence a person can check, and expose it through the API. |
+| Objective | Give the platform a way to find the knowledge-base articles that answer a question, with evidence a person can check, and expose it through the application programming interface (API). |
 | Initial state | Phase 4's API: tickets, customers, dashboard, audit, settings. The 15 articles existed as files in `sample_data/knowledge_base/` and nothing read them. |
 | Requirements addressed | F5 (cited evidence from the knowledge base, semantic plus keyword, reranked); the retrieval part of CLAUDE.md section 8; the Redis retrieval cache key from section 7.5. F6 (similar resolved cases) is a different feature and is not built. |
 | Major additions | A new top-level package `rag/` (chunking, fake embeddings, vector-store protocol with in-memory and Qdrant classes, hybrid retriever, ingest); a knowledge service and four routes; a retrieval-cache adapter; indexing at startup; `make ingest`. |
@@ -38,7 +38,7 @@ flowchart LR
     KB["sample_data/knowledge_base, 15 files, unread"]
 ```
 
-Limitations: no search at all; nothing could answer "which article explains an MFA lockout".
+Limitations: no search at all; nothing could answer "which article explains an multi-factor authentication (MFA) lockout".
 
 ---
 
@@ -48,7 +48,7 @@ Limitations: no search at all; nothing could answer "which article explains an M
 
 - **Original design.** Articles were files only.
 - **Motivation.** Retrieval works on small passages, not whole articles; a whole article dilutes the match and cannot be cited precisely.
-- **Introduced.** `rag/` as a new top-level package that knows nothing about tickets. `rag/chunking.py` loads articles (YAML front-matter: title, category, tags, summary) and `chunk_article` splits on headings, then into 900-character windows with a 150-character overlap. The chunk text is prefixed `"{title} - {heading}"`; `Chunk.body` keeps the raw window so size and overlap can be tested. Text before the first heading is filed under "Overview". Missing or incomplete front-matter raises `ValueError` at load time. `pyyaml` is the one new dependency.
+- **Introduced.** `rag/` as a new top-level package that knows nothing about tickets. `rag/chunking.py` loads articles (YAML Ain't Markup Language (YAML) front-matter: title, category, tags, summary) and `chunk_article` splits on headings, then into 900-character windows with a 150-character overlap. The chunk text is prefixed `"{title} - {heading}"`; `Chunk.body` keeps the raw window so size and overlap can be tested. Text before the first heading is filed under "Overview". Missing or incomplete front-matter raises `ValueError` at load time. `pyyaml` is the one new dependency.
 - **Boundary.** `.claude/rules/rag.md` and each module docstring say `rag/` must not import tickets, repositories or agents; a test in `tests/rag/test_chunking.py` checks the imports.
 - **Effect on existing components.** None; nothing calls it yet.
 - **Trade-off.** Fixed-size character windows can cut a sentence; the overlap softens that.
@@ -57,7 +57,7 @@ Limitations: no search at all; nothing could answer "which article explains an M
 ### C2. P5-2: vector store and fake embeddings (PR #46)
 
 - **Motivation.** Semantic search needs vectors and somewhere to keep them, and tests must run with no network or API key.
-- **Introduced.** `rag/embeddings.py`: the `Embeddings` protocol and `FakeEmbeddings`, which hashes lower-cased tokens (md5, stable across processes) into 384 buckets and L2-normalises, with no numpy. `rag/vector_store.py`: `Document`, `SearchHit`, the `VectorStoreService` protocol, `InMemoryVectorStore` (cosine similarity, equality filters, the same id replaces), `QdrantVectorStore`, and `get_vector_store(settings)`, which picks the class from `settings.vector_store` and caches it. The Qdrant class imports `qdrant_client` inside its methods, so offline runs never load it; chunk ids become stable UUID point ids; the collection is created on first write. `qdrant-client` is the one new dependency.
+- **Introduced.** `rag/embeddings.py`: the `Embeddings` protocol and `FakeEmbeddings`, which hashes lower-cased tokens (md5, stable across processes) into 384 buckets and L2-normalises, with no numpy. `rag/vector_store.py`: `Document`, `SearchHit`, the `VectorStoreService` protocol, `InMemoryVectorStore` (cosine similarity, equality filters, the same id replaces), `QdrantVectorStore`, and `get_vector_store(settings)`, which picks the class from `settings.vector_store` and caches it. The Qdrant class imports `qdrant_client` inside its methods, so offline runs never load it; chunk ids become stable universally unique identifier (UUID) point ids; the collection is created on first write. `qdrant-client` is the one new dependency.
 - **Effect.** `settings` is passed in, so `rag/` imports nothing from `app`. A test checks that no module outside `rag/` names a concrete store class.
 - **Trade-off.** Fake embeddings are a bag of words: they match shared wording, not meaning. They make the pipeline testable, not smart.
 - **Verified.** `tests/rag/test_vector_store.py`. Qdrant was only exercised with a stubbed client and constructed lazily; no server was run.
@@ -69,11 +69,11 @@ Limitations: no search at all; nothing could answer "which article explains an M
 - **Sufficiency check.** Deterministic: top score at least 0.3 and at least half the query terms found in the top three hits. If it fails, ONE extra ranking pass runs on the uncovered terms, then retrieval stops. This is the bounded loop CLAUDE.md asks for.
 - **Cache.** Results are cached 300 s under the key `rag:{mode}:{category}:{top_k}:{query}` through an injected object with `get` and `set(ttl)`. `backend/app/services/retrieval_cache.py` adapts the Redis client, so `rag/` imports nothing from `app`.
 - **Hooks.** `chunk_filter` is where Phase 7 will drop injected chunks; the default passes everything. `rewriter` and `llm_rerank` are injected, so the retriever itself never calls a model.
-- **Verified.** `tests/rag/test_retriever.py`: hit-rate@3 over 11 queries taken from the demo tickets is 1.0 with fake embeddings; modes, RRF arithmetic, category filter and boost, hooks, cache and the one-retry rule each have a test. The cache was exercised only with fakeredis.
+- **Verified.** `tests/rag/test_retriever.py`: hit-rate@3 over 11 queries taken from the demo tickets is 1.0 with fake embeddings; modes, reciprocal rank fusion (RRF) arithmetic, category filter and boost, hooks, cache and the one-retry rule each have a test. The cache was exercised only with fakeredis.
 
 ### C4. P5-4: ingest command and knowledge API (PR #48)
 
-- **Motivation.** The retriever needs an indexed store, and the console and agents need HTTP access.
+- **Motivation.** The retriever needs an indexed store, and the console and agents need Hypertext Transfer Protocol (HTTP) access.
 - **Introduced.** `rag/ingest.py`: `ingest(store, embeddings, directory, recreate=False)` returns an `IngestResult` (15 articles, 75 chunks on the demo set). Chunk ids are stable and the store replaces a same-id document, so a second run changes nothing. `recreate=True` calls the new `clear()` (in-memory: empty the dict; Qdrant: delete the collection, recreated on the next write), so chunks of deleted articles go too. `backend/app/services/knowledge_service.py` keeps the in-process articles and embedded chunks and serves four routes in `backend/app/api/knowledge.py`: `GET /api/v1/knowledge/articles` (search, category), `GET /api/v1/knowledge/articles/{id}` (ids are file slugs), `POST /api/v1/knowledge/search`, and admin-only `POST /api/v1/knowledge/reindex`, whose `indexed` is the chunk count. The lifespan in `backend/app/main.py` indexes at startup only when `VECTOR_STORE=memory`; a failure is logged and never stops startup. `make ingest` runs `python -m app.services.knowledge_service` (the command lives in `app` because it needs settings, which `rag/` may not import).
 - **Effect.** The service is now stateful in process: `_articles` and `_documents` in the knowledge service. `_ensure_indexed` refills an empty store on first use.
 - **Verified.** `tests/rag/test_ingest.py`, `tests/api/test_knowledge.py` (list, filter, detail, 404, MFA article in the top 3, mode and top_k validation, admin-only reindex, search after reindex, 401 on every route, startup indexing).
@@ -108,7 +108,7 @@ flowchart LR
 | API | `backend/app/api/knowledge.py` | HTTP and roles only (any valid token reads; `admin` reindexes) |
 | Service | `backend/app/services/knowledge_service.py` | Own index state, call ingest and the retriever, shape responses |
 | Adapter | `backend/app/services/retrieval_cache.py` | Present Redis as `get` and `set(ttl)` |
-| RAG | `rag/` | Load, chunk, embed, store, retrieve, ingest; no ticket knowledge |
+| Retrieval-augmented generation (RAG) | `rag/` | Load, chunk, embed, store, retrieve, ingest; no ticket knowledge |
 | Data | Vector store (in-memory or Qdrant), BM25 index rebuilt per retriever, Redis cache | |
 
 Security boundary: every knowledge route requires a token. Retrieved text is not yet screened; the hook exists, the screen does not.
@@ -158,7 +158,7 @@ Errors: no token 401; bad body 422; unknown article id 404 `Article not found`; 
 
 | Decision | Context | Alternatives | Rationale | Benefits | Trade-offs | Status |
 |---|---|---|---|---|---|---|
-| `rag/` is its own package that imports nothing from `app` | Retrieval should be testable and reusable by agents | Put retrieval under `backend/app` | Settings and the cache are passed in | Offline tests; clear boundary, enforced by tests | Glue code (adapter, CLI) lives in `app` | Implemented |
+| `rag/` is its own package that imports nothing from `app` | Retrieval should be testable and reusable by agents | Put retrieval under `backend/app` | Settings and the cache are passed in | Offline tests; clear boundary, enforced by tests | Glue code (adapter, command-line interface (CLI)) lives in `app` | Implemented |
 | `VectorStoreService` protocol with in-memory default | Demo must run with no server | Qdrant only; a library such as Chroma | One protocol, two classes | Swap by setting; no network in tests | Two implementations to keep equal; Qdrant untested against a server | Implemented |
 | Fake hashed embeddings | No API key offline | A local model | Deterministic and dependency-free | Fast, stable tests | Wording match only | Implemented |
 | Hybrid with reciprocal rank fusion | Keyword and vector scores are not comparable | Weighted score sum | RRF uses ranks, so no score calibration | Robust merge | Ignores score magnitude | Implemented |
@@ -212,7 +212,7 @@ Scalability is not demonstrated: no load test, and the index is per process.
 
 ## QA remediation, 2026-11-27: relevance cut-off and readable passages
 
-Found during the local QA audit: retrieval always returned `top_k` articles, so a refund ticket showed sharing and roles articles next to the refund article, and an unanswerable question still returned five hits.
+Found during the local quality assurance (QA) audit: retrieval always returned `top_k` articles, so a refund ticket showed sharing and roles articles next to the refund article, and an unanswerable question still returned five hits.
 
 - **Root cause.** The evidence `score` is rank-based (reciprocal-rank fusion normalised by its ceiling), so an unanswerable question scored 0.93 to 0.96, above several correct hits. No score threshold can separate answers from padding.
 - **Fix.** `rag/retriever.py` now measures how many of the query's content words the whole article contains and keeps only hits above `MIN_TERM_COVERAGE` (0.3), with at least two matched words and at least half the best hit's coverage. The constants come from measurement over the 16 evaluation cases (expected article 0.36 to 0.83; unanswerable questions at most 0.5 and two words), recorded in the module and in `tests/rag/test_relevance_cutoff.py`. Each kept hit is labelled `strong` or `partial`; with no strong hit the result is marked insufficient.

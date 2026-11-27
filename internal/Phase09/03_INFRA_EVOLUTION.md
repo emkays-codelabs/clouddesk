@@ -1,6 +1,6 @@
 # Phase 9: infrastructure design evolution
 
-> **Status:** the Euron settings and the Docker pass-through are implemented and were exercised once against the real Euron API on 2026-11-27. No cloud resource exists.
+> **Status:** the Euron settings and the Docker pass-through are implemented and were exercised once against the real Euron application programming interface (API) on 2026-11-27. No cloud resource exists.
 
 ## A. Overview
 
@@ -23,7 +23,7 @@ No Dockerfile change in this phase beyond the earlier COPY lines. The backend im
 
 ## E. Networking
 
-The backend calls the Euron HTTPS endpoint outbound. No inbound port was added.
+The backend calls the Euron Hypertext Transfer Protocol Secure (HTTPS) endpoint outbound. No inbound port was added.
 
 ## F. Wiring
 
@@ -47,7 +47,7 @@ Unchanged: `backend-data` holds SQLite and checkpoints.
 
 ## K. Observability
 
-Every model call logs provider, schema, attempts, tier, served tier, model and token totals as JSON. Cost for the fake provider is 0.0; real costs are estimates.
+Every model call logs provider, schema, attempts, tier, served tier, model and token totals as JavaScript Object Notation (JSON). Cost for the fake provider is 0.0; real costs are estimates.
 
 ## L. Final infrastructure
 

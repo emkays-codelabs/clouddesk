@@ -43,7 +43,7 @@ sequenceDiagram
 
 ## F. Decisions and trade-offs
 
-Policy by rules (ADR 0003); in-process tools (ADR 0004). Rejection escalates, trading a quieter queue for no silently dropped customer.
+Policy by rules (architecture decision record (ADR) 0003); in-process tools (ADR 0004). Rejection escalates, trading a quieter queue for no silently dropped customer.
 
 ## G. Improvements during the phase
 

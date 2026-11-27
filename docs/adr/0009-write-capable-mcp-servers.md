@@ -2,11 +2,11 @@
 
 ## Status
 
-Accepted on 2026-11-27 (owner approval in chat). This is decision D3 in `CLAUDE.md` section 20. The decision is taken; nothing is built, and MCP stays read-only in v1 until a `TASKS.md` row builds it.
+Accepted on 2026-11-27 (owner approval in chat). This is decision D3 in `CLAUDE.md` section 20. The decision is taken; nothing is built, and Model Context Protocol (MCP) stays read-only in v1 until a `TASKS.md` row builds it.
 
 ## Context
 
-Upstream reaches back-office systems over MCP with scoped service tokens, including write tools over HTTP.
+Upstream reaches back-office systems over MCP with scoped service tokens, including write tools over Hypertext Transfer Protocol (HTTP).
 CloudDesk keeps MCP read-only and runs writes in process (see
 [ADR-0004](0004-tools-run-in-process-through-one-registry.md)).
 

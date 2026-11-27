@@ -12,7 +12,7 @@ A demo that "seems fine" is not evidence. The thresholds put numbers on classifi
 
 ## C. Architecture in simple language
 
-`tests/evaluation/test_eval_thresholds.py` runs every ticket case in `datasets/eval_cases.json` through the real workflow API on the fake model and checks five metrics. `deployment/` holds one Terraform root per cloud and shared per-environment var-files. `.github/workflows/` holds the five pipelines.
+`tests/evaluation/test_eval_thresholds.py` runs every ticket case in `datasets/eval_cases.json` through the real workflow application programming interface (API) on the fake model and checks five metrics. `deployment/` holds one Terraform root per cloud and shared per-environment var-files. `.github/workflows/` holds the five pipelines.
 
 ## D. File-by-file
 
@@ -37,7 +37,7 @@ A demo that "seems fine" is not evidence. The thresholds put numbers on classifi
 
 ## F. Concepts
 
-Thresholds fail the build and are never lowered to pass. Image tags are git SHAs. Secrets reach Terraform only through `TF_VAR_*`. Var-files are named `dev.tfvars` and so on, not terraform.tfvars, which resolves the contradiction between committing var-files and ignoring that name.
+Thresholds fail the build and are never lowered to pass. Image tags are git Secure Hash Algorithms (SHAs). Secrets reach Terraform only through `TF_VAR_*`. Var-files are named `dev.tfvars` and so on, not terraform.tfvars, which resolves the contradiction between committing var-files and ignoring that name.
 
 ## G. Decisions and trade-offs
 

@@ -2,7 +2,7 @@
 
 > **Status of this phase:** implemented and checked locally. All five tasks (P6-1 to P6-5) are done. P6-1 merged as pull request #50; P6-2, P6-3, P6-4 and P6-5 landed together in pull request #51, by a decision to save agent usage (one commit, built in the order described below). In a run made for this document (2026-11-22) the whole suite passed (974 tests) and `ruff check .` reported no problems. Nothing is deployed.
 >
-> **Not built in Phase 6:** no language model, no agent, no workflow, no approval screen or approval service (Phase 11), no real email, billing or workspace adapter, no `prohibited` risk tier (D2), no write-capable MCP (D3), no network or authenticated MCP transport, and no run against Postgres. The tools exist but nothing calls them except tests and one read-only HTTP listing.
+> **Not built in Phase 6:** no language model, no agent, no workflow, no approval screen or approval service (Phase 11), no real email, billing or workspace adapter, no `prohibited` risk tier (D2), no write-capable MCP (D3), no network or authenticated MCP transport, and no run against Postgres. The tools exist but nothing calls them except tests and one read-only Hypertext Transfer Protocol (HTTP) listing.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 5 design evolution](../Phase05/02_DESIGN_EVOLUTION.md).
 >
@@ -15,9 +15,9 @@
 | Item | Content |
 |---|---|
 | Objective | Give the platform a single, controlled way to do things: read customer facts, search the knowledge base, and make changes, with approval, provenance, idempotency and read-back checks built in, and with mock outside systems. |
-| Initial state | Phase 5's API: tickets, customers, dashboard, audit, settings, knowledge. Repositories, the retriever and the `resolution_actions` table existed; nothing could act on them as a "tool". |
-| Requirements addressed | F9 (consequential actions need approval, at the tool layer), part of F4 (customer, subscription and history tools), F5 (`search_docs`), F7 (`check_service_status`); CLAUDE.md sections 7.4 (registry, policy, idempotency, verification, provenance) and 4.2 (tools may not bypass the registry). FR-16 and FR-17 from the upstream PRD. N6 and N8 are untouched. |
-| Major additions | A `backend/app/tools/` package (policy, registry, context, factory, read tools, write tools, DB idempotency store); an `integrations/` package (protocols, in-memory mocks, factory, MCP server and a client example); one route, `GET /api/v1/mcp/tools`; the `make mcp` target; the `mcp` dependency. |
+| Initial state | Phase 5's application programming interface (API): tickets, customers, dashboard, audit, settings, knowledge. Repositories, the retriever and the `resolution_actions` table existed; nothing could act on them as a "tool". |
+| Requirements addressed | F9 (consequential actions need approval, at the tool layer), part of F4 (customer, subscription and history tools), F5 (`search_docs`), F7 (`check_service_status`); CLAUDE.md sections 7.4 (registry, policy, idempotency, verification, provenance) and 4.2 (tools may not bypass the registry). FR-16 and FR-17 from the upstream product requirements document (PRD). N6 and N8 are untouched. |
+| Major additions | A `backend/app/tools/` package (policy, registry, context, factory, read tools, write tools, database (DB) idempotency store); an `integrations/` package (protocols, in-memory mocks, factory, MCP server and a client example); one route, `GET /api/v1/mcp/tools`; the `make mcp` target; the `mcp` dependency. |
 | Important changes | The registry grew during the phase: a per-tool `idempotent` flag (P6-2), an async store, a `workflow_id` argument and a `Verified` result (P6-3). `backend/Dockerfile` copies `integrations/`. |
 | Final capability | Nine tools registered behind one `ToolRegistry.execute`; a refund without approval writes nothing; the same approved refund run twice, even from a new registry, acts once; a five-tool read-only MCP server over stdio; an HTTP listing of all nine tools. All offline. |
 
@@ -176,12 +176,12 @@ Errors, all returned not raised: `approval_required`, `unknown_tool`, `provenanc
 |---|---|---|---|---|---|---|
 | One `ToolRegistry.execute` for every call | Policy must not be bypassable | Each agent calls tool functions directly | One choke point for approval, provenance, idempotency, timeout | Tested once, applied everywhere | Callers must pass ids and trusted values correctly | Implemented |
 | Explicit approval table; unknown tool needs approval | A new or misspelt tool must fail closed | Deny-list of risky tools | Safe default | A typo cannot become an open door | The table must be edited for each new tool | Implemented |
-| Rules, not the model, decide approval | CLAUDE.md 7.2, ADR-0003 | Ask the LLM if approval is needed | Money and accounts are never left to probability | Deterministic and tested | No `prohibited` tier yet (D2) | Implemented (three tiers) |
+| Rules, not the model, decide approval | CLAUDE.md 7.2, ADR-0003 | Ask the large language model (LLM) if approval is needed | Money and accounts are never left to probability | Deterministic and tested | No `prohibited` tier yet (D2) | Implemented (three tiers) |
 | Idempotency key `ticket_id:tool:sha256(args)` stored in `resolution_actions` | A retried or resumed run must not refund twice | Cache in Redis; rely on the vendor's key only | Reuses the Phase 2 table and survives restart | One real record per action, visible in the database | Store write is a separate transaction after the action | Implemented |
 | Read tools are not idempotent-stored | Reads must be fresh | Cache reads | Customer data changes | Always current | No per-call dedupe of reads | Implemented |
 | Write tools verify by reading back | FR-17: do not trust "ok" | Trust the write | A failed read-back is a failure | Catches silent loss | Costs an extra read | Implemented |
 | `ToolContext` passed in, no globals | Tests and MCP need different sessions | Module-level session | Explicit dependencies | Testable; same tools in MCP | Slightly more wiring | Implemented |
-| Integrations behind protocols, mocks only | v1 may not move real money or send mail | Call a vendor SDK | Boundary now, adapter later | Offline; inspectable calls | Mocks never fail | Implemented |
+| Integrations behind protocols, mocks only | v1 may not move real money or send mail | Call a vendor software development kit (SDK) | Boundary now, adapter later | Offline; inspectable calls | Mocks never fail | Implemented |
 | MCP exposes only a registry built from read tools | ADR-0004; write-capable MCP is D3 | One registry, filter at the server | Absence by construction, not by a filter | A test shows write tools are neither listed nor callable | The HTTP listing and MCP list differ | Implemented |
 | Write-capable MCP and a `prohibited` tier | Upstream documents | Build now | Not decided, needs a `TASKS.md` row | | Not available | Proposed (ADR-0008, ADR-0009) |
 
@@ -211,7 +211,7 @@ Performance and scalability are not claimed: no measurement, and the integration
 - `update_ticket` and `create_escalation` need no approval by policy; the Phase 11 workflow may want to constrain what they can change.
 - The MCP server speaks stdio with no authentication and no network transport; the HTTP listing needs only a token.
 - The doc-search default uses process-wide index state from Phase 5.
-- Not run against Postgres; the idempotency table's unique `(tenant_id, idempotency_key)` constraint is in the SQL and was not exercised there.
+- Not run against Postgres; the idempotency table's unique `(tenant_id, idempotency_key)` constraint is in the Structured Query Language (SQL) and was not exercised there.
 - Recommendations, not built: the `prohibited` tier, transaction-aware idempotency, per-tool argument schemas, a rate limit per tool.
 
 ---

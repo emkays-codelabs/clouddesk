@@ -39,7 +39,7 @@ Polling over server-sent events. Role-based disabling over hiding.
 
 ## G. Improvements
 
-Refund amounts shown in INR; an approval diff shows what changes before a person approves.
+Refund amounts shown in Indian rupees (INR); an approval diff shows what changes before a person approves.
 
 ## H. Limitations
 

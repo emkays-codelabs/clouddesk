@@ -5,7 +5,7 @@ paths:
 
 # Test conventions
 
-- Tests run fully offline: no API key, no network. `tests/conftest.py` sets the environment before the
+- Tests run fully offline: no application programming interface (API) key, no network. `tests/conftest.py` sets the environment before the
   app imports and blocks non-loopback sockets. Do not weaken it.
 - `asyncio_mode = "auto"` with one session-scoped loop is set in `pyproject.toml`. Async tests need no
   marker; never add `@pytest.mark.asyncio` with a different scope.

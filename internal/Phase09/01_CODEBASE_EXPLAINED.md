@@ -1,6 +1,6 @@
 # Phase 9 explained: the specialist agents
 
-> **Status:** implemented and checked locally with the offline fake model. The Euron router and embeddings were also exercised against the real Euron API during the Docker bring-up (see `MEMORY.md`). Nothing is deployed.
+> **Status:** implemented and checked locally with the offline fake model. The Euron router and embeddings were also exercised against the real Euron application programming interface (API) during the Docker bring-up (see `MEMORY.md`). Nothing is deployed.
 
 ## A. Executive summary
 
@@ -46,7 +46,7 @@ A ticket's text is wrapped as untrusted. The supervisor combines `rule_category`
 
 ## G. Decisions and trade-offs
 
-The router is in process rather than a gateway (ADR 0010, accepted in limited form): less to run, no shared failover state. Actions are deterministic, which limits creativity but makes refunds auditable. The fake provider accepts rule results as hints so offline behaviour is realistic.
+The router is in process rather than a gateway (architecture decision record (ADR) 0010, accepted in limited form): less to run, no shared failover state. Actions are deterministic, which limits creativity but makes refunds auditable. The fake provider accepts rule results as hints so offline behaviour is realistic.
 
 ## H. Failure handling
 
@@ -54,7 +54,7 @@ An invalid model reply is repaired twice and then raises `LLMError` carrying the
 
 ## I. Testing
 
-`tests/agents/` has one test per specialist behaviour, `tests/unit/` covers the LLM layer and rules, `tests/rag/` covers embeddings, and `tests/evaluation/test_eval_cases.py` checks the dataset agrees with the rules. All run offline. Real-model behaviour was checked by hand only.
+`tests/agents/` has one test per specialist behaviour, `tests/unit/` covers the large language model (LLM) layer and rules, `tests/rag/` covers embeddings, and `tests/evaluation/test_eval_cases.py` checks the dataset agrees with the rules. All run offline. Real-model behaviour was checked by hand only.
 
 ## J. Interview-ready explanation
 

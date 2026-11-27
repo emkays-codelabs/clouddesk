@@ -20,7 +20,7 @@ The backend image already contains `agents/`. No new COPY line or package.
 
 ## E. Networking
 
-None added. The UI polls the backend over the same REST port.
+None added. The user interface (UI) polls the backend over the same Representational State Transfer (REST) port.
 
 ## F. Wiring
 
@@ -44,7 +44,7 @@ Because state is saved after every node, a restart leaves a visible `running` ru
 
 ## K. Observability
 
-`GET /tickets/{id}/events` returns node, tool and model events with duration and tokens; JSON logs carry `workflow_id`.
+`GET /tickets/{id}/events` returns node, tool and model events with duration and tokens; JavaScript Object Notation (JSON) logs carry `workflow_id`.
 
 ## L. Final architecture
 

@@ -2,13 +2,13 @@
 
 ## Status
 
-Accepted. Differs from upstream ADR-02. The question of write-capable MCP servers is open as
+Accepted. Differs from upstream ADR-02. The question of write-capable Model Context Protocol (MCP) servers is open as
 [ADR-0009](0009-write-capable-mcp-servers.md).
 
 ## Context
 
 Upstream ADR-02 puts all tool access behind MCP servers, with scoped service tokens and write tools over
-HTTP. CloudDesk v1 must run offline on one machine, and its integrations are mocks: no real email, no real
+Hypertext Transfer Protocol (HTTP). CloudDesk v1 must run offline on one machine, and its integrations are mocks: no real email, no real
 refunds.
 
 ## Decision

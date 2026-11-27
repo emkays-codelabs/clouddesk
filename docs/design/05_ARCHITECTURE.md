@@ -1,16 +1,16 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-27 21:28 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
-These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. The upstream
+These are CloudDesk's own diagrams, for the single-tenant v1 this repository builds. The upstream
 high-level and low-level designs for the full product are [`03_HLD.md`](../03_HLD.md) and [`04_LLD.md`](../04_LLD.md) one folder up;
 `CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
 
 This is the design, and v1 of it is built: all 14 phases exist and run locally in Docker on real services (PostgreSQL, Redis, a local Qdrant container, Euron embeddings and chat). What is not built: row-level security enforced at runtime, the approval timeout, and the decisions D2, D3, D5 and D6 in `CLAUDE.md` §20. The Terraform and the GitHub workflows are written and validated only: no cloud account has been applied, no workflow has run, and nothing in these diagrams is deployed.
 
-The product is used by support agents of the fictional SaaS **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
+The product is used by support agents of the fictional software as a service (SaaS) **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
 
 ## How to create the diagrams in Eraser
 
@@ -31,9 +31,9 @@ Create one Eraser diagram per block. Do not paste two blocks into the same diagr
 | 2 | Cloud architecture | Backend components and layers |
 | 3 | Cloud architecture | LangGraph nodes |
 | 4 | Cloud architecture | Local Docker Compose |
-| 5 | Cloud architecture | AWS |
+| 5 | Cloud architecture | Amazon Web Services (AWS) |
 | 6 | Cloud architecture | Azure |
-| 7 | Cloud architecture | GCP |
+| 7 | Cloud architecture | Google Cloud Platform (GCP) |
 | 8 | Cloud architecture | CI/CD |
 | 9 | Sequence diagram | Run, pause, approve, reply |
 | M1–M4 | Mermaid | The same flows, plus the data model |
@@ -131,20 +131,20 @@ flowchart TB
 
 ## 2. Component architecture
 
-The workflow is one component inside a normal web application. HTTP, SQL, prompts, retrieval, and tools stay in separate folders.
+The workflow is one component inside a normal web application. Hypertext Transfer Protocol (HTTP), Structured Query Language (SQL), prompts, retrieval, and tools stay in separate folders.
 
 | Layer | Folder | Does | Must not |
 |---|---|---|---|
 | Frontend | `frontend/` | Pages, polling, typed client | Hold the service-role key |
-| API | `backend/app/api/` | HTTP, validation, auth, RBAC, background tasks | Contain business rules |
+| Application programming interface (API) | `backend/app/api/` | HTTP, validation, auth, role-based access control (RBAC), background tasks | Contain business rules |
 | Services | `backend/app/services/` | Orchestrate repositories and the graph | Talk HTTP |
 | Repositories | `backend/app/repositories/` | SQL through SQLAlchemy | Call a model |
-| Core | `backend/app/core/` | Config, LLM factory, security, logging, Redis, guardrails, database | Import `agents/` |
+| Core | `backend/app/core/` | Config, large language model (LLM) factory, security, logging, Redis, guardrails, database | Import `agents/` |
 | Tools | `backend/app/tools/` | `@tool` functions, `ToolPolicy`, `ToolRegistry` | Bypass the registry |
 | Agents | `agents/` | State, graph, nodes, specialists, rules, prompts | Write SQL |
-| RAG | `rag/` | Chunk, embed, retrieve, ingest | Know about tickets |
+| Retrieval-augmented generation (RAG) | `rag/` | Chunk, embed, retrieve, ingest | Know about tickets |
 | Memory | `memory/` | Short-term and long-term facades | Store secrets |
-| Integrations | `integrations/` | Protocols, mock adapters, MCP server | Be imported by `core` |
+| Integrations | `integrations/` | Protocols, mock adapters, Model Context Protocol (MCP) server | Be imported by `core` |
 
 ### 2.1 Frontend
 
@@ -156,11 +156,11 @@ The ticket screen is three columns: messages and composer, customer context, and
 
 ### 2.2 Backend edge
 
-Middleware order, outermost first: CORS, then RequestId, then RateLimit, then Audit. (`create_app()` adds them in the reverse order, Audit first, because the last one added is the outermost.)
+Middleware order, outermost first: Cross-Origin Resource Sharing (CORS), then RequestId, then RateLimit, then Audit. (`create_app()` adds them in the reverse order, Audit first, because the last one added is the outermost.)
 
 | Concern | Behaviour |
 |---|---|
-| N1 JWT | HS256, Supabase-compatible. Demo tokens last 8 hours |
+| N1 JSON Web Token (JWT) | Hash-based message authentication code (HMAC) with SHA-256 (HS256), Supabase-compatible. Demo tokens last 8 hours |
 | N2 Rate limit | Fixed window in Redis. Demo ceiling is 120 requests per minute |
 | N3 Request id | `X-Request-ID` on every response |
 | N6 Audit | One `audit_logs` row for every non-GET request |
@@ -518,7 +518,7 @@ Never stored: card numbers, API keys, passwords, raw ticket bodies, or anything 
 
 ## 5. Data model
 
-Two forms on purpose. SQLAlchemy models in `backend/app/models/entities.py` use JSON columns and `String(36)` UUIDs so the same code runs on SQLite and Postgres. `database/schema.sql` is the Postgres DDL. `schema.sql` is the authority for the table list: 17 tables, the 16 below plus `tenants`.
+Two forms on purpose. SQLAlchemy models in `backend/app/models/entities.py` use JavaScript Object Notation (JSON) columns and `String(36)` universally unique identifiers (UUIDs) so the same code runs on SQLite and Postgres. `database/schema.sql` is the Postgres data definition language (DDL). `schema.sql` is the authority for the table list: 17 tables, the 16 below plus `tenants`.
 
 `profiles`, `customers`, `subscriptions`, `workspaces`, `products`, `tickets`, `ticket_messages`, `support_articles`, `incidents`, `workflow_runs`, `workflow_events`, `resolution_actions`, `approval_requests`, `escalations`, `customer_memory`, `audit_logs`.
 
@@ -549,7 +549,7 @@ erDiagram
 ```
 
 Every data table also carries `tenant_id` (`String(36)`, not null, indexed, and first in every
-composite index), and RLS is keyed on it: `USING (tenant_id = current_setting('app.tenant_id')::uuid)`,
+composite index), and row-level security (RLS) is keyed on it: `USING (tenant_id = current_setting('app.tenant_id')::uuid)`,
 with the API issuing `SET LOCAL app.tenant_id` per transaction. One tenant is seeded and v1 builds no
 tenant features (decision D1, `CLAUDE.md` §6). Repositories are the only place the filter lives, so
 on SQLite — which has no RLS — that filter is the boundary.
@@ -569,7 +569,7 @@ uses the service-role key on the server. The browser receives only the anon key.
 | Severity | Rules may raise the model score. They never lower it |
 | Tenant | Every data table carries `tenant_id`; RLS in Postgres and the repository filter on SQLite. One enforcement point, never a per-query `WHERE` in a router or agent (D1) |
 | Tools | Registry only. Refunds and setting resets require a recorded approval. Arguments need provenance: an id or amount comes from customer context or a tool result, never from ticket text. Every action carries an idempotency key and is read back |
-| Customer reply | `validate_customer_output` blocks internal URLs, secrets, and another customer's data before the reply is shown |
+| Customer reply | `validate_customer_output` blocks internal uniform resource locators (URLs), secrets, and another customer's data before the reply is shown |
 | Memory | `scrub()` removes card numbers, API keys, and passwords |
 | Logs and events | Decisions, tool results, evidence scores, timings, tokens, errors. No raw prompts, hidden chain-of-thought, other customers, or secrets |
 | Deploy | Prod uses a reviewed plan and the prod var-file. `--auto-approve` is refused for staging and prod |
@@ -594,7 +594,7 @@ The Docker stack runs on real services and needs only your Euron key in `.env`. 
 
 Compose is `frontend → backend → postgres, redis, qdrant`, with `depends_on: service_healthy`, named volumes, and `restart: unless-stopped`. On start the backend creates its tables, seeds the demo data and fills Qdrant when it is empty.
 
-Images: backend `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, build context the repo root. Frontend `node:22-alpine`, `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
+Images: backend `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, build context the repository root. Frontend `node:22-alpine`, `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
 
 ```eraser
 direction right
@@ -644,19 +644,19 @@ Offline tests skip Compose. They use SQLite, fakeredis, the in-memory vector sto
 
 ## 8. Cloud infrastructure
 
-Terraform is one root per cloud, `deployment/aws`, `deployment/azure` and `deployment/gcp`, each with the same concerns in flat files: networking, container registry, secrets, compute, load balancing, monitoring and Redis (Terraform modules cannot be shared across providers, so what is shared is the per-environment var-files, the scripts and the workflows). Environments are var-files, `deployment/environments/{dev,staging,prod}.tfvars`, not copies of the code. Remote state uses a git-ignored `backend.hcl`. Secrets enter only as `TF_VAR_*`. The roots are validated with `make terraform-validate` and never applied. They do not yet provision the application database, a frontend service, HTTPS or Qdrant; AWS (ECR, ECS Fargate, ALB) is the first target.
+Terraform is one root per cloud, `deployment/aws`, `deployment/azure` and `deployment/gcp`, each with the same concerns in flat files: networking, container registry, secrets, compute, load balancing, monitoring and Redis (Terraform modules cannot be shared across providers, so what is shared is the per-environment var-files, the scripts and the workflows). Environments are var-files, `deployment/environments/{dev,staging,prod}.tfvars`, not copies of the code. Remote state uses a git-ignored `backend.hcl`. Secrets enter only as `TF_VAR_*`. The roots are validated with `make terraform-validate` and never applied. They do not yet provision the application database, a frontend service, Hypertext Transfer Protocol Secure (HTTPS) or Qdrant; AWS (Elastic Container Registry (ECR), Elastic Container Service (ECS) Fargate, Application Load Balancer (ALB)) is the first target.
 
 These products stay outside every cloud account: **Supabase** (Postgres and JWT), **Qdrant Cloud**, and the **LLM API**.
 
 v1 background work stays inside the backend process. A restart can drop an in-memory pause. File checkpoints survive only if that file is on a volume. A separate worker is not part of v1.
 
-Image tags equal the git SHA. The image that was tested is the image that ships.
+Image tags equal the git Secure Hash Algorithm (SHA). The image that was tested is the image that ships.
 
 ### 8.1 AWS
 
 | Module | Service |
 |---|---|
-| Networking | VPC |
+| Networking | Virtual private cloud (VPC) |
 | Container registry | ECR |
 | Compute | ECS Fargate, frontend and backend tasks |
 | Load balancer | ALB |
@@ -733,7 +733,7 @@ flowchart TB
 
 | Module | Service |
 |---|---|
-| Container registry | ACR |
+| Container registry | Azure Container Registry (ACR) |
 | Compute | Container Apps, frontend and backend |
 | Secrets | Key Vault |
 | Monitoring | Log Analytics |
@@ -834,7 +834,7 @@ ApiSvc --> Logs: "JSON logs"
 
 ## 9. Delivery pipeline
 
-GitHub Actions, when the workflows exist and the repository is pushed with OIDC configured:
+GitHub Actions, when the workflows exist and the repository is pushed with OpenID Connect (OIDC) configured:
 
 | Workflow | Does |
 |---|---|

@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 8 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done, plus a small container fix. In a run made for this document (2026-11-27) the whole suite passed (1103 tests, 31 of them new or extended in Phase 8) and `ruff check .` was clean. Nothing was committed or deployed when this document was written (the work has since merged as pull request #54, and nothing is deployed). Phase 8 has **no language model, no graph node and no API route**: the memory service is a library that Phase 10's nodes will call (planned). Today only tests call it.
+> **Status of this phase:** implemented and checked locally. All three tasks (P8-1 to P8-3) are done, plus a small container fix. In a run made for this document (2026-11-27) the whole suite passed (1103 tests, 31 of them new or extended in Phase 8) and `ruff check .` was clean. Nothing was committed or deployed when this document was written (the work has since merged as pull request #54, and nothing is deployed). Phase 8 has **no language model, no graph node and no application programming interface (API) route**: the memory service is a library that Phase 10's nodes will call (planned). Today only tests call it.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 7 explained](../Phase07/01_CODEBASE_EXPLAINED.md).
 
@@ -18,7 +18,7 @@
 
 ## B. Business problem and solution
 
-1. **Real-world problem.** Support teams repeat themselves when nothing remembers a customer, and an AI that remembers carelessly can store a pasted credit card.
+1. **Real-world problem.** Support teams repeat themselves when nothing remembers a customer, and an artificial intelligence (AI) that remembers carelessly can store a pasted credit card.
 2. **Limitation of the basic approach.** Appending every ticket body to a notes field stores secrets and noise and cannot be erased cleanly.
 3. **Solution.** Store a few short, scrubbed, confident facts per customer; never the ticket text.
 4. **Benefit.** Faster, more consistent resolutions and a clean answer to a deletion request.
@@ -42,7 +42,7 @@ Layer rule: `memory/` imports nothing from `backend/app`. Everything app-specifi
 | File | What it does | Main parts | Interview line |
 |---|---|---|---|
 | `memory/__init__.py` | Creates the package and states its rule: no app imports | docstring | "A library with no knowledge of the web app." |
-| `memory/short_term.py` | Redis facade | `ShortTermMemory` (`append_message`, `conversation`, `save_workflow_state`, `workflow_state`, `clear_ticket`), `RetrievalCache` (`get`, `set` with a TTL), `cache_key`, `SHORT_TERM_TTL_SECONDS` (86400), `CACHE_TTL_SECONDS` (300) | "A scratchpad that expires on its own." |
+| `memory/short_term.py` | Redis facade | `ShortTermMemory` (`append_message`, `conversation`, `save_workflow_state`, `workflow_state`, `clear_ticket`), `RetrievalCache` (`get`, `set` with a time to live (TTL)), `cache_key`, `SHORT_TERM_TTL_SECONDS` (86400), `CACHE_TTL_SECONDS` (300) | "A scratchpad that expires on its own." |
 | `memory/long_term.py` | Durable notes | `LongTermMemory.remember` (type check, floor 0.7, scrub hook, duplicate check, optional vector), `recall` (at most 10, newest first), `erase` (vectors first, then rows), `Note`, `ErasureReport`, `MemoryRepository` protocol | "Only confident, clean, new facts get in." |
 | `memory/memory_service.py` | Orchestrates one resolution | `MemoryService.recall_customer`, `record_resolution` (past issue, steps 1 to 3, resolution note), `RecordReport` | "Three kinds of note, one call." |
 | `backend/app/services/customer_memory_service.py` | Wiring | `build_memory_service(session)`, `erase_customer_memory(session, customer_id)` | "The only place memory meets the app." |

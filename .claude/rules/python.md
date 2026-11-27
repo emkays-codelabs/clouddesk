@@ -12,6 +12,6 @@ paths:
   `pythonpath`, not from an installed package (`package = false`).
 - Every agent returns a Pydantic model. No model call without `call_structured`; no tool call without
   `ToolRegistry`.
-- Keep the layers apart (`CLAUDE.md` section 4.2): SQL only in repositories, `core/` never imports
+- Keep the layers apart (`CLAUDE.md` section 4.2): Structured Query Language (SQL) only in repositories, `core/` never imports
   `agents/`, `rag/` never knows about tickets.
 - New behaviour passes offline with `LLM_PROVIDER=fake`.

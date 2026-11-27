@@ -4,7 +4,7 @@
 
 ## A. Overview
 
-The delivery layer: containers, Compose, Terraform for AWS, Azure and GCP, deploy scripts and workflows.
+The delivery layer: containers, Compose, Terraform for Amazon Web Services (AWS), Azure and Google Cloud Platform (GCP), deploy scripts and workflows.
 
 ## B. Initial design
 
@@ -22,7 +22,7 @@ Backend multi-stage `python:3.12-slim`; frontend `node:22-alpine` standalone. Bo
 
 ## E. Networking
 
-Locally: browser to frontend :3000, browser to backend on `BACKEND_PORT` (18000 here). In the cloud scaffolds: AWS has a VPC, two subnets and a load balancer on 443; Azure uses the Container Apps environment as ingress; GCP uses Cloud Run.
+Locally: browser to frontend :3000, browser to backend on `BACKEND_PORT` (18000 here). In the cloud scaffolds: AWS has a virtual private cloud (VPC), two subnets and a load balancer on 443; Azure uses the Container Apps environment as ingress; GCP uses Cloud Run.
 
 ## F. Wiring
 
@@ -42,7 +42,7 @@ Named volumes `backend-data`, `redis-data`, `qdrant-storage` locally. In the sca
 
 ## J. Health checks and resilience
 
-Container health checks; the ALB health check hits `/api/health`; the compose startup order uses `service_healthy`.
+Container health checks; the Application Load Balancer (ALB) health check hits `/api/health`; the compose startup order uses `service_healthy`.
 
 ## K. Observability
 
@@ -72,6 +72,6 @@ At the owner's request ("all should run in docker locally, no fakes") the Compos
 
 Verified on this stack: the app created its 17 tables and seeded the demo data on Postgres; the refund workflow paused for approval; a viewer got 403, a duplicate approve 409 and a reject after approve 409; exactly one refund executed; a full restart kept every row. `database/schema.sql`, `database/rls_policies.sql` and the migration applied cleanly to a fresh Postgres 16, and a non-superuser role was isolated correctly by the policies (cross-tenant read, update, delete and insert all blocked).
 
-Not true yet: row-level security is not enforced at runtime. The API does not set `app.tenant_id` per transaction, and enabling the policies today would stop the application's own queries, so the repository filter remains the real boundary.
+Not true yet: row-level security is not enforced at runtime. The application programming interface (API) does not set `app.tenant_id` per transaction, and enabling the policies today would stop the application's own queries, so the repository filter remains the real boundary.
 
 `.env.example` is a placeholders-only template and `.env` holds your real values; `tests/unit/test_env_settings.py` keeps both, `CLAUDE.md` section 10.1 and `Settings` in step.

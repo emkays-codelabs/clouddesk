@@ -6,7 +6,7 @@ Accepted on 2026-11-27 (owner approval in chat). This is decision D2 in `CLAUDE.
 
 ## Context
 
-The upstream policy engine can forbid an action outright, for example closing an account from the CRM.
+The upstream policy engine can forbid an action outright, for example closing an account from the customer relationship management (CRM).
 CloudDesk's `CLAUDE.md` section 7.4 can only require approval, using the tiers `low`, `medium` and `high`
 and a per-tool approval bit. Today there is no way to express "never".
 

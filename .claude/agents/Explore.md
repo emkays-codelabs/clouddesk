@@ -1,6 +1,6 @@
 ---
 name: Explore
-description: Delegate here to find where something lives in the codebase, such as a function, a route, a requirement ID or a config key. Read-only search that replaces the built-in Explore agent.
+description: Delegate here to find where something lives in the codebase, such as a function, a route, a requirement identifier (ID) or a configuration key. Read-only search that replaces the built-in Explore agent.
 model: haiku
 effort: low
 tools: Read, Grep, Glob

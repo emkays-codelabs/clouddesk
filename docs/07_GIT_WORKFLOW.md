@@ -1,14 +1,14 @@
 # CloudDesk AI: Git & GitHub Workflow Guide
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
-CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
+CloudDesk artificial intelligence (AI) — AI-Powered Customer Support & Ticket Investigation Platform
 
 *Version 1.2*
 
 |  |  |
 |---|---|
-| Audience | Contributors: backend, frontend, RAG, infra, and QA |
+| Audience | Contributors: backend, frontend, retrieval-augmented generation (RAG), infrastructure, and quality assurance (QA) |
 | Repository | https://github.com/emkays-codelabs/clouddesk.git |
 | GitHub account | emkays-codelabs |
 | Default integration branch | development |
@@ -27,7 +27,7 @@ This guide is how code moves for CloudDesk. Feature work branches from developme
 - 5. Pull requests
 - 6. Promoting code: development → testing → main
 - 7. Branch naming
-- 8. CloudDesk checks before you open a PR
+- 8. CloudDesk checks before you open a pull request (PR)
 - 9. Quick reference
 - 10. Questions
 
@@ -57,7 +57,7 @@ Three long-lived branches. Day-to-day work targets development only. They alread
 - Use the GitHub account that owns https://github.com/emkays-codelabs/clouddesk. Collaborators need write access before they can push.
 - Confirm the repository page loads and lists main, development, and testing.
 - Turn on two-factor authentication on the GitHub account.
-- Prefer HTTPS with GitHub CLI, or SSH if you already have a key on the account. Do not put tokens in the repo.
+- Prefer Hypertext Transfer Protocol Secure (HTTPS) with GitHub command-line interface (CLI), or Secure Shell (SSH) if you already have a key on the account. Do not put tokens in the repo.
 
 ## Tools to install
 
@@ -138,7 +138,7 @@ git checkout development
 
 Before that first commit, git status must not list any of these:
 
-- .env, credentials, or any real API key
+- .env, credentials, or any real application programming interface (API) key
 - data/, \*.db, or checkpoints
 - terraform.tfvars, backend.hcl, or tfplan
 - The service-role key
@@ -199,7 +199,7 @@ git checkout -b feature/backend-config-logging
 
 Examples from the tracker:
 
-- feature/backend-config-logging — P1-1 settings and JSON logging
+- feature/backend-config-logging — P1-1 settings and JavaScript Object Notation (JSON) logging
 - feature/sqlalchemy-entities — P2-1 entities and the ten ticket categories
 - feature/api-tickets — P4-2 create and read tickets
 - feature/rag-hybrid-retriever — P5-3 hybrid retrieval
@@ -221,7 +221,7 @@ Message prefixes: feat, fix, docs, test, chore, infra.
 - feat(api): accept tickets from email, chat, web, and API
 - feat(workflow): pause CD-1002 until the refund is approved
 - fix(guardrails): keep CD-1013 ticket text as data
-- test(rag): expect the MFA article for the lockout query
+- test(rag): expect the multi-factor authentication (MFA) article for the lockout query
 - docs: record Phase 1 as validated locally in MEMORY.md
 
 Name the requirement in the test (F1–F14 or N1–N8). Stay inside one layer from CLAUDE.md section 4.2. Policy stays in code: agents/rules.py and backend/app/tools/policy.py.
@@ -334,7 +334,7 @@ git pull origin testing
 
 **Checklist**
 
-- CI on development is green. Until GitHub Actions have been executed, say that they have not run.
+- continuous integration (CI) on development is green. Until GitHub Actions have been executed, say that they have not run.
 - make test, and make demo for CD-1002 and CD-1005 once those checkpoints exist.
 - Migrations are additive and backward compatible.
 - No secret is in the tree.
@@ -351,7 +351,7 @@ When staging behavior is accepted and a production candidate is intended. Mergin
 
 - QA notes for the phase demo are written down.
 - Security workflow results are acceptable, or the workflow has not been run yet and the PR says so.
-- Rollback is the previous git SHA image, once images exist. Image tags equal the git SHA.
+- Rollback is the previous git Secure Hash Algorithm (SHA) image, once images exist. Image tags equal the git SHA.
 - The prod var-file is not the dev var-file. Apply waits for a reviewed plan.
 
 ## Who does what
@@ -391,7 +391,7 @@ Run the checks that exist for the phase you are in. Do not claim a later checkpo
 | Lint | make lint | Python changes. |
 | Frontend | npm run lint and npm run test -- --run | Files under frontend/. |
 | Demo | make demo then make demo TICKET=CD-1005 | Once the workflow exists. CD-1002 must pause. CD-1005 must escalate by rule. |
-| Compose | docker compose config -q | Delivery phase, when the compose file exists. |
+| Compose | docker compose configuration -q | Delivery phase, when the compose file exists. |
 | Smoke | BASE\_URL=http://localhost:8000 make smoke | Against a local stack only, until a real host exists. |
 
 On Windows, prefer uv run, which finds .venv and backend for you. Set PYTHONIOENCODING=utf-8 for CLI output with symbols.
@@ -401,7 +401,7 @@ On Windows, prefer uv run, which finds .venv and backend for you. Set PYTHONIOEN
 - A viewer receives 403 on run, reply, and approve.
 - CD-1013 does not export customer records and does not change the graph route.
 - A refund, deletion, or setting reset does not run without a recorded approval.
-- A customer reply does not contain internal URLs, secrets, or another customer's data.
+- A customer reply does not contain internal uniform resource locators (URLs), secrets, or another customer's data.
 - Memory notes do not contain card numbers, keys, passwords, or raw ticket bodies.
 - Ticket categories are introduced only in backend/app/schemas/common.py.
 

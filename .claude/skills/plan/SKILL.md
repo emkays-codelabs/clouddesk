@@ -4,7 +4,7 @@ description: Write an implementation plan for a TASKS.md task or a feature reque
 context: fork
 agent: planner
 background: false
-argument-hint: "[task id or topic, e.g. P2-1]"
+argument-hint: "[task id or topic, for example, P2-1]"
 ---
 
 Plan this: $ARGUMENTS

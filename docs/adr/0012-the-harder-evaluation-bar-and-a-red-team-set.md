@@ -6,7 +6,7 @@ Accepted on 2026-11-27 (owner approval in chat). This is decision D6 in `CLAUDE.
 
 ## Context
 
-The upstream PRD section 8 sets a harder bar for the full product: triage at least 0.90, Recall@10 at least
+The upstream product requirements document (PRD) section 8 sets a harder bar for the full product: triage at least 0.90, Recall@10 at least
 0.90, faithfulness at least 0.92, tool-call correctness at least 0.95, escalation recall at least 0.98, and
 zero successful red-team injections. The v1 gate in `CLAUDE.md` section 13 is lower: classification 0.80,
 retrieval hit-rate@3 0.75, escalation correctness 0.90, citation rate 0.90 and grounding rate 0.90.

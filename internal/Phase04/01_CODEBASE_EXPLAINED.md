@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 4 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. All five tasks (P4-1 to P4-5) are merged (pull requests #36 to #40). In a run made for this document (2026-11-22) the whole suite passed (807 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 4 has **no AI workflow, no approvals, no knowledge search, no frontend, no Docker and no real Redis, Postgres or Supabase run**. The routes `POST /tickets/{id}/run`, `/workflow` and `/events` are in the contract but are not built yet.
+> **Status of this phase:** implemented and checked locally. All five tasks (P4-1 to P4-5) are merged (pull requests #36 to #40). In a run made for this document (2026-11-22) the whole suite passed (807 tests) and `ruff check .` reported no problems. Nothing is deployed. Phase 4 has **no artificial intelligence (AI) workflow, no approvals, no knowledge search, no frontend, no Docker and no real Redis, Postgres or Supabase run**. The routes `POST /tickets/{id}/run`, `/workflow` and `/events` are in the contract but are not built yet.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 3 explained](../Phase03/01_CODEBASE_EXPLAINED.md).
 
@@ -16,7 +16,7 @@
 
 **What the phase accomplished.**
 
-- Written, tested data shapes (Pydantic models) for tickets, customers and their parts, and a corrected API contract.
+- Written, tested data shapes (Pydantic models) for tickets, customers and their parts, and a corrected application programming interface (API) contract.
 - Ticket routes: create, list, get one with full context.
 - Customer routes: list, get one with subscription, workspace, recent tickets and memory notes.
 - Ticket actions: reply, request-info, escalate and update.
@@ -40,7 +40,7 @@
 2. **Limitation of before.** The data existed and the guards existed, but no route exposed either.
 3. **Solution.** A thin HTTP layer over small "use case" functions (services) that read and write through the repositories, with the role check on every route.
 4. **Benefit.** The same use cases will be called by the AI workflow later, so a human clicking "escalate" and the AI escalating share the same rules and tables. The console can be built against a stable, tested contract.
-5. **Why appropriate.** Keeping HTTP, rules and SQL in separate layers means a rule can be tested without a web server and a route can change without touching SQL.
+5. **Why appropriate.** Keeping HTTP, rules and Structured Query Language (SQL) in separate layers means a rule can be tested without a web server and a route can change without touching SQL.
 
 Analogy: a restaurant. The route is the waiter (takes the order, checks you are allowed in, brings the plate); the service is the kitchen (knows how to make the dish); the repository is the pantry (the only place ingredients are fetched, and it only ever opens this restaurant's shelves).
 
@@ -50,7 +50,7 @@ Analogy: a restaurant. The route is the waiter (takes the order, checks you are 
 
 | Component | What it is | Receives | Produces | If removed |
 |---|---|---|---|---|
-| Ticket routes | The ticket counter | HTTP requests with a token | JSON, or 401, 403, 404, 422 | Agents could not reach tickets |
+| Ticket routes | The ticket counter | HTTP requests with a token | JavaScript Object Notation (JSON), or 401, 403, 404, 422 | Agents could not reach tickets |
 | Customer routes | The customer lookup desk | Search text, ids | Customers, or one customer with context | No customer view |
 | Dashboard, audit, settings routes | The notice boards | A signed-in request | Counts, log rows, a redacted configuration view | No overview; the audit table could be written but not read |
 | Ticket service | The ticket rulebook | A session and a request body | Response models; writes messages, escalations, status changes | Rules would leak into routes |
@@ -59,7 +59,7 @@ Analogy: a restaurant. The route is the waiter (takes the order, checks you are 
 | Repositories | The pantry | Method calls | Rows, always for this tenant only | No data access |
 | Audit middleware (Phase 3) | The guest book | Every non-read request | A row per request | Ticket changes would leave no trace |
 
-Technical terms. **Route**: a URL plus a method that does one job. **Schema**: a Pydantic model that checks data on the way in and shapes it on the way out. **Service**: a function holding a business rule. **Pagination**: returning results a page at a time (`page`, `page_size`).
+Technical terms. **Route**: a uniform resource locator (URL) plus a method that does one job. **Schema**: a Pydantic model that checks data on the way in and shapes it on the way out. **Service**: a function holding a business rule. **Pagination**: returning results a page at a time (`page`, `page_size`).
 
 ---
 
@@ -75,7 +75,7 @@ Technical terms. **Route**: a URL plus a method that does one job. **Schema**: a
 | `backend/app/schemas/workflow.py` | A minimal `WorkflowState`, `ResolutionAction`, `Escalation`. `WorkflowState` keeps unknown keys so later phases can add fields. | "A placeholder shape for the AI's progress, so the ticket form can already carry it." |
 | `backend/app/schemas/common.py` | Enums: `Category` (10), `TicketStatus` (7), `Severity`, `Channel`, `CustomerStatus`, `Plan` and others. One source for every allowed value. | "The list of allowed words." |
 | `backend/app/api/customers.py` and `backend/app/services/customer_service.py` | `list_customers`; `get_customer` loads the customer, latest subscription, latest workspace, up to 10 recent tickets and up to 10 memory notes. Reuses `_to_summary` so a ticket looks the same everywhere. | "The customer file, assembled from the existing pantry." |
-| `backend/app/api/dashboard.py` and `backend/app/services/dashboard_service.py` | `get_summary`: open tickets, resolved today (from UTC midnight), pending approvals, open escalations, average resolution minutes, counts by severity and category (every value listed, zeros included), five recent tickets, and an empty `agent_activity`. | "The scoreboard." |
+| `backend/app/api/dashboard.py` and `backend/app/services/dashboard_service.py` | `get_summary`: open tickets, resolved today (from Coordinated Universal Time (UTC) midnight), pending approvals, open escalations, average resolution minutes, counts by severity and category (every value listed, zeros included), five recent tickets, and an empty `agent_activity`. | "The scoreboard." |
 | `backend/app/api/audit.py` and `backend/app/services/audit_service.py` | `list_audit` with `actor`, `action`, `page`, `page_size`, returning `{items, total}`. | "Reading the guest book." |
 | `backend/app/api/settings.py` and `backend/app/services/settings_service.py` | `get_settings_view`: booleans and names only (`api_key_configured`, `redis` as `fake` or `real`, `database` as `sqlite` or `postgres`). `SettingsView` has no field that could hold a key or a URL. | "The status board that cannot leak a secret." |
 | `backend/app/schemas/dashboard.py`, `backend/app/schemas/audit.py`, `backend/app/schemas/settings.py` | Response shapes for those three routes. | |

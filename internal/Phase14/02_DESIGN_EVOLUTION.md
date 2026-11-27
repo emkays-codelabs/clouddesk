@@ -10,7 +10,7 @@
 
 ## P14-2: Backend and frontend Dockerfiles
 
-`backend/Dockerfile` is multi-stage `python:3.12-slim`, built from the repo root, non-root `app`, HEALTHCHECK on `/health/live`. `frontend/Dockerfile` is `node:22-alpine` standalone, non-root, HEALTHCHECK on `/api/health`. Built ahead of the graph at the owner's request and brought up healthy on 2026-11-27.
+`backend/Dockerfile` is multi-stage `python:3.12-slim`, built from the repository root, non-root `app`, HEALTHCHECK on `/health/live`. `frontend/Dockerfile` is `node:22-alpine` standalone, non-root, HEALTHCHECK on `/api/health`. Built ahead of the graph at the owner's request and brought up healthy on 2026-11-27.
 
 ## P14-3: Compose stack
 
@@ -22,10 +22,10 @@ One root per cloud under `deployment/` (`deployment/aws/main.tf`, `deployment/az
 
 ## P14-5: Deployment hygiene tests
 
-`tests/deployment/test_delivery.py` checks the roots, sensitive variables, var-files, script strictness and syntax, the `--auto-approve` rule, SHA tagging, workflow structure and ordering, no embedded credential, the Makefile targets and no committed `.env`. `make smoke` passed against the local stack.
+`tests/deployment/test_delivery.py` checks the roots, sensitive variables, var-files, script strictness and syntax, the `--auto-approve` rule, Secure Hash Algorithm (SHA) tagging, workflow structure and ordering, no embedded credential, the Makefile targets and no committed `.env`. `make smoke` passed against the local stack.
 
 ---
 
 ## Limitations
 
-No `terraform plan` or `apply`, no application database in the scaffolds, no checkov or Trivy run, no CI run, and no harder evaluation bar or red-team set (D6).
+No `terraform plan` or `apply`, no application database in the scaffolds, no checkov or Trivy run, no continuous integration (CI) run, and no harder evaluation bar or red-team set (D6).

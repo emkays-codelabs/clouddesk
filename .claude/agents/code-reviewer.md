@@ -17,7 +17,7 @@ Check, in this order:
 2. `CLAUDE.md` section 18.1, "Things that must never happen": a reply leaking internal data, a refund or
    deletion without a recorded approval, a viewer able to act, ticket text steering the workflow, a secret
    in memory notes.
-3. Layering (section 4.2): SQL outside repositories, a model call outside `call_structured`, a tool call
+3. Layering (section 4.2): Structured Query Language (SQL) outside repositories, a model call outside `call_structured`, a tool call
    outside `ToolRegistry`, a router holding business rules.
 4. A route or payload change that did not update `docs/design/06_API_CONTRACT.md`, the schemas and `frontend/lib/types.ts`.
 5. Anything in the diff that is `.env`, `data/`, `*.db`, a key or a state file.

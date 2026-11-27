@@ -6,14 +6,14 @@
 | Document type | BRD |
 | Version | 1.0 (Draft) |
 | Date | 31 October 2026 |
-| Owner | Anu — OrionVexa (Agentic AI Production Engineering, Project 1) |
+| Owner | Anu — OrionVexa (Agentic artificial intelligence (AI) Production Engineering, Project 1) |
 | Status | Draft for review |
 | Related docs | `02_PRD.md`, `03_HLD.md`, `04_LLD.md` |
 
 ---
 
 > **Split note.** This document is one half of the combined PRD/BRD v1.0. Its wording is
-> unchanged, and the original section numbers are kept, so references such as “PRD §8”,
+> unchanged, and the original section numbers are kept, so references such as “product requirements document (PRD) §8”,
 > “FR-01–42” and “NFR-01–16” stay valid. Sections §1, §2, §10, §11, §13 are here;
 > the rest are in `02_PRD.md`. §13 Glossary appears in both.
 
@@ -29,7 +29,7 @@ ACSRP is a multi-agent platform that behaves like a **production AI Customer Res
 
 It classifies and prioritises the request, retrieves the right documentation and similar past tickets, pulls customer context, troubleshoots, builds a resolution plan, executes approved actions through governed tools (MCP), escalates high-risk cases to humans, and stores what it learned for the next customer.
 
-The same application is deployed on **AWS, Azure and GCP** using Terraform, so learners see how one architecture maps to three clouds.
+The same application is deployed on **Amazon Web Services (AWS), Azure and Google Cloud Platform (GCP)** using Terraform, so learners see how one architecture maps to three clouds.
 
 ---
 
@@ -40,7 +40,7 @@ The same application is deployed on **AWS, Azure and GCP** using Terraform, so l
 | # | Problem | Business impact |
 |---|---|---|
 | P1 | High ticket volume, much of it repetitive (password resets, billing questions, order status, how-to) | Agent cost scales linearly with volume |
-| P2 | Slow first response and resolution times | CSAT drop, churn, SLA penalties |
+| P2 | Slow first response and resolution times | Customer satisfaction score drop, churn, service level agreement penalties |
 | P3 | Knowledge spread across docs, wikis, old tickets and agent heads | Inconsistent answers, long onboarding |
 | P4 | Chatbots answer but cannot act (refund, reset, reship, update account) | Customers still wait for a human |
 | P5 | No reliable judgement on when AI should stop | Risky automated actions or over-escalation |
@@ -49,15 +49,15 @@ The same application is deployed on **AWS, Azure and GCP** using Terraform, so l
 
 ### 2.2 Business Objectives
 
-| ID | Objective | Target (12 weeks post go-live, reference tenant) |
+| Identifier (ID) | Objective | Target (12 weeks post go-live, reference tenant) |
 |---|---|---|
 | BO-1 | Automate resolution of routine tickets end-to-end | ≥ 40% autonomous resolution rate (L1 categories) |
-| BO-2 | Reduce first response time | P50 < 30 s, P95 < 2 min for chat/app channels |
-| BO-3 | Reduce mean time to resolution (MTTR) | −35% vs baseline |
-| BO-4 | Keep quality high | CSAT ≥ 4.3/5 on AI-resolved tickets; reopen rate < 8% |
+| BO-2 | Reduce first response time | P50 < 30 s, 95th percentile (P95) < 2 minutes for chat/app channels |
+| BO-3 | Reduce mean time to resolution (mean time to resolution) | −35% versus baseline |
+| BO-4 | Keep quality high | Customer satisfaction score ≥ 4.3/5 on AI-resolved tickets; reopen rate < 8% |
 | BO-5 | Zero unsafe autonomous actions | 0 high-risk actions executed without approval |
 | BO-6 | Make human agents faster | Agent handle time −25% via summaries and draft plans |
-| BO-7 | Control AI cost | Average LLM cost per ticket < US$0.08 |
+| BO-7 | Control AI cost | Average large language model (LLM) cost per ticket < US$0.08 |
 
 ### 2.3 Stakeholders
 
@@ -65,19 +65,19 @@ The same application is deployed on **AWS, Azure and GCP** using Terraform, so l
 |---|---|
 | Customers / end users | Fast, correct, consistent resolution |
 | Support agents (L1/L2) | Copilot, summaries, fewer repetitive tickets |
-| Support supervisors / team leads | Queue health, SLA, approvals, quality |
+| Support supervisors / team leads | Queue health, service level agreement, approvals, quality |
 | Support operations / admin | Configuration, policies, knowledge base, integrations |
-| Engineering / SRE | Reliability, deployability, observability |
-| Security & compliance | PII handling, audit trails, RBAC |
+| Engineering / site reliability engineering (SRE) | Reliability, deployability, observability |
+| Security & compliance | Personally identifiable information (PII) handling, audit trails, role-based access control (RBAC) |
 | Finance | AI and cloud cost per ticket |
 | Learners (series audience) | A reference architecture they can rebuild and extend |
 
 ### 2.4 Scope
 
 **In scope (v1.0)**
-- Ingestion from web chat widget, email (inbound webhook), REST API (apps), and a ticketing-system connector (mock Zendesk/Jira-style adapter)
+- Ingestion from web chat widget, email (inbound webhook), Representational State Transfer (REST) API (apps), and a ticketing-system connector (mock Zendesk/Jira-style adapter)
 - Six-agent LangGraph system (Supervisor, Customer, Knowledge/RAG, Troubleshooting, Resolution, Escalation)
-- Advanced + agentic RAG over product docs and resolved tickets (hybrid search + reranking)
+- Advanced + agentic retrieval-augmented generation (RAG) over product docs and resolved tickets (hybrid search + reranking)
 - Action execution via MCP tool servers with human-in-the-loop approvals
 - Customer memory (short-term + long-term)
 - Support dashboard (Next.js) for agents, supervisors and admins
@@ -105,7 +105,7 @@ The same application is deployed on **AWS, Azure and GCP** using Terraform, so l
 |---|---|---|---|
 | Hallucinated policies or promises | M | H | Grounding checks, citations, policy guardrail, low temperature |
 | Prompt injection via email/attachments/docs | H | H | Content isolation, injection classifier, tool allow-lists, no tool args from untrusted text without validation |
-| Wrong or duplicate action (e.g. double refund) | M | H | Risk tiers, HITL, idempotency keys, spend caps, post-action verification |
+| Wrong or duplicate action (for example, double refund) | M | H | Risk tiers, human in the loop (HITL), idempotency keys, spend caps, post-action verification |
 | PII leakage to logs/LLM | M | H | Redaction, data minimisation, provider data controls |
 | LLM provider outage / latency | M | M | Gateway failover, timeouts, handoff mode |
 | Cost runaway (loops) | M | M | Max graph steps, token budgets, loop detection |
@@ -120,7 +120,7 @@ The same application is deployed on **AWS, Azure and GCP** using Terraform, so l
 - Data retention configurable per tenant (default: conversations 1 year, traces 30 days, audit 7 years).
 - Right to access / erasure for customer memory.
 - Model and prompt version recorded per decision.
-- Alignment targets: GDPR/PIPEDA principles, SOC 2-style controls (reference implementation, not certification).
+- Alignment targets: GDPR/PIPEDA principles, System and Organization Controls (SOC) 2-style controls (reference implementation, not certification).
 
 ---
 

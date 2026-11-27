@@ -4,11 +4,11 @@
 
 ## A. Executive summary
 
-Phase 10 joins the six agents into one LangGraph workflow. A ticket runs through twelve steps, every step is recorded, state is saved after each node, and the run can pause and resume. The API exposes it as run, workflow and events routes.
+Phase 10 joins the six agents into one LangGraph workflow. A ticket runs through twelve steps, every step is recorded, state is saved after each node, and the run can pause and resume. The application programming interface (API) exposes it as run, workflow and events routes.
 
 ## B. Business problem and solution
 
-Without a graph the agents are parts on a bench. The workflow gives support agents one button, "Run AI workflow", and an inspectable record of what the platform did and why, including time, tokens and tool calls.
+Without a graph the agents are parts on a bench. The workflow gives support agents one button, "Run artificial intelligence (AI) workflow", and an inspectable record of what the platform did and why, including time, tokens and tool calls.
 
 ## C. Architecture in simple language
 
@@ -44,7 +44,7 @@ understand, classify, customer context, retrieval, troubleshooting, resolution p
 
 ## G. Decisions
 
-Background tasks run in the API process (ADR 0007) rather than a worker: simpler, but a restart loses in-flight runs, which is why state is saved after every node.
+Background tasks run in the API process (architecture decision record (ADR) 0007) rather than a worker: simpler, but a restart loses in-flight runs, which is why state is saved after every node.
 
 ## H. Failure handling
 

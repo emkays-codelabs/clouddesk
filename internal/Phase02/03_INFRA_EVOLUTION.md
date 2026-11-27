@@ -2,7 +2,7 @@
 
 > **Read this first.** Phase 2 still has **no Docker, no Docker Compose, no containers, no Postgres server, no Redis, no reverse proxy, no continuous-integration pipeline and no deployment**. I checked the repository root: there is no `Dockerfile`, no Compose file, no `.dockerignore`, no `.github` workflows folder and no `deployment` folder.
 >
-> What Phase 2 adds to the infrastructure is **one local file**, the SQLite database `data/support.db`, a startup routine that creates and fills it, one new Make target (`make seed`), and a set of Postgres SQL files that have been written but never run. This document explains that honestly. Container ideas appear only as concepts marked planned. Nothing below claims a container exists.
+> What Phase 2 adds to the infrastructure is **one local file**, the SQLite database `data/support.db`, a startup routine that creates and fills it, one new Make target (`make seed`), and a set of Postgres Structured Query Language (SQL) files that have been written but never run. This document explains that honestly. Container ideas appear only as concepts marked planned. Nothing below claims a container exists.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md), [system design evolution](./02_DESIGN_EVOLUTION.md) and [Phase 1 infrastructure evolution](../Phase01/03_INFRA_EVOLUTION.md).
 >
@@ -47,7 +47,7 @@ flowchart LR
 ### Change 1. A SQLite file as the demo database (P2-1)
 
 - **Before.** No storage.
-- **Added.** `backend/app/core/database.py` opens the URL in `DATABASE_URL`. For SQLite it creates the parent folder if missing (the SQLite driver will not) and runs `PRAGMA foreign_keys=ON` on every new connection. `create_tables()` builds missing tables.
+- **Added.** `backend/app/core/database.py` opens the uniform resource locator (URL) in `DATABASE_URL`. For SQLite it creates the parent folder if missing (the SQLite driver will not) and runs `PRAGMA foreign_keys=ON` on every new connection. `create_tables()` builds missing tables.
 - **Why.** The demo must run offline with no server to install.
 - **Services affected.** The FastAPI process only.
 - **Communication.** The process reads and writes `data/support.db` through the file system. No port.
@@ -57,14 +57,14 @@ flowchart LR
 
 - **Before.** The only database form was the Python models.
 - **Added.** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql` and `database/migrations/0001_initial.sql`, meant to be pasted into the Supabase SQL editor or run with a Postgres client.
-- **Why.** The cloud database needs real DDL, row-level security and a migration history.
+- **Why.** The cloud database needs real data definition language (DDL), row-level security and a migration history.
 - **Communication.** None yet. The files are applied by hand. At run time the repositories would announce their tenant with `SET LOCAL app.tenant_id`, but nothing issues that statement yet.
 - **Verified.** By text comparison only: tests parse the SQL and compare it with the models. **Nothing was applied to a Postgres instance**, so syntax, triggers and policy behaviour are unproven.
 
 ### Change 3. Demo data files and the startup routine (P2-4)
 
 - **Before.** An empty database after `create_tables()`.
-- **Added.** `sample_data/` (seven JSON files), the lifespan in `backend/app/main.py`, and the `seed` target in `Makefile`.
+- **Added.** `sample_data/` (seven JavaScript Object Notation (JSON) files), the lifespan in `backend/app/main.py`, and the `seed` target in `Makefile`.
 - **Why.** A fresh clone should have a working scenario with no manual step.
 - **Gates that protect the file.** Seeding does nothing outside `DEMO_MODE`, and nothing if a customer or ticket exists.
 - **Verified.** `tests/api/test_startup_seed.py` starts the app on a temporary database and checks 13 tickets and 8 customers appear once, a second start adds nothing, demo mode off creates tables but loads nothing, and an unusable database neither crashes startup nor leaks a secret into the log. `tests/unit/test_seed_service.py` covers the `make seed` entry point.
@@ -92,7 +92,7 @@ flowchart TD
 
 ## E. Docker networking
 
-Not applicable. The only communication is a client calling `localhost:8000` over HTTP, as in Phase 1, and a same-process file access to the SQLite database. When Postgres runs in a container later, `localhost` inside the backend container will not reach it; the service name on the Compose network will. That is planned and untested.
+Not applicable. The only communication is a client calling `localhost:8000` over Hypertext Transfer Protocol (HTTP), as in Phase 1, and a same-process file access to the SQLite database. When Postgres runs in a container later, `localhost` inside the backend container will not reach it; the service name on the Compose network will. That is planned and untested.
 
 ## F. Component wiring and routing
 
@@ -195,5 +195,5 @@ There are no containers, no networks, no volumes, no monitoring components and n
 | Foreign keys enforced on SQLite | Verified |
 | Postgres SQL | **Not verified.** Only compared with the models as text. |
 | `make backend` and `make seed` run by hand for this document | **Not run for this document.** The seed entry point is covered by a test; I did not start the server. |
-| Docker, networks, DNS, health checks of containers | Do not exist |
+| Docker, networks, Domain Name System (DNS), health checks of containers | Do not exist |
 | Persistent volumes, backup and restore | Do not exist |

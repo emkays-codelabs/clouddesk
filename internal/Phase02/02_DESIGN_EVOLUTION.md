@@ -15,23 +15,23 @@
 **Objectives.** Give CloudDesk somewhere to keep data and something to keep in it:
 
 1. a portable data model that runs on SQLite for the demo and on Postgres in the cloud (P2-1);
-2. one place where all SQL lives, and one place where the tenant filter lives (P2-3);
+2. one place where all Structured Query Language (SQL) lives, and one place where the tenant filter lives (P2-3);
 3. the Postgres version of the same schema, with row-level security and a migration (P2-2);
 4. a fictional demo scenario that loads itself on first start (P2-4).
 
-**Initial system state.** The Phase 1 skeleton: one FastAPI process with settings, JSON logs, request IDs and three health routes. No database engine, no table, no row.
+**Initial system state.** The Phase 1 skeleton: one FastAPI process with settings, JavaScript Object Notation (JSON) logs, request identifiers (IDs) and three health routes. No database engine, no table, no row.
 
 **Requirements addressed.**
 
 | Requirement | Where Phase 2 touches it |
 |---|---|
-| D1 (settled 2026-11-02): `tenant_id` on every data table, RLS keyed on it | `tenant_id` in every model, every index and every policy; one seeded tenant |
+| D1 (settled 2026-11-02): `tenant_id` on every data table, row-level security (RLS) keyed on it | `tenant_id` in every model, every index and every policy; one seeded tenant |
 | F1 (tickets from several channels) | The `tickets` table, the channel enum, `TicketRepository.create` |
 | F4 (customer, subscription, workspace, previous tickets, memory) | The customer, subscription, workspace, ticket and memory repositories, and the seeded data they read |
 | F14 (runs offline in demo mode) | SQLite as the demo database, `DEMO_MODE`-gated seeding |
 | Rule 12 (migrations are additive, an applied migration never changes) | `database/migrations/0001_initial.sql` and the test that pins its hash |
 
-No API route for tickets exists yet. The data layer is reachable only from tests, from `make seed` and from the startup code.
+No application programming interface (API) route for tickets exists yet. The data layer is reachable only from tests, from `make seed` and from the startup code.
 
 **Major architectural additions.** A domain vocabulary module, 17 SQLAlchemy models, an async engine and session factory, ten repository modules, a Postgres schema with RLS policies, a seed loader, and a lifespan that creates tables and seeds data.
 
@@ -60,7 +60,7 @@ flowchart LR
 | External dependencies | None |
 | Data stores | None. `DATABASE_URL` existed as a setting but nothing opened it. |
 | Request entry points | `/health`, `/health/live`, `/health/ready` |
-| Communication paths | Client to process over HTTP; plain function calls inside |
+| Communication paths | Client to process over Hypertext Transfer Protocol (HTTP); plain function calls inside |
 | Major limitations | Nothing could be stored, read or seeded. The readiness route could only check that the database setting looked sensible. |
 
 ---
@@ -74,8 +74,8 @@ The tasks merged in the order P2-1, P2-3, P2-2, P2-4. (P2-2 and P2-3 both needed
 - **Original design.** No data model.
 - **Motivation.** The demo must run offline on SQLite and the cloud build on Postgres. One model definition for both avoids two drifting copies.
 - **Introduced.** `backend/app/schemas/common.py` holds the domain vocabulary as `StrEnum`s: 10 categories, 7 ticket statuses, 4 severities and 4 channels, plus the smaller enums the tables need (role, memory type, approval status, action status, escalation status, workflow status, message role, workflow event type). `backend/app/models/entities.py` holds the SQLAlchemy 2 models: `tenants` and 16 data tables. `backend/app/core/database.py` holds the async engine, session factory and `create_tables()`.
-- **How portability is achieved.** JSON instead of JSONB, `String(36)` ids, and enum columns stored as VARCHAR with a CHECK constraint (`native_enum=False`), so Postgres needs no `CREATE TYPE`. The vocabulary is defined once and the models import it; a test compares it with `docs/design/06_API_CONTRACT.md`.
-- **D1 in the model.** `TenantMixin` adds a not-null, indexed `tenant_id` with a foreign key to `tenants.id`, and it is the first column of every composite index and unique constraint. A test loops over `Base.metadata.tables`, so a table added later cannot omit the column. `DEMO_TENANT_ID` is a fixed, valid UUID, because the planned RLS policies cast with `::uuid`.
+- **How portability is achieved.** JSON instead of JSON binary (JSONB), `String(36)` ids, and enum columns stored as VARCHAR with a CHECK constraint (`native_enum=False`), so Postgres needs no `CREATE TYPE`. The vocabulary is defined once and the models import it; a test compares it with `docs/design/06_API_CONTRACT.md`.
+- **D1 in the model.** `TenantMixin` adds a not-null, indexed `tenant_id` with a foreign key to `tenants.id`, and it is the first column of every composite index and unique constraint. A test loops over `Base.metadata.tables`, so a table added later cannot omit the column. `DEMO_TENANT_ID` is a fixed, valid universally unique identifier (UUID), because the planned RLS policies cast with `::uuid`.
 - **SQLite behaviour.** `backend/app/core/database.py` creates the database file's parent directory and runs `PRAGMA foreign_keys=ON` on every connection, so a row pointing at a missing tenant is rejected as Postgres would reject it.
 - **Effect on existing components.** None. Nothing imported the model yet.
 - **Benefits and trade-offs.** One definition for two databases. The cost is lowest-common-denominator types: no native enums, no JSONB operators, no database-side UUIDs.
@@ -112,7 +112,7 @@ flowchart TD
 
 ### Step 3. The Postgres schema, RLS and migrations (P2-2, PR #28)
 
-- **Original design.** The models could build SQLite tables, but the cloud database needs real DDL, policies and a migration history.
+- **Original design.** The models could build SQLite tables, but the cloud database needs real data definition language (DDL), policies and a migration history.
 - **Motivation.** CLAUDE.md section 6 promised RLS on every data table, keyed on `tenant_id`. The Supabase SQL editor takes SQL, not Python.
 - **Introduced.** `database/schema.sql` (17 tables in foreign-key order, indexes, `set_updated_at()` and one `BEFORE UPDATE` trigger per table). `database/rls_policies.sql` (RLS enabled and forced on every table, one `tenant_isolation` policy each). `database/seed.sql` (the demo tenant row only). `database/migrations/0001_initial.sql` (the schema followed by the policies).
 - **Type mapping (owner decision O1).** Models keep `String(36)`; the SQL uses `uuid` for every id and `tenant_id`, because Postgres has no `varchar = uuid` operator and the policy text needs a uuid column. `String(n)` becomes `varchar(n)`, enums become `varchar(32)` plus a CHECK, `JSON` becomes `jsonb`, `DateTime(timezone=True)` becomes `timestamptz`, `Float` becomes `double precision`.
@@ -135,7 +135,7 @@ flowchart LR
 - **Original design.** Tables could be created and queried, but they were empty, so no later phase had a ticket to work on.
 - **Motivation.** F14 (the demo runs offline) and the demo scenario in CLAUDE.md section 5 need CD-1001 to CD-1013 present on a fresh machine.
 - **Introduced.** `sample_data/` holds seven fictional JSON files. `backend/app/services/seed_service.py` validates them with strict Pydantic records, cross-checks them, and writes them through the repositories in one transaction. `backend/app/main.py` gains a lifespan, and `make seed` runs the same loader by hand.
-- **Startup order.** `create_tables()`, then `bootstrap_demo_data()`, then the application serves, and `dispose_engine()` on shutdown. A database error at startup is logged as the exception class and a redacted URL, with no traceback, and is swallowed, so `/health/ready` can still answer `degraded` instead of the process refusing to start.
+- **Startup order.** `create_tables()`, then `bootstrap_demo_data()`, then the application serves, and `dispose_engine()` on shutdown. A database error at startup is logged as the exception class and a redacted uniform resource locator (URL), with no traceback, and is swallowed, so `/health/ready` can still answer `degraded` instead of the process refusing to start.
 - **Gates.** Nothing is written unless `DEMO_MODE` is true, and nothing when the database already holds a customer or a ticket. The files are parsed and cross-checked before the first write, so a bad record raises `ValueError` naming it and the database stays empty. If two workers pass the emptiness check together, a unique key makes the second commit fail and that is reported as "not empty".
 - **Deterministic ids.** Each id is `uuid5` of `kind:key` under a fixed namespace, so `CD-1002` has the same id on every machine.
 - **Deliberately not loaded.** `sample_data/previous_resolutions.json` is validated and left on disk for the Knowledge Agent, because no table holds it and loading it as tickets would break the count of 13.
@@ -187,7 +187,7 @@ flowchart TD
 | Database | SQLite (demo) | the only database that has actually run |
 | Postgres artefacts | `database/` | DDL, RLS, migration; unproven against a server |
 | Security boundary | the repository filter | on SQLite it is the only tenant boundary; RLS is written but unexercised |
-| Orchestration, AI, workers, observability beyond logs | none | later phases |
+| Orchestration, artificial intelligence (AI), workers, observability beyond logs | none | later phases |
 
 ---
 

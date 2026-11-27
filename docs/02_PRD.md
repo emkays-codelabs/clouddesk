@@ -6,7 +6,7 @@
 | Document type | PRD |
 | Version | 1.0 (Draft) |
 | Date | 31 October 2026 |
-| Owner | Anu — OrionVexa (Agentic AI Production Engineering, Project 1) |
+| Owner | Anu — OrionVexa (Agentic artificial intelligence (AI) Production Engineering, Project 1) |
 | Status | Draft for review |
 | Related docs | `01_BRD.md`, `03_HLD.md`, `04_LLD.md` |
 
@@ -25,7 +25,7 @@
 |---|---|---|
 | **Maya — Customer** | Uses chat or email to get help | Quick answers, no repetition of context, clear next steps |
 | **Ravi — L1 Support Agent** | Handles queue, reviews AI drafts | Ticket summary, suggested plan, one-click approve/edit |
-| **Elena — Support Supervisor** | Owns SLA and quality | Approval queue, escalations, dashboards, QA sampling |
+| **Elena — Support Supervisor** | Owns service level agreement and quality | Approval queue, escalations, dashboards, quality assurance (QA) sampling |
 | **Sam — Support Ops Admin** | Configures the platform | Knowledge sources, policies, tool permissions, routing rules |
 | **Priya — Platform Engineer** | Runs it in production | Health, traces, cost, deploy pipeline, incident tooling |
 
@@ -40,7 +40,7 @@
 4. Troubleshooting Agent confirms two captured charges for the same invoice.
 5. Knowledge Agent retrieves the refund policy and three similar resolved tickets.
 6. Resolution Agent proposes: refund duplicate charge (US$29), within auto-approve limit per policy.
-7. Policy engine marks action **low risk → auto-approved**; MCP `billing.refund` executes.
+7. Policy engine marks action **low risk → auto-approved**; Model Context Protocol (MCP) `billing.refund` executes.
 8. Customer receives confirmation; ticket resolved, summary written, memory updated.
 
 ### J2 — Human-in-the-loop approval
@@ -62,9 +62,9 @@ After a ticket is closed with positive feedback, its resolution is distilled int
 Priority: **M** = Must, **S** = Should, **C** = Could.
 
 ### 5.1 Intake & Understanding
-| ID | Requirement | Pri |
+| Identifier (ID) | Requirement | Pri |
 |---|---|---|
-| FR-01 | Accept requests from chat widget, email webhook, REST API and ticketing connector, normalised into one `Ticket` model | M |
+| FR-01 | Accept requests from chat widget, email webhook, Representational State Transfer (REST) application programming interface (API) and ticketing connector, normalised into one `Ticket` model | M |
 | FR-02 | Detect language, intent, product area, category/subcategory and entities (order ID, invoice ID, device, error code) | M |
 | FR-03 | Classify severity (P1–P4) and sentiment; detect urgency signals (outage, security, legal, churn threat) | M |
 | FR-04 | Deduplicate / thread messages into existing tickets | S |
@@ -76,7 +76,7 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 | FR-06 | Search product documentation with hybrid retrieval (dense + BM25) and reranking | M |
 | FR-07 | Search previously resolved tickets and resolution cards | M |
 | FR-08 | Retrieve customer profile, subscriptions, orders, invoices, device/service status via tools | M |
-| FR-09 | Agentic RAG: query rewriting, multi-hop retrieval, self-check of retrieved evidence sufficiency | M |
+| FR-09 | Agentic retrieval-augmented generation (RAG): query rewriting, multi-hop retrieval, self-check of retrieved evidence sufficiency | M |
 | FR-10 | Every factual claim in a customer reply is grounded with a citation to a source chunk | M |
 | FR-11 | Check system status / known incidents before troubleshooting | S |
 
@@ -99,7 +99,7 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 | FR-21 | Approvers can approve, reject, or edit arguments; decisions are audited | M |
 | FR-22 | Escalate when: confidence < threshold, P1, security/legal/fraud, repeated failure, explicit human request, negative sentiment spike | M |
 | FR-23 | Escalation creates a case brief (summary, evidence, attempted steps, recommended owner) and routes to a queue | M |
-| FR-24 | SLA timers and approval timeouts with auto-escalation | S |
+| FR-24 | Service level agreement timers and approval timeouts with auto-escalation | S |
 
 ### 5.5 Memory & Learning
 | ID | Requirement | Pri |
@@ -109,7 +109,7 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 | FR-27 | Customer can request memory deletion (right to erasure) | M |
 | FR-28 | Generate ticket summary on resolve/escalate | M |
 | FR-29 | Distil successful resolutions into resolution cards, indexed for retrieval after review | S |
-| FR-30 | Capture CSAT and agent feedback, linked to traces for evaluation | M |
+| FR-30 | Capture customer satisfaction score and agent feedback, linked to traces for evaluation | M |
 
 ### 5.6 Dashboard (Web)
 | ID | Requirement | Pri |
@@ -118,7 +118,7 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 | FR-32 | Ticket detail: conversation, AI timeline, evidence with citations, plan, actions | M |
 | FR-33 | Approval queue with diff view of proposed action arguments | M |
 | FR-34 | Escalation queue | M |
-| FR-35 | Analytics: volume, autonomous rate, FRT, MTTR, CSAT, cost, escalation reasons | M |
+| FR-35 | Analytics: volume, autonomous rate, first response time, mean time to resolution, customer satisfaction score, cost, escalation reasons | M |
 | FR-36 | Admin: knowledge sources, ingestion jobs, policies, tool registry, users and roles | M |
 | FR-37 | Customer-facing chat widget (embeddable) | M |
 | FR-38 | Real-time updates (WebSocket/SSE) | S |
@@ -126,7 +126,7 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 ### 5.7 Administration
 | ID | Requirement | Pri |
 |---|---|---|
-| FR-39 | Upload/connect knowledge sources (PDF, Markdown, HTML, URL crawl); scheduled re-index | M |
+| FR-39 | Upload/connect knowledge sources (Portable Document Format (PDF), Markdown, Hypertext Markup Language (HTML), uniform resource locator (URL) crawl); scheduled re-index | M |
 | FR-40 | Versioned prompts and policies with rollback | S |
 | FR-41 | Feature flags per tenant (autonomy level: copilot-only / supervised / autonomous) | M |
 | FR-42 | Multi-tenancy (tenant isolation at data and vector index level) | S |
@@ -137,22 +137,22 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 
 | Category | ID | Requirement |
 |---|---|---|
-| Performance | NFR-01 | Chat first token P95 < 3 s; full resolution plan P95 < 20 s (excluding approval waits) |
+| Performance | NFR-01 | Chat first token 95th percentile (P95) < 3 s; full resolution plan P95 < 20 s (excluding approval waits) |
 | | NFR-02 | Retrieval (hybrid + rerank) P95 < 800 ms |
 | Scalability | NFR-03 | 50 concurrent conversations per API replica; horizontal scaling to 1,000+ |
 | | NFR-04 | 100k tickets/month per tenant; 1M+ indexed chunks |
-| Availability | NFR-05 | 99.9% API availability; graceful degradation to "human handoff" mode if LLM provider fails |
+| Availability | NFR-05 | 99.9% API availability; graceful degradation to "human handoff" mode if large language model (LLM) provider fails |
 | Reliability | NFR-06 | Durable graph checkpoints; no lost tickets; at-least-once background processing with idempotency |
-| Security | NFR-07 | OIDC/JWT auth, RBAC, TLS 1.2+, encryption at rest, secrets in cloud secret manager |
-| | NFR-08 | OWASP API Top 10 controls; prompt-injection defences on all untrusted content |
-| Privacy | NFR-09 | PII detection and redaction in logs/traces; data residency per tenant; retention policies |
+| Security | NFR-07 | OIDC/JWT auth, role-based access control (RBAC), Transport Layer Security (TLS) 1.2+, encryption at rest, secrets in cloud secret manager |
+| | NFR-08 | Open Worldwide Application Security Project (OWASP) API Top 10 controls; prompt-injection defences on all untrusted content |
+| Privacy | NFR-09 | Personally identifiable information (PII) detection and redaction in logs/traces; data residency per tenant; retention policies |
 | Rate limiting | NFR-10 | Per-tenant, per-user and per-IP limits; LLM token budgets per tenant |
 | Observability | NFR-11 | Structured logs, metrics, distributed traces (OpenTelemetry) and LLM traces (Langfuse/LangSmith) with ticket correlation ID |
 | Evaluation | NFR-12 | Offline eval suite gates every release; online quality monitoring |
 | Cost | NFR-13 | Per-ticket token and cost accounting; model routing (small model for classification) |
 | Portability | NFR-14 | Same images on AWS/Azure/GCP; cloud-specific code isolated behind adapters |
 | Maintainability | NFR-15 | ≥ 80% unit test coverage on core services; typed contracts (Pydantic/TypeScript) |
-| Accessibility | NFR-16 | Dashboard and widget meet WCAG 2.1 AA |
+| Accessibility | NFR-16 | Dashboard and widget meet Web Content Accessibility Guidelines (WCAG) 2.1 AA |
 
 ---
 
@@ -178,12 +178,12 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 | Autonomous resolution rate | Resolved without human touch / total eligible | ≥ 40% |
 | Escalation precision | Escalations judged necessary by humans | ≥ 85% |
 | Escalation recall | High-risk tickets that were escalated | ≥ 98% |
-| Classification accuracy | Category & severity vs labelled set | ≥ 90% / ≥ 92% |
+| Classification accuracy | Category & severity versus labelled set | ≥ 90% / ≥ 92% |
 | Retrieval quality | Recall@10 / nDCG@5 on golden queries | ≥ 0.90 / ≥ 0.75 |
 | Faithfulness | Answer claims supported by context (RAGAS-style) | ≥ 0.92 |
 | Tool-call correctness | Correct tool + valid args on eval set | ≥ 95% |
 | Unsafe action rate | Actions violating policy | 0 |
-| CSAT (AI-resolved) | Post-resolution survey | ≥ 4.3 / 5 |
+| Customer satisfaction score (AI-resolved) | Post-resolution survey | ≥ 4.3 / 5 |
 | Reopen rate | Reopened within 7 days | < 8% |
 | Cost per ticket | LLM + embedding + rerank cost | < US$0.08 |
 
@@ -193,18 +193,18 @@ Priority: **M** = Must, **S** = Should, **C** = Could.
 
 | Phase | Deliverables |
 |---|---|
-| 0. Problem & PRD | This document, success metrics, synthetic dataset spec |
-| 1. Architecture | HLD, LLD, ADRs |
+| 0. Problem & PRD | This document, success metrics, synthetic dataset specification |
+| 1. Architecture | High-level design (HLD), low-level design (LLD), architecture decision records (ADRs) |
 | 2. Foundations | Repo, FastAPI skeleton, Postgres schema, Redis, auth, Next.js shell |
 | 3. Knowledge | Ingestion pipeline, hybrid retrieval, reranking, eval set |
 | 4. Agents | LangGraph supervisor + 5 agents, structured outputs, tools |
-| 5. MCP & Actions | MCP servers (CRM, billing, orders, ticketing, status), policy engine, HITL |
+| 5. MCP & Actions | MCP servers (customer relationship management (CRM), billing, orders, ticketing, status), policy engine, human in the loop (HITL) |
 | 6. Memory & Learning | Short/long-term memory, summaries, resolution cards |
 | 7. Guardrails & Security | Input/output/action guardrails, RBAC, rate limiting |
-| 8. Testing & Evaluation | Unit, integration, agent evals, red-team set, CI gates |
-| 9. Containerisation & IaC | Docker, Compose, Terraform modules per cloud |
+| 8. Testing & Evaluation | Unit, integration, agent evals, red-team set, continuous integration (CI) gates |
+| 9. Containerisation & infrastructure as code (IaC) | Docker, Compose, Terraform modules per cloud |
 | 10. CI/CD | GitHub Actions: build, test, eval, scan, deploy |
-| 11. Multi-cloud deploy | AWS, Azure, GCP environments |
+| 11. Multi-cloud deploy | Amazon Web Services (AWS), Azure, Google Cloud Platform (GCP) environments |
 | 12. Observability & Ops | Dashboards, alerts, runbooks, cost monitoring |
 
 **Autonomy rollout per tenant:** Copilot-only → Supervised (all actions need approval) → Autonomous (policy-based).

@@ -6,13 +6,13 @@
 >
 > **Status:** implemented and checked locally on 2026-10-31 and since. 97 tests pass and lint is clean (run while writing this). Not deployed.
 >
-> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the API title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the application programming interface (API) title ("CloudDesk artificial intelligence (AI) API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 
 ## A. Phase overview
 
-**Objective.** A process that boots offline, writes JSON logs carrying a request ID, and answers health probes (the phase goal stated in `PLAN.md`).
+**Objective.** A process that boots offline, writes JavaScript Object Notation (JSON) logs carrying a request identifier (ID), and answers health probes (the phase goal stated in `PLAN.md`).
 
 **Requirements addressed.** F14 (the offline demo profile, through the settings and harness) and N3 (a request ID on every response).
 
@@ -240,7 +240,7 @@ If the response had already begun, the layer re-raises instead of writing a seco
 | Trade-offs | A harness reviewed before it has real code to guard |
 | Status | Implemented |
 
-**Decision 2: plain ASGI for the request-ID layer**
+**Decision 2: plain Asynchronous Server Gateway Interface (ASGI) for the request-ID layer**
 
 | Field | Description |
 |---|---|
@@ -299,7 +299,7 @@ Compared with the empty start, and only where the implementation or a test suppo
 | Separation of responsibilities | The API, core, middleware and schema code live in separate packages | The folder layout under `backend/app/` |
 | Modularity | The app is built by a factory, so tests build fresh copies | `create_app()` in `backend/app/main.py` |
 | Testability | Offline, hermetic tests and a lazily imported app | `tests/conftest.py` |
-| Security | Secrets redacted in settings output; request IDs allow-listed; readiness reasons never echo a URL or key | Tests in `tests/unit/test_config_logging.py` and `tests/api/test_health.py` |
+| Security | Secrets redacted in settings output; request IDs allow-listed; readiness reasons never echo a uniform resource locator (URL) or key | Tests in `tests/unit/test_config_logging.py` and `tests/api/test_health.py` |
 | Reliability | A crash returns a clean 500 with an ID | A test in `tests/api/test_health.py` |
 | Maintainability | One settings object and one `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), checked against each other by a test | `tests/unit/test_env_example.py` |
 | Extensibility | The middleware order has room for two more layers | A comment in `backend/app/main.py` |
@@ -340,7 +340,7 @@ Compared with the empty start, and only where the implementation or a test suppo
 
 **Important decisions:** build the harness first; plain ASGI middleware; configuration-only readiness; a work-free liveness route; shell-portable recipes.
 
-**Verified outcomes.** 97 Phase 1 tests pass and lint is clean (run while writing this). The service was started on loopback and its three routes, request-ID rules, CORS behaviour and JSON logs were observed directly.
+**Verified outcomes.** 97 Phase 1 tests pass and lint is clean (run while writing this). The service was started on loopback and its three routes, request-ID rules, Cross-Origin Resource Sharing (CORS) behaviour and JSON logs were observed directly.
 
 **Outstanding.** Real dependency checks, authentication, rate limiting, audit, containers.
 

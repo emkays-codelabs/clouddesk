@@ -2,7 +2,7 @@
 
 > **Read this first.** In Phase 6 **no container was built and no Compose stack was brought up**. The files `backend/Dockerfile`, `frontend/Dockerfile`, `.dockerignore` and `docker-compose.yml` exist, because tasks P14-2 and P14-3 were pulled forward, but the Docker daemon was not used, so `docker build`, `docker compose up` and every health check described below were **never executed**. Everything here about containers comes from reading those files and from the tests in `tests/deployment/` that parse them.
 >
-> Phase 6 adds **no new service, no new port and no new environment variable**. It adds one route, one `Makefile` target and one Python dependency, and one line to the backend Dockerfile. The **MCP stdio server and `make mcp` were not run end to end** for this document. The MCP server is a process you start by hand on your own machine; it is not in Compose and has no container.
+> Phase 6 adds **no new service, no new port and no new environment variable**. It adds one route, one `Makefile` target and one Python dependency, and one line to the backend Dockerfile. The **Model Context Protocol (MCP) stdio server and `make mcp` were not run end to end** for this document. The MCP server is a process you start by hand on your own machine; it is not in Compose and has no container.
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md), [design evolution](./02_DESIGN_EVOLUTION.md), [Phase 5 infrastructure](../Phase05/03_INFRA_EVOLUTION.md).
 >
@@ -55,7 +55,7 @@ flowchart LR
 ### Change 2. Tool actions stored in the existing database (P6-3)
 
 - **Before.** The `resolution_actions` table existed (Phase 2) and was never written.
-- **Added.** `DbIdempotencyStore` writes one row per successful tool action. Same SQLite file in the demo; the SQL for Postgres has a unique constraint on tenant and idempotency key. No new table or migration.
+- **Added.** `DbIdempotencyStore` writes one row per successful tool action. Same SQLite file in the demo; the Structured Query Language (SQL) for Postgres has a unique constraint on tenant and idempotency key. No new table or migration.
 - **Effect on infrastructure.** The idempotency guarantee depends on the database file persisting. In Compose the SQLite file would sit in the `backend-data` volume (written, not run). Not run against Postgres.
 - **Verified.** `tests/unit/test_write_tools.py` includes a new registry over the same database refusing a second refund.
 
@@ -86,7 +86,7 @@ Unchanged from Phase 5 except the Dockerfile line above. All from `docker-compos
 | Service | Image or build | Purpose | Ports | Volumes | Dependencies | Health check |
 |---|---|---|---|---|---|---|
 | `redis` | `redis:7-alpine`, append-only persistence | Cache and rate-limit store | None published | `redis-data` | None | `redis-cli ping` |
-| `qdrant` | `qdrant/qdrant:v1.12.4` | Vector database, unused by default | None published | `qdrant-storage` | None | TCP check on port 6333 |
+| `qdrant` | `qdrant/qdrant:v1.12.4` | Vector database, unused by default | None published | `qdrant-storage` | None | Transmission Control Protocol (TCP) check on port 6333 |
 | `backend` | Built from `backend/Dockerfile`, context is the repository root | FastAPI service; now includes `integrations/` | `8000:8000` | `backend-data` | `redis` and `qdrant` healthy | Python call to `/health/live` |
 | `frontend` | Built from `frontend/Dockerfile` | Next.js shell | `3000:3000` | None | `backend` healthy | `wget` to `/api/health` |
 
@@ -129,7 +129,7 @@ Local:
 
 | Task | Command | Status |
 |---|---|---|
-| Start the API | `make backend` | Used in earlier phases |
+| Start the application programming interface (API) | `make backend` | Used in earlier phases |
 | Load demo data | `make seed` | Needed before the MCP server can read anything |
 | Start the MCP server | `make mcp` | Written; **not run for this document**. It waits on stdin, so by itself it just sits there |
 | Try the MCP example client | `uv run python -m integrations.mcp.client_example` (from the repository root) | Started once, recorded in `MEMORY.md`; not repeated |
@@ -182,7 +182,7 @@ A consequence worth saying aloud: after a restart the ledger still blocks a repe
 
 ## K. Observability and troubleshooting
 
-- Logs: JSON with request id, as before. The registry does not log tool calls itself; the workflow tracer that records `tool_called` events arrives in Phase 10.
+- Logs: JavaScript Object Notation (JSON) with request id, as before. The registry does not log tool calls itself; the workflow tracer that records `tool_called` events arrives in Phase 10.
 - The mocks record every call in memory (`calls` list), which tests inspect; there is no endpoint for it.
 - No metrics or tracing for tools exist.
 
@@ -230,7 +230,7 @@ flowchart TB
 | MCP server lists five read tools and exposes no write tool | Verified in process by tests; **the stdio process was not run end to end** |
 | `make mcp` | **Not run** |
 | Backend Dockerfile copies `integrations/` | Checked as text by `tests/deployment/test_dockerfiles.py`; image **not built** |
-| Containers start, health checks pass, service-name DNS works | **Not verified** |
+| Containers start, health checks pass, service-name Domain Name System (DNS) works | **Not verified** |
 | Postgres, real Redis, real Qdrant | **Not verified** |
 | Volume persistence, backup, restore | **Not verified, backup not built** |
 | Cloud deployment | None |

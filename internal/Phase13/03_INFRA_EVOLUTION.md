@@ -44,7 +44,7 @@ The test waits up to six minutes for a real-model run, because each Euron call c
 
 ## K. Observability
 
-Backend JSON logs show each model call during the browser run.
+Backend JavaScript Object Notation (JSON) logs show each model call during the browser run.
 
 ## L. Final architecture
 
@@ -52,4 +52,4 @@ Unchanged.
 
 ## M. Verification
 
-Run: two Playwright tests against the Docker stack. Not run: CI browser tests.
+Run: two Playwright tests against the Docker stack. Not run: Continuous integration (CI) browser tests.

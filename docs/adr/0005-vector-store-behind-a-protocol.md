@@ -7,7 +7,7 @@ Accepted. Matches upstream ADR-03 in spirit. v1 does not offer a pgvector option
 ## Context
 
 Upstream ADR-03 makes Qdrant the default for native hybrid search and payload filters, with pgvector as a
-low-operations alternative. CloudDesk must also run and be tested with no server and no API key.
+low-operations alternative. CloudDesk must also run and be tested with no server and no application programming interface (API) key.
 
 ## Decision
 

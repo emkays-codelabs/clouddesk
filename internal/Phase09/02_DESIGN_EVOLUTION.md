@@ -1,16 +1,16 @@
 # Phase 9: system design evolution
 
-> **Status of this phase:** complete and validated locally. All ten tasks (P9-1 to P9-10) are done; the graph that joins the agents is Phase 10. P9-9 added the in-process Euron router and P9-10 the Euron embeddings provider (ADR 0010, accepted in limited form). Nothing is deployed.
+> **Status of this phase:** complete and validated locally. All ten tasks (P9-1 to P9-10) are done; the graph that joins the agents is Phase 10. P9-9 added the in-process Euron router and P9-10 the Euron embeddings provider (architecture decision record (ADR) 0010, accepted in limited form). Nothing is deployed.
 
 ---
 
 ## P9-1: Workflow schemas and the LLM layer
 
-- **Schemas.** `backend/app/schemas/workflow.py` now holds the agent outputs (`Classification`, `SeverityAssessment`, `CustomerContext`, `PreviousCase`, `Diagnosis`, `ResolutionPlan`, `EscalationDecision`), `TokenUsage` and the full `WorkflowState` from the API contract. Every state field except the run identity is optional and extra keys are still allowed, so states saved earlier still load.
+- **Schemas.** `backend/app/schemas/workflow.py` now holds the agent outputs (`Classification`, `SeverityAssessment`, `CustomerContext`, `PreviousCase`, `Diagnosis`, `ResolutionPlan`, `EscalationDecision`), `TokenUsage` and the full `WorkflowState` from the application programming interface (API) contract. Every state field except the run identity is optional and extra keys are still allowed, so states saved earlier still load.
 - **One door to a model.** `backend/app/core/llm.py` exposes `get_llm()` and `call_structured()`. `call_structured` caps temperature at 0.2, validates against the schema, sends an invalid reply back for repair at most twice, measures usage and latency, and raises only `LLMError` (carrying the usage spent). A static test fails if `openai` or `langchain_openai` is imported anywhere else.
 - **Providers.** `fake` (default) is deterministic with cost 0.0 and accepts rule results as `hints`, because the core layer cannot import the agents layer. `openai` and `euron` use one OpenAI-compatible client; `euron` defaults to its euri endpoint. `anthropic` raises a clear not-implemented error. When P9-1 was written there was one model, no tiers and no gateway; P9-9 below added in-process tiers (ADR-0010, accepted in a limited form).
 - **Setting.** `LLM_BASE_URL` (empty default) joined `Settings`, `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) and `CLAUDE.md` 10.1. `/settings` is unchanged.
-- **Not done at the time.** No real provider call had been made (no key yet), and cost estimates for real models were a one-entry price table with 0.0 for unknown models. Both changed later: real Euron calls were made on 2026-11-27, and unknown prices now report `unavailable` (see the QA section at the end).
+- **Not done at the time.** No real provider call had been made (no key yet), and cost estimates for real models were a one-entry price table with 0.0 for unknown models. Both changed later: real Euron calls were made on 2026-11-27, and unknown prices now report `unavailable` (see the quality assurance (QA) section at the end).
 
 ---
 
@@ -51,7 +51,7 @@
 ## P9-10: the Euron embeddings provider
 
 - **What it does.** `rag/embeddings.py` gains `EuronEmbeddings`, which sends batches of up to 64 texts to Euron's OpenAI-compatible embeddings endpoint (model `euri-embedding`), reads the vector size from the first reply and refuses a size that differs from `EMBEDDING_DIMENSIONS` with a clear `EmbeddingError` that never echoes a provider message. The fake hashed embeddings stay the default and the only ones tests use.
-- **Settings.** `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL` (empty falls back to the LLM base URL) and `EMBEDDING_DIMENSIONS` (1024 for `euri-embedding`). Changing the model needs `POST /api/v1/knowledge/reindex`, because the collection is recreated.
+- **Settings.** `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL` (empty falls back to the large language model (LLM) base uniform resource locator (URL)) and `EMBEDDING_DIMENSIONS` (1024 for `euri-embedding`). Changing the model needs `POST /api/v1/knowledge/reindex`, because the collection is recreated.
 - **Verified.** `tests/rag/test_euron_embeddings.py` offline; on 2026-11-27 the real endpoint filled a local Qdrant collection with 75 chunks of 1,024 dimensions and search returned the right article first.
 
 ---

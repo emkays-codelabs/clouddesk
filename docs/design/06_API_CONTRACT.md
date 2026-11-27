@@ -1,16 +1,16 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-27 20:27 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
-Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
+Base uniform resource locator (URL): `http://localhost:8000` (environment `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
 Every response carries `X-Request-ID`. A caller-supplied value is echoed when it is 1–128 characters
-from `A-Za-z0-9._:-`; any other value is replaced with a UUID. CORS exposes `X-Request-ID`.
-Errors: `{ "detail": string }` with proper HTTP status.
+from `A-Za-z0-9._:-`; any other value is replaced with a universally unique identifier (UUID). Cross-Origin Resource Sharing (CORS) exposes `X-Request-ID`.
+Errors: `{ "detail": string }` with proper Hypertext Transfer Protocol (HTTP) status.
 
-This is the v1 surface. The upstream LLD §4 also specifies routes this contract does not carry — an
+This is the v1 surface. The upstream low-level design (LLD) §4 also specifies routes this contract does not carry — an
 editable approval decision, customer feedback, analytics, memory erasure, the widget session and the
-SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk requirement” in
+Server-sent events (SSE) stream. Each is listed under “Upstream Must requirements with no CloudDesk requirement” in
 `PLAN.md` and needs a decision before it is added here.
 
 **Built and planned.** Built today: health, auth, dashboard, tickets (list, create, read, `/reply`,
@@ -23,7 +23,7 @@ yet** (marked below): `/tickets/{id}/run`, `/workflow` and `/events` (Phase 10),
 |---|---|---|
 | GET | `/health` | 200 `{status:"ok", service, version, environment}` |
 | GET | `/health/live` | 200 `{status:"alive"}`. No dependency I/O. |
-| GET | `/health/ready` | 200 `{status:"ready", checks:{database, redis, vector_store, llm}}` when every check is `ok`. 503 `{status:"degraded", checks:...}` otherwise. Each check is `{status:"ok"|"error", detail?}`. Details never include URLs, passwords, or API keys. |
+| GET | `/health/ready` | 200 `{status:"ready", checks:{database, redis, vector_store, llm}}` when every check is `ok`. 503 `{status:"degraded", checks:...}` otherwise. Each check is `{status:"ok"|"error", detail?}`. Details never include URLs, passwords, or application programming interface (API) keys. |
 
 ## Auth
 | Method | Path | Body | Response |
@@ -156,4 +156,4 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 
 ## Settings
 `GET /settings` → `{ demo_mode, environment, llm: {llm_provider, llm_model, embedding_provider, embedding_model, api_key_configured, tracing}, vector_store, redis: "real"|"fake", database: "sqlite"|"postgres", approval_policy: { refunds_require_approval, max_refund_without_approval, approval_required_tools: string[] } }`
-`GET /mcp/tools` → `{ tools: {name, description, requires_approval}[] }` (MCP server introspection; built, any signed-in role)
+`GET /mcp/tools` → `{ tools: {name, description, requires_approval}[] }` (Model Context Protocol (MCP) server introspection; built, any signed-in role)

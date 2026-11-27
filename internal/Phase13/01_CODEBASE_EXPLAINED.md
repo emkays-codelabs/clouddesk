@@ -1,10 +1,10 @@
 # Phase 13 explained: the ticket workflow screen
 
-> **Status:** implemented. A headed Playwright run opened a ticket, started the workflow on the real model and saw it finish; the viewer path was checked as disabled. Not checked: the approve and reject buttons in a browser (covered by API tests).
+> **Status:** implemented. A headed Playwright run opened a ticket, started the workflow on the real model and saw it finish; the viewer path was checked as disabled. Not checked: the approve and reject buttons in a browser (covered by application programming interface (API) tests).
 
 ## A. Executive summary
 
-One screen, `frontend/app/(dashboard)/tickets/[id]/page.tsx`, lets an agent read the ticket, see the customer, run the AI workflow, watch it progress, inspect evidence and approve, reject, reply, request information or escalate.
+One screen, `frontend/app/(dashboard)/tickets/[id]/page.tsx`, lets an agent read the ticket, see the customer, run the artificial intelligence (AI) workflow, watch it progress, inspect evidence and approve, reject, reply, request information or escalate.
 
 ## B. Business problem and solution
 
@@ -33,7 +33,7 @@ Open a ticket, press Run AI workflow, see "Workflow started", watch steps tick, 
 
 ## F. Concepts
 
-Polling with `usePolling`; pure derivation of step state from the saved state so the UI never guesses.
+Polling with `usePolling`; pure derivation of step state from the saved state so the user interface (UI) never guesses.
 
 ## G. Decisions
 

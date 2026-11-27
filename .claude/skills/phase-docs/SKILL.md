@@ -5,7 +5,7 @@ context: fork
 agent: general-purpose
 background: false
 disable-model-invocation: true
-argument-hint: "[phase number, e.g. 1]"
+argument-hint: "[phase number, for example, 1]"
 ---
 
 Write the four documents for phase $ARGUMENTS.

@@ -16,7 +16,7 @@
 | Initial state | Phase 3: one FastAPI process, SQLite, repositories, seeded demo data, four middleware, auth routes and health routes only |
 | Requirements addressed | F1 (create ticket from any channel), F4 (read side of customer context), F12 (the data side of the one-screen actions), N6 (audit is now readable); the contract rule in `CLAUDE.md` section 12 |
 | Major additions | Five new routers (`backend/app/api/tickets.py`, `customers.py`, `dashboard.py`, `audit.py`, `settings.py`), five new services, new Pydantic schema modules, new repository methods |
-| Important design changes | The API gained its first business routes; the role ladder is applied for the first time; `TicketDetail` is assembled from many repositories; the API contract was corrected against the models |
+| Important design changes | The application programming interface (API) gained its first business routes; the role ladder is applied for the first time; `TicketDetail` is assembled from many repositories; the API contract was corrected against the models |
 | Final capabilities | 12 business routes under `/api/v1`; viewer reads, agent and admin write; every write is audited by the Phase 3 middleware |
 
 ---
@@ -53,7 +53,7 @@ Limitations at the start: no route read tickets or customers, nothing used `requ
 ### C2. P4-2: ticket create, list, get
 
 - **Before.** No route touched tickets.
-- **Change.** `backend/app/api/tickets.py` (HTTP and role only) over `backend/app/services/ticket_service.py` (models and the transaction). Create writes the ticket and its first `customer` message in one commit and never starts a workflow. Numbers come from `TicketRepository.next_ticket_number()`; the service retries up to three times if the unique key refuses a duplicate. `get_ticket` assembles `TicketDetail` from customer, subscription, messages, up to 10 other tickets of the customer, latest run, resolution actions and latest escalation.
+- **Change.** `backend/app/api/tickets.py` (Hypertext Transfer Protocol (HTTP) and role only) over `backend/app/services/ticket_service.py` (models and the transaction). Create writes the ticket and its first `customer` message in one commit and never starts a workflow. Numbers come from `TicketRepository.next_ticket_number()`; the service retries up to three times if the unique key refuses a duplicate. `get_ticket` assembles `TicketDetail` from customer, subscription, messages, up to 10 other tickets of the customer, latest run, resolution actions and latest escalation.
 - **New repository methods**, tenant-scoped and added to the isolation test: `CustomerRepository.get_many`, `EscalationRepository.latest_for_ticket`, `ResolutionActionRepository.list_for_ticket`, `TicketRepository.next_ticket_number`.
 - **Effect.** `TicketDetail.workflow` is `null` for every ticket, because no run exists until Phase 10. Seeded tickets have no severity or category, so severity filtering is only exercised after a row is given one.
 - **Verified.** `tests/api/test_tickets.py`. The numbering retry is written but not exercised by a test.
@@ -72,8 +72,8 @@ Limitations at the start: no route read tickets or customers, nothing used `requ
 
 ### C5. P4-5: dashboard, audit, settings
 
-- **Change.** Three read routes and services. New tenant-scoped aggregates: `TicketRepository.count_open`, `count_resolved_since`, `count_by_severity`, `count_by_category`, `resolution_spans`, `ApprovalRepository.count_pending`, `EscalationRepository.count_open`. Average resolution time is computed in Python from the (created, resolved) pairs so it behaves the same on SQLite and Postgres. `by_severity` and `by_category` always list every value, with zeros. `agent_activity` is an empty list until workflow events exist. "Resolved today" counts from UTC midnight.
-- `SettingsView` has fields only for booleans and names, so a key, URL or password cannot be serialised. `approval_required_tools` is a constant in `backend/app/services/settings_service.py`. It was written to wait for the tool registry (Phase 6), but the constant is still there today and could read `ToolPolicy` instead.
+- **Change.** Three read routes and services. New tenant-scoped aggregates: `TicketRepository.count_open`, `count_resolved_since`, `count_by_severity`, `count_by_category`, `resolution_spans`, `ApprovalRepository.count_pending`, `EscalationRepository.count_open`. Average resolution time is computed in Python from the (created, resolved) pairs so it behaves the same on SQLite and Postgres. `by_severity` and `by_category` always list every value, with zeros. `agent_activity` is an empty list until workflow events exist. "Resolved today" counts from Coordinated Universal Time (UTC) midnight.
+- `SettingsView` has fields only for booleans and names, so a key, uniform resource locator (URL) or password cannot be serialised. `approval_required_tools` is a constant in `backend/app/services/settings_service.py`. It was written to wait for the tool registry (Phase 6), but the constant is still there today and could read `ToolPolicy` instead.
 - **Verified.** `tests/api/test_dashboard.py`, `tests/api/test_audit_api.py`, `tests/api/test_settings_api.py`. Tests that count whole-table rows use the private `fresh_db` fixture in `tests/api/conftest.py`, because the default test database is shared by the session.
 
 ```mermaid
@@ -121,7 +121,7 @@ flowchart TD
     MW <--> RD[("fakeredis")]
 ```
 
-Layer responsibilities: routers validate, check token and role and map exceptions to HTTP; services hold rules, build response models and own the transaction (one commit per use case); repositories hold every query and the tenant filter and never commit; schemas define the wire format. Security boundaries: the token, the role ladder, the per-client budget and the tenant filter. Observability: JSON logs with the request id, and the audit table, now readable at `GET /api/v1/audit`.
+Layer responsibilities: routers validate, check token and role and map exceptions to HTTP; services hold rules, build response models and own the transaction (one commit per use case); repositories hold every query and the tenant filter and never commit; schemas define the wire format. Security boundaries: the token, the role ladder, the per-client budget and the tenant filter. Observability: JavaScript Object Notation (JSON) logs with the request id, and the audit table, now readable at `GET /api/v1/audit`.
 
 Role table: reads (`GET` on tickets, customers, dashboard, audit, settings) need any valid token; writes (create, reply, request-info, escalate, PATCH) need `agent` or `admin`.
 
@@ -159,15 +159,15 @@ Errors: missing or bad token gives 401; viewer gives 403; unknown id gives 404 `
 | Decision | Context | Alternatives | Rationale | Benefits | Trade-offs | Status |
 |---|---|---|---|---|---|---|
 | Contract and schemas first (P4-1) | The frontend and later agents need stable shapes | Write routes first and document afterwards | Disagreements between contract and models are cheapest to fix before routes exist | Contract matches code; tests pin the field lists | An up-front task with no visible route | Implemented |
-| Router, service, repository layering | `CLAUDE.md` section 4.2 | Logic in routes | Rules testable without HTTP; SQL in one layer | Later workflow reuses services | More files for small features | Implemented |
+| Router, service, repository layering | `CLAUDE.md` section 4.2 | Logic in routes | Rules testable without HTTP; Structured Query Language (SQL) in one layer | Later workflow reuses services | More files for small features | Implemented |
 | Service owns the commit; repositories flush only | A use case writes several rows | Commit in each repository call | One transaction per use case, so a ticket and its first message succeed or fail together | Atomic create | A caller that forgets to commit loses writes | Implemented |
 | `TicketDetail` in its own module | `CustomerDetail` needs `TicketSummary`, `TicketDetail` needs `Customer` | One module with forward references | Avoids an import cycle | Simple imports | One more file | Implemented |
 | Create never starts a workflow | The run is an explicit action with its own status code | Auto-start on create | Keeps F1 small; avoids a cost on every create | Predictable | Agent must call `/run` (Phase 10) | Implemented |
-| Ticket number: max suffix plus one, retry three times on a unique-key conflict | Numbers must be `CD-NNNN` and unique | A database sequence; a UUID | Portable across SQLite and Postgres; numeric cast so `CD-10000` sorts above `CD-1013` | No new table | A race can still fail after three tries; untested | Implemented |
+| Ticket number: max suffix plus one, retry three times on a unique-key conflict | Numbers must be `CD-NNNN` and unique | A database sequence; a universally unique identifier (UUID) | Portable across SQLite and Postgres; numeric cast so `CD-10000` sorts above `CD-1013` | No new table | A race can still fail after three tries; untested | Implemented |
 | Transitions as internal system messages | The ticket history should show who changed status | A separate history table | The message list is already shown on the ticket | No schema change | Not queryable as structured data | Implemented |
 | `PATCH` accepts any valid status | v1 needs manual override | A state machine | Keeps the human in control | Simple | A human can set `waiting_on_approval` or `resolved` without the workflow | Implemented, state machine proposed |
 | Escalation team fixed to `Tier 2 support` | No routing exists yet | Ask the caller for a team | Honest default, labelled as such | Simple | Not real routing; arrives with Phase 11 | Implemented |
-| Offset pagination, `page_size` 1 to 100 | Small tables, a page UI | Keyset cursors | Simple, supports page numbers | Easy to test | Deep pages are slow on large tables; rows inserted between pages can shift | Implemented |
+| Offset pagination, `page_size` 1 to 100 | Small tables, a page user interface (UI) | Keyset cursors | Simple, supports page numbers | Easy to test | Deep pages are slow on large tables; rows inserted between pages can shift | Implemented |
 | Aggregates in repositories, mean in Python | SQLite and Postgres differ in date arithmetic | SQL average | Same result on both | Portable | Loads every resolved row's two timestamps; unbounded | Implemented |
 | Settings view with no secret-capable field | N7 and "never in responses" | Redact at serialisation time | A secret cannot appear if no field can hold it | Safe by construction | New settings need a deliberate field | Implemented |
 | Reads open to every role, including audit | Contract says any authenticated role | Restrict audit to admin | Matches the contract and the viewer role in `CLAUDE.md` section 2 | Simple | A viewer can read actor emails and request ids | Implemented, open question |
@@ -193,7 +193,7 @@ Errors: missing or bad token gives 401; viewer gives 403; unknown id gives 404 `
 
 ## H. Limitations and future evolution
 
-- `POST /tickets/{id}/run`, `/workflow`, `/events` and the approvals, knowledge, escalations, agents and MCP routes are in the contract and not built.
+- `POST /tickets/{id}/run`, `/workflow`, `/events` and the approvals, knowledge, escalations, agents and Model Context Protocol (MCP) routes are in the contract and not built.
 - `TicketDetail.workflow`, `resolution_actions` and `agent_activity` are empty or null until Phases 10 and 11.
 - No status state machine; any status can be set by `PATCH`. `assigned_to` is free text and is not checked against a profile. Escalating twice creates two escalation rows.
 - The number retry is untested; the unique-key conflict path was not exercised against real concurrency.

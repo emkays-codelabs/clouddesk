@@ -12,7 +12,7 @@
 
 **The 30-second version, ready to say out loud:**
 
-"After Phase 4 an agent could open a ticket but the platform had no memory of how to solve anything. Phase 5 builds the library and the librarian. We have fifteen help articles. The code cuts them into small passages, indexes them, and when someone asks a question it finds the best passages using two methods at once: matching exact words and matching similar wording. It returns the top articles with a score and a source, so a person can check the answer. All of it runs offline on a laptop. No AI model is involved yet; this phase builds the evidence the AI will later read."
+"After Phase 4 an agent could open a ticket but the platform had no memory of how to solve anything. Phase 5 builds the library and the librarian. We have fifteen help articles. The code cuts them into small passages, indexes them, and when someone asks a question it finds the best passages using two methods at once: matching exact words and matching similar wording. It returns the top articles with a score and a source, so a person can check the answer. All of it runs offline on a laptop. No artificial intelligence (AI) model is involved yet; this phase builds the evidence the AI will later read."
 
 **What the phase accomplished.**
 
@@ -54,9 +54,9 @@ Analogy: a library. Chunking is cutting books into index cards, embeddings are f
 | Vector store | The card cabinet that can find "similar" cards | Passages and their numbers | The closest passages to a query | No semantic search |
 | Hybrid retriever | The librarian | A question | Ranked evidence | No search |
 | Ingest | The shelver | A folder of articles | Counts; a filled cabinet | The cabinet stays empty |
-| Knowledge service | The front-desk clerk | HTTP requests | Responses; keeps the index in memory | Routes would hold logic |
+| Knowledge service | The front-desk clerk | Hypertext Transfer Protocol (HTTP) requests | Responses; keeps the index in memory | Routes would hold logic |
 | Retrieval cache adapter | A note pad for recent answers | A key and a value | Stored for five minutes | Repeated queries recompute |
-| Knowledge routes | The counter | HTTP with a token | JSON, or 401, 403, 404, 422 | Nothing reachable |
+| Knowledge routes | The counter | HTTP with a token | JavaScript Object Notation (JSON), or 401, 403, 404, 422 | Nothing reachable |
 
 Terms. **Embedding**: text turned into numbers so similar texts are close. **Vector store**: a database of those number lists. **BM25**: a classic keyword scoring formula. **Reciprocal rank fusion (RRF)**: merging two ranked lists by giving each item `1 / (60 + position)` from each list and adding. **Reranking**: a second pass that reorders the top candidates. **Evidence**: a result with title, source, snippet and score.
 
@@ -68,7 +68,7 @@ Terms. **Embedding**: text turned into numbers so similar texts are close. **Vec
 |---|---|---|
 | `rag/chunking.py` | `load_article_files` (reads front-matter; raises `ValueError` if missing), `split_sections` (by heading; text before the first heading is "Overview"), `split_windows` (900 characters, 150 overlap), `chunk_article`. `Chunk.text` is `"{title} - {heading}"` plus the body; ids are `{slug}#{n}`. | "The card cutter." |
 | `rag/embeddings.py` | `Embeddings` protocol; `FakeEmbeddings` hashes each word with md5 into one of 384 slots, counts, then normalises so length is 1. md5 rather than Python's `hash()` because the latter changes between runs. | "Counting words into 384 boxes: similar wording gives similar numbers, and it never changes between runs." |
-| `rag/vector_store.py` | `Document`, `SearchHit`, `VectorStoreService` protocol (`add_documents`, `search`, `delete`, `count`, `clear`, `health`), `InMemoryVectorStore` (cosine similarity), `QdrantVectorStore` (lazy import of `qdrant_client`; ids converted to stable UUIDs), `get_vector_store(settings)` (cached), `reset_vector_store`. | "One socket, two plugs: memory for the demo, Qdrant for a real server." |
+| `rag/vector_store.py` | `Document`, `SearchHit`, `VectorStoreService` protocol (`add_documents`, `search`, `delete`, `count`, `clear`, `health`), `InMemoryVectorStore` (cosine similarity), `QdrantVectorStore` (lazy import of `qdrant_client`; ids converted to stable universally unique identifiers (UUIDs)), `get_vector_store(settings)` (cached), `reset_vector_store`. | "One socket, two plugs: memory for the demo, Qdrant for a real server." |
 | `rag/retriever.py` | `HybridRetriever.retrieve`; `rewrite_query`, `tokenize`, `reciprocal_rank_fusion`, `documents_from_chunks`, `cache_key`; constants `RRF_K=60`, `CACHE_TTL_SECONDS=300`, `MIN_TOP_SCORE=0.3`, `MIN_COVERAGE=0.5`. Hooks: `rewriter`, `llm_rerank`, `chunk_filter`, `cache`. Returns `RetrievalResult` (evidence, sufficient, gaps, passes, cached). | "The librarian: two searches, a fair merge, a sanity check, one retry at most." |
 | `rag/ingest.py` | `ingest` (returns `IngestResult` of article and chunk counts; `recreate=True` clears first), `load_documents`. Re-exports `get_vector_store`. | "Shelve every card; doing it twice changes nothing." |
 | `backend/app/services/knowledge_service.py` | Module state `_articles` and `_documents`; `index_knowledge_base`, `reindex`, `list_articles`, `get_article`, `search`, `_ensure_indexed`; `ArticleNotFound`; a `__main__` block for `make ingest`. | "The clerk that owns the index in memory." |
@@ -85,7 +85,7 @@ Terms. **Embedding**: text turned into numbers so similar texts are close. **Vec
 
 ## E. End-to-end execution flow
 
-Example: Sam asks "locked out after too many MFA attempts".
+Example: Sam asks "locked out after too many multi-factor authentication (MFA) attempts".
 
 1. `POST /api/v1/knowledge/search` with a bearer token and a JSON body. The form checks it (422 if the query is empty, `top_k` is 21, or the mode is unknown).
 2. Middleware gives the request an id, counts it, and will audit it. Auth rejects a missing token (401).
@@ -132,7 +132,7 @@ Errors: no token 401; viewer or agent calling reindex 403; unknown article 404 `
 
 ## G. Design decisions and trade-offs
 
-Historical decisions (made while building): `rag/` as a separate package; a protocol with an in-memory default; fake embeddings; RRF over score blending; a single bounded retry; the cache injected through an adapter; the CLI placed in `app` because it needs settings; indexing at startup only for the memory store. The decision table is in [section F of the design evolution](./02_DESIGN_EVOLUTION.md). Retrospective recommendations, not built: a real embedding provider, cache invalidation on reindex, a persisted keyword index, chunk screening.
+Historical decisions (made while building): `rag/` as a separate package; a protocol with an in-memory default; fake embeddings; RRF over score blending; a single bounded retry; the cache injected through an adapter; the command-line interface (CLI) placed in `app` because it needs settings; indexing at startup only for the memory store. The decision table is in [section F of the design evolution](./02_DESIGN_EVOLUTION.md). Retrospective recommendations, not built: a real embedding provider, cache invalidation on reindex, a persisted keyword index, chunk screening.
 
 ---
 
@@ -162,7 +162,7 @@ Run: `.venv/Scripts/python.exe -m pytest -q` and `.venv/Scripts/python.exe -m ru
 |---|---|
 | `tests/rag/test_chunking.py` | 15 articles load; front-matter complete and categories valid; every demo topic has an article; chunks carry the prefix; windows respect size and overlap; missing front-matter is rejected; `rag/` states what it must not do and imports no ticket or repository code |
 | `tests/rag/test_vector_store.py` | Embeddings are deterministic, 384 numbers, unit length; similar text scores higher; add, search, delete, count; the selector returns and caches the memory store; Qdrant is constructed lazily with no network and not imported at module level; nothing outside `rag/` names a concrete store |
-| `tests/rag/test_retriever.py` | hit-rate@3 over 11 demo queries; evidence shape; each mode finds the article; modes rank differently; one hit per article; category filter and soft boost; RRF arithmetic; title rerank; query rewriting and the rewriter hook; chunk filter; LLM rerank hook; cache hit and key shape; insufficient evidence retries exactly once; sufficient evidence does not |
+| `tests/rag/test_retriever.py` | hit-rate@3 over 11 demo queries; evidence shape; each mode finds the article; modes rank differently; one hit per article; category filter and soft boost; RRF arithmetic; title rerank; query rewriting and the rewriter hook; chunk filter; large language model (LLM) rerank hook; cache hit and key shape; insufficient evidence retries exactly once; sufficient evidence does not |
 | `tests/rag/test_ingest.py` | 15 articles indexed with every chunk; a second ingest leaves the count unchanged; reindex drops stale chunks |
 | `tests/api/test_knowledge.py` | 15 articles listed; filters; detail; 404; MFA article in the top 3; mode and `top_k` honoured and validated; reindex admin-only; search after reindex; 401 on every route; startup indexes an empty store |
 
@@ -174,7 +174,7 @@ Results from this session: 893 passed, `ruff check .` clean (807 were reported a
 
 **30 seconds.** Phase 5 builds the search over our help articles. They are cut into passages, indexed, and found by combining keyword and similarity search, merged, reranked and cached. It exposes search, list, read and reindex routes. It runs offline with fake embeddings and an in-memory store, with a Qdrant option behind the same interface.
 
-**2 minutes.** I put retrieval in its own package that knows nothing about tickets, so it can be tested alone and reused by agents later. Chunking splits on headings and then into 900-character windows with a 150-character overlap, each labelled with its article and heading. Embeddings are a deterministic fake so tests need no key. The vector store is a protocol with an in-memory and a Qdrant class. The retriever runs semantic and BM25 searches per rewritten query, merges them with reciprocal rank fusion, reranks by title overlap and category, keeps one passage per article, and does a deterministic sufficiency check with at most one retry. Ingest is idempotent. The API reads this through a service and caches results in Redis.
+**2 minutes.** I put retrieval in its own package that knows nothing about tickets, so it can be tested alone and reused by agents later. Chunking splits on headings and then into 900-character windows with a 150-character overlap, each labelled with its article and heading. Embeddings are a deterministic fake so tests need no key. The vector store is a protocol with an in-memory and a Qdrant class. The retriever runs semantic and BM25 searches per rewritten query, merges them with reciprocal rank fusion, reranks by title overlap and category, keeps one passage per article, and does a deterministic sufficiency check with at most one retry. Ingest is idempotent. The application programming interface (API) reads this through a service and caches results in Redis.
 
 **5 minutes.** Walk the sequence in section E, then the boundaries: `rag/` takes settings and the cache as arguments, and the adapter lives in the app. Then three details: why RRF (ranks, not incomparable scores); why one retry (a budget, not a loop); why startup indexes only the memory store. Finish with what is missing: no real embeddings, no real Qdrant run, no screening of retrieved text, no use by agents yet.
 

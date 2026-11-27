@@ -1,11 +1,11 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 21:28 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
 
-**Branch convention:** `feature/<name>` for product work, `docs/<name>` for documents and `chore/<name>` for tooling (one branch per sub-task; open the PR against `development`)
+**Branch convention:** `feature/<name>` for product work, `docs/<name>` for documents and `chore/<name>` for tooling (one branch per sub-task; open the pull request (PR) against `development`)
 **Status:** `Pending ❌` · `Completed ✅`
 
 Sub-tasks in the same phase that do not share files can be open at the same time. Do not stack a branch on another feature branch. Merge the listed predecessor first when a row names one.
@@ -24,12 +24,12 @@ Work every task the same way:
 2. Read the task's definition below, the phase in `PLAN.md`, and the matching section of `CLAUDE.md`.
 3. Write the test first and name the requirement (F1–F14, N1–N8) it proves. Watch it fail.
 4. Implement until the test passes. Keep the layers in `CLAUDE.md` §4.2.
-5. Run the checks for the area (`make test`, `make lint`, and the frontend commands for UI work).
+5. Run the checks for the area (`make test`, `make lint`, and the frontend commands for user interface (UI) work).
 6. Open a pull request into `development`. **The same pull request must update this file:** set the task's row to Completed ✅ and update the Progress summary (its phase count and the total). Add a line to the Honest status in `MEMORY.md`, saying only what was run. When a whole phase is done, also update the Build phases table in `PLAN.md`. A task is not done until its pull request includes this; it counts as complete when the pull request merges.
 
 **Order.** A task can start once everything it **Needs** has merged. Tasks in the same wave have no dependency on each other and can run in parallel; each task's **Needs** line is authoritative.
 
-**Expected small conflicts.** Most tasks add packages, so `pyproject.toml` and `uv.lock` will conflict when branches overlap: rebase, then run `uv lock`. Every API task registers a router in `main.py`, and several tasks add a `Makefile` target. Resolve these by keeping both sides.
+**Expected small conflicts.** Most tasks add packages, so `pyproject.toml` and `uv.lock` will conflict when branches overlap: rebase, then run `uv lock`. Every application programming interface (API) task registers a router in `main.py`, and several tasks add a `Makefile` target. Resolve these by keeping both sides.
 
 | Wave | Tasks that can start |
 |---|---|
@@ -62,7 +62,7 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P1-1 · Settings and JSON logging | F14 | `feature/backend-config-logging` | Completed ✅ |
+| P1-1 · Settings and JavaScript Object Notation (JSON) logging | F14 | `feature/backend-config-logging` | Completed ✅ |
 | P1-2 · Health routes and request-id middleware | N3 | `feature/backend-health-request-id` | Completed ✅ |
 | P1-3 · Offline pytest harness | F14 | `feature/test-harness-offline` | Completed ✅ |
 | P1-4 · Makefile and `.env.example` | F14 | `feature/makefile-env-example` | Completed ✅ |
@@ -84,15 +84,15 @@ The longest dependency chain is 16 tasks long.
 
 #### Task definitions
 
-**P1-1 · Settings and JSON logging**
+**P1-1 · Settings and JavaScript Object Notation (JSON) logging**
 - **Needs:** nothing
-- **Build:** Cached `get_settings()` with every variable in `CLAUDE.md` §10.1 (secrets and URL passwords redacted in `model_dump()`), and JSON logging with `request_id` and `workflow_id` bound through `log_context()`.
+- **Build:** Cached `get_settings()` with every variable in `CLAUDE.md` §10.1 (secrets and uniform resource locator (URL) passwords redacted in `model_dump()`), and JSON logging with `request_id` and `workflow_id` bound through `log_context()`.
 - **Files:** `backend/app/__init__.py`, `backend/app/core/__init__.py`, `backend/app/core/config.py`, `backend/app/core/logging.py`, `tests/unit/test_config_logging.py`, `pyproject.toml` (the `pydantic-settings` dependency, pytest `pythonpath`, and Ruff `src` so `app` imports resolve)
 - **Done when:** Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment; `model_dump()` hides secrets and URL passwords; every log line carries `request_id` and `workflow_id` (`null` when unset).
 
 **P1-2 · Health routes and request-id middleware**
 - **Needs:** `P1-1`, `P1-3`
-- **Build:** `GET /health`, `GET /health/live` (no I/O), `GET /health/ready` (configuration probes, 503 when degraded), and `RequestIdMiddleware` that echoes a safe `X-Request-ID` (1–128 chars of `A-Za-z0-9._:-`) or issues a UUID. CORS is outermost and exposes the header.
+- **Build:** `GET /health`, `GET /health/live` (no I/O), `GET /health/ready` (configuration probes, 503 when degraded), and `RequestIdMiddleware` that echoes a safe `X-Request-ID` (1–128 chars of `A-Za-z0-9._:-`) or issues a universally unique identifier (UUID). Cross-Origin Resource Sharing (CORS) is outermost and exposes the header.
 - **Files:** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/readiness.py`, `backend/app/middleware/request_id.py` (plus the `__init__.py` files), `tests/api/test_health.py`
 - **Done when:** Every response, including 404 and 500, carries `X-Request-ID`; `/health` and `/health/live` call no dependency; `/health/ready` returns 503 when a check fails and never shows a URL, password, or key.
 
@@ -100,7 +100,7 @@ The longest dependency chain is 16 tasks long.
 - **Needs:** `P1-1`
 - **Build:** The offline test harness: environment fixed before `app` is imported (`DEMO_MODE=true`, `LLM_PROVIDER=fake`, `VECTOR_STORE=memory`, `USE_FAKE_REDIS=true`, temp SQLite, `CHECKPOINT_DB_PATH=:memory:`), every credential blanked so a key exported in the shell cannot reach a test, a guard that fails any attempt to reach a non-local host (loopback still works), a `client` fixture that imports `create_app` lazily and skips with a clear reason until the app exists (so the harness can land first; P1-14 later made it import the app directly, so a broken import fails), and pytest `asyncio_mode = "auto"` with session loop scope.
 - **Files:** `tests/conftest.py`, `tests/unit/test_harness.py`, `pyproject.toml` (pytest `asyncio_mode` and session loop scope, and the `pytest-asyncio` and `httpx` dev dependencies; `pythonpath` already set by P1-1)
-- **Done when:** `pytest` passes with no network and no API key; a test that changes env vars sees the change after `get_settings.cache_clear()`.
+- **Done when:** `pytest` passes with no network and no API key; a test that changes environment variables sees the change after `get_settings.cache_clear()`.
 
 **P1-4 · Makefile and `.env.example`**
 - **Needs:** `P1-1`
@@ -157,24 +157,24 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** A test asserts every file in `docs/` matches `NN_NAME`, numbers run from 01 without a gap,
   and the design documents are in dependency order; a second test fails on any tracked file that still uses
   an old name or on a relative link that no longer resolves; the stamper's list names only files that exist.
-  The author's HLD and LLD, which name their own original files, are the one exception.
+  The author's high-level design (HLD) and low-level design (LLD), which name their own original files, are the one exception.
 - **Note:** additive tooling, not a Phase 1 exit criterion. No application code changes.
 
 **P1-8 · Phase documentation workflow**
 - **Needs:** `P1-7`
 - **Build:** `docs/09_PHASE_DOCUMENTATION.md`, the owner's specification of four mandatory documents per phase
   (codebase explanation, system design evolution, infrastructure evolution, interview Q&A, written to
-  `internal/`); a `/phase-docs N` skill that writes them from the spec, mapping the phase to its `TASKS.md`
+  `internal/`); a `/phase-docs N` skill that writes them from the specification, mapping the phase to its `TASKS.md`
   rows and merge commits; one row in the delegation rule; a line in `PLAN.md` making the documents a requirement
   of every phase; and completion checks in `scripts/check_phase_docs.py` that a finished phase has its documents,
-  that cited file paths exist, and that Mermaid blocks are structurally sound. The spec stays out of the
-  always-loaded rules (about 6,200 tokens) and is read only when the skill runs. The spec was first supplied
+  that cited file paths exist, and that Mermaid blocks are structurally sound. The specification stays out of the
+  always-loaded rules (about 6,200 tokens) and is read only when the skill runs. The specification was first supplied
   cut off partway through Category E of its section 6.2; the owner then sent the full text, which is saved complete
   and which the skill covers in full (Categories A to M).
 - **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`,
   `.claude/rules/cost-and-delegation.md`, `PLAN.md`, `README.md`, `CLAUDE.md`, `.gitignore`, `scripts/check_phase_docs.py`,
   `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`
-- **Done when:** Tests assert the skill is forked, on demand, and names every folder and file the spec defines;
+- **Done when:** Tests assert the skill is forked, on demand, and names every folder and file the specification defines;
   the delegation rule and `PLAN.md` reference it; no rule exceeds 30 lines; every finished phase has its documents
   or is in the explicit `OWED` set, and `OWED` may name only a phase that is still owed; cited paths that do not
   exist are rejected, with external paths, local-only files and lines marked planned or historical handled
@@ -201,7 +201,7 @@ The longest dependency chain is 16 tasks long.
 
 **P1-10 · Mid-phase documentation trigger**
 - **Needs:** `P1-8`
-- **Build:** The documentation spec asks for documents to be updated as a phase goes (section 7, Step 4), not only
+- **Build:** The documentation specification asks for documents to be updated as a phase goes (section 7, Step 4), not only
   when it ends. `CLAUDE.md` rule 16 and the `clouddesk-support` skill's Done-when checklist now say that a task which
   adds a significant component, or changes an architectural boundary, networking or an important flow, updates its
   phase's design-evolution or infrastructure document under `internal/` in the same pull request. The completion
@@ -223,10 +223,10 @@ The longest dependency chain is 16 tasks long.
   numbers keep reading order, which alphabetical names would lose.
 - **Files:** `docs/09_PHASE_DOCUMENTATION.md`, `.claude/skills/phase-docs/SKILL.md`, `scripts/check_phase_docs.py`,
   `.gitignore`, `CLAUDE.md`, `MEMORY.md`, `tests/unit/test_phase_docs.py`, `tests/unit/test_phase_doc_checks.py`
-- **Done when:** The spec defines exactly the four per-phase file names; the skill names the phase folder and each file;
+- **Done when:** The specification defines exactly the four per-phase file names; the skill names the phase folder and each file;
   `required_documents` returns the new paths; the Q&A file is ignored for every phase and the other three are not; and
   `OWED` is empty because Phase 1's documents exist.
-- **Note:** the earlier layout is superseded, not kept. No document in the earlier layout had been committed. The spec
+- **Note:** the earlier layout is superseded, not kept. No document in the earlier layout had been committed. The specification
   carries a dated revision note under its title. No application code changes.
 
 **P1-12 · Zero-padded phase folders**
@@ -239,14 +239,14 @@ The longest dependency chain is 16 tasks long.
   `CLAUDE.md`, `MEMORY.md`, `TASKS.md`, `tests/unit/test_docs_folder.py`, `tests/unit/test_phase_docs.py`,
   `tests/unit/test_phase_doc_checks.py`
 - **Done when:** A test accepts `Phase01` and `Phase14` and rejects `Phase1`, `Phase001` and `phase01`; another shows
-  padding keeps the folders in order; `required_documents` returns two-digit folders; the skill and the spec agree on
+  padding keeps the folders in order; `required_documents` returns two-digit folders; the skill and the specification agree on
   `PhaseNN`; and the existing Phase 1 documents live under `internal/Phase01/`.
 - **Note:** its commit (`b4c70a9`) reached `development` inside PR #19 (`docs/professional-readme`); PR #18 was closed unmerged. Done at the owner's request, and cheapest while only one phase folder exists. The Q&A ignore rule
   (`internal/Phase*/04_INTERVIEW_QNA.md`) needed no change because it uses a wildcard. No application code changes.
 
 **P1-13 · Professional README**
 - **Needs:** `P1-12`
-- **Build:** The README takes the product identity the owner chose: title CloudDesk AI, category AI-Powered Customer Support
+- **Build:** The README takes the product identity the owner chose: title CloudDesk artificial intelligence (AI), category AI-Powered Customer Support
   & Ticket Investigation Platform, tagline "Intelligent Resolution. Human-Controlled Decisions." It gains a numbered table of
   contents, numbered sections and subsections in sequence, a back-to-top link ending every section, and plainer wording. The
   repository, package and code keep the name `clouddesk`, and the README says so.
@@ -283,7 +283,7 @@ The longest dependency chain is 16 tasks long.
 - **Build:** Two gaps found by comparing this repository with the standard Claude Code project layout. `CLAUDE.local.md` (personal overrides for `CLAUDE.md`) was not ignored, so a personal file could be committed by accident; it is ignored now. `.claude/commands/` (custom slash commands) would have been ignored by the rule that tracks only the shared setup; it is now tracked if someone adds it. The `CLAUDE.md` layout notes both. This repository uses skills rather than commands, so no commands folder is created. The README is brought up to date with P1-14 to P1-17: it lists the design folder and the checks that keep the documents honest, explains the branch names and the personal overrides files, and says which documents describe the full product.
 - **Files:** `.gitignore`, `CLAUDE.md`, `README.md`, `tests/unit/test_repo_hygiene.py`, `tests/unit/test_readme.py`, `TASKS.md`, `MEMORY.md`, `PLAN.md`
 - **Done when:** A test shows git ignores `CLAUDE.local.md` and does not ignore `.claude/commands/review.md` or `.mcp.json`; the layout in `CLAUDE.md` mentions the personal file and says it is git-ignored.
-- **Note:** no `.mcp.json` is added, because no project-level MCP server is configured. No application code changes.
+- **Note:** no `.mcp.json` is added, because no project-level Model Context Protocol (MCP) server is configured. No application code changes.
 
 **P1-18 · Refresh the Phase 1 documents**
 - **Needs:** `P1-17`
@@ -309,7 +309,7 @@ The longest dependency chain is 16 tasks long.
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P2-1 · SQLAlchemy entities and category enum | F1 | `feature/sqlalchemy-entities` | Completed ✅ |
-| P2-2 · Postgres schema, RLS, and migrations | — | `feature/postgres-schema-rls` | Completed ✅ |
+| P2-2 · Postgres schema, row-level security (RLS), and migrations | — | `feature/postgres-schema-rls` | Completed ✅ |
 | P2-3 · Repository layer | F4 | `feature/repository-layer` | Completed ✅ |
 | P2-4 · Sample data and demo bootstrap | F4 | `feature/sample-data-bootstrap` | Completed ✅ |
 
@@ -317,14 +317,14 @@ The longest dependency chain is 16 tasks long.
 
 **P2-1 · SQLAlchemy entities and category enum**
 - **Needs:** `P1-1`
-- **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
+- **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSON binary (JSONB), `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
 - **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `tests/unit/test_entities.py`, `tests/unit/test_common_schemas.py`, `tests/unit/test_database.py`, `pyproject.toml` (adds `sqlalchemy` and `aiosqlite`)
 - **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels; and a test asserts every data table has a not-null `tenant_id`, so a table added later cannot quietly omit it.
 
-**P2-2 · Postgres schema, RLS, and migrations**
+**P2-2 · Postgres schema, row-level security (RLS), and migrations**
 - **Needs:** `P2-1`
 - **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table, keyed `USING (tenant_id = current_setting('app.tenant_id')::uuid)`), and an additive migration folder. The first migration already contains `tenant_id`, so there is never a migration that adds it (D1).
-- **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_initial.sql`, `tests/unit/sql_ddl.py` (a small SQL parser for the tests), `tests/unit/test_schema_sql.py`, `test_rls_policies.py`, `test_seed_sql.py`, `test_migrations.py`, `test_sql_ddl_parser.py`
+- **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_initial.sql`, `tests/unit/sql_ddl.py` (a small Structured Query Language (SQL) parser for the tests), `tests/unit/test_schema_sql.py`, `test_rls_policies.py`, `test_seed_sql.py`, `test_migrations.py`, `test_sql_ddl_parser.py`
 - **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count; a test asserts every data table in `schema.sql` has RLS enabled and a policy keyed on `tenant_id`.
 
 **P2-3 · Repository layer**
@@ -348,16 +348,16 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P3-1 · JWT and `require_role` | N1 | `feature/jwt-rbac` | Completed ✅ |
+| P3-1 · JSON Web Token (JWT) and `require_role` | N1 | `feature/jwt-rbac` | Completed ✅ |
 | P3-2 · Demo auth routes and tokens | N1 | `feature/auth-demo-tokens` | Completed ✅ |
 | P3-3 · Redis rate limit | N2 | `feature/rate-limit-redis` | Completed ✅ |
 | P3-4 · Audit middleware and middleware order | N6 | `feature/audit-middleware` | Completed ✅ |
 
 #### Task definitions
 
-**P3-1 · JWT and `require_role`**
+**P3-1 · JSON Web Token (JWT) and `require_role`**
 - **Needs:** `P1-2`, `P2-1`
-- **Build:** JWT handling (HS256 via PyJWT, Supabase secret preferred when set) and `require_role` with the ranking `viewer 1 < agent 2 < admin 3`.
+- **Build:** JWT handling (hash-based message authentication code (HMAC) with SHA-256 (HS256) via PyJWT, Supabase secret preferred when set) and `require_role` with the ranking `viewer 1 < agent 2 < admin 3`.
 - **Files:** `backend/app/core/security.py`, `tests/api/test_auth.py`, `pyproject.toml` (adds `pyjwt`)
 - **Done when:** Missing and bad tokens are rejected; an agent token is accepted; `vic.viewer` receives 403 on a mutating route (N1).
 
@@ -445,7 +445,7 @@ The longest dependency chain is 16 tasks long.
 
 **P5-1 · Knowledge articles and chunking**
 - **Needs:** `P2-4`
-- **Build:** Fifteen knowledge articles with YAML front-matter (`title`, `category`, `tags`, `summary`) and the chunker: split on headings, then 900-character windows with 150 overlap, each chunk prefixed `"{title} - {heading}"`.
+- **Build:** Fifteen knowledge articles with YAML Ain't Markup Language (YAML) front-matter (`title`, `category`, `tags`, `summary`) and the chunker: split on headings, then 900-character windows with 150 overlap, each chunk prefixed `"{title} - {heading}"`.
 - **Files:** `sample_data/knowledge_base/*.md`, `rag/__init__.py`, `rag/chunking.py`, `pyproject.toml` (adds `pyyaml`), `.claude/rules/rag.md`, `tests/rag/test_chunking.py`
 - **Done when:** Loading yields 15 articles; every chunk carries the title–heading prefix and respects the window and overlap sizes; each `rag/` module's docstring says what it does and what it must not do (`rag/` knows nothing about tickets), and `.claude/rules/rag.md` (`paths: rag/**`) says the same to the agents that edit it.
 
@@ -457,15 +457,15 @@ The longest dependency chain is 16 tasks long.
 
 **P5-3 · Hybrid retriever**
 - **Needs:** `P5-2`, `P3-3`
-- **Build:** Hybrid retriever: query rewrite into 1–3 sub-queries → semantic ∪ BM25 → reciprocal rank fusion (k=60) → heuristic rerank → optional LLM rerank → one hit per article → a sufficiency check that may retrieve once more against the gaps it names (upstream FR-09). Modes `hybrid`, `semantic`, `keyword`; results cached 300 s under `rag:{mode}:{category}:{top_k}:{query}`.
+- **Build:** Hybrid retriever: query rewrite into 1–3 sub-queries → semantic ∪ BM25 → reciprocal rank fusion (k=60) → heuristic rerank → optional large language model (LLM) rerank → one hit per article → a sufficiency check that may retrieve once more against the gaps it names (upstream FR-09). Modes `hybrid`, `semantic`, `keyword`; results cached 300 s under `rag:{mode}:{category}:{top_k}:{query}`.
 - **Files:** `rag/retriever.py`, `pyproject.toml` (adds `rank_bm25`), `tests/rag/test_retriever.py`
-- **Done when:** Key queries return the expected article in the top 3 (hit-rate@3 is measured); each mode, the cache, RRF, rerank, and the category filter have tests; a query whose evidence is insufficient triggers exactly one extra retrieval and then stops.
+- **Done when:** Key queries return the expected article in the top 3 (hit-rate@3 is measured); each mode, the cache, reciprocal rank fusion (RRF), rerank, and the category filter have tests; a query whose evidence is insufficient triggers exactly one extra retrieval and then stops.
 
 **P5-4 · Ingest command and knowledge API**
 - **Needs:** `P5-3`, `P3-1`
 - **Build:** Ingest and the knowledge API: `make ingest`, `GET /knowledge/articles`, `GET /knowledge/articles/{id}`, `POST /knowledge/search`, and admin-only `POST /knowledge/reindex` that recreates the collection.
 - **Files:** `rag/ingest.py`, `backend/app/services/knowledge_service.py` (also the `make ingest` entry point), `backend/app/schemas/knowledge.py`, `backend/app/api/knowledge.py`, `Makefile`, `tests/rag/test_ingest.py`, `tests/api/test_knowledge.py`
-- **Done when:** `make ingest` reports article and chunk counts; the MFA lockout query returns its article in the top 3; non-admins get 403 on reindex; a second ingest leaves the chunk count unchanged (`tests/rag/test_ingest.py`, the ingest-count test `CLAUDE.md` §13 assigns to `tests/rag/`).
+- **Done when:** `make ingest` reports article and chunk counts; the multi-factor authentication (MFA) lockout query returns its article in the top 3; non-admins get 403 on reindex; a second ingest leaves the chunk count unchanged (`tests/rag/test_ingest.py`, the ingest-count test `CLAUDE.md` §13 assigns to `tests/rag/`).
 
 ---
 
@@ -579,7 +579,7 @@ The longest dependency chain is 16 tasks long.
 
 **P8-1 · Short-term Redis facade**
 - **Needs:** `P3-3`, `P7-4`
-- **Build:** Short-term memory on Redis: conversation per ticket and workflow state (24 h TTL) and the retrieval cache (300 s).
+- **Build:** Short-term memory on Redis: conversation per ticket and workflow state (24 h time to live (TTL)) and the retrieval cache (300 s).
 - **Files:** `memory/short_term.py`, `tests/unit/test_short_term.py`
 - **Done when:** With fakeredis, entries expire at the stated TTLs and the cache key shape matches `rag:{mode}:{category}:{top_k}:{query}`.
 
@@ -817,7 +817,7 @@ The longest dependency chain is 16 tasks long.
 **P12-1 · Next.js app shell and navigation**
 - **Needs:** `P4-1`
 - **Build:** The Next.js 15 App Router shell with TypeScript and Tailwind, the hand-written `components/ui/` kit (no UI library, no gradients), navigation declared once, and `/api/health`.
-- **Files:** `frontend/app/`, `frontend/components/`, `frontend/components/layout/nav.ts`, `frontend/package.json` and its config files, `frontend/__tests__/` (`StatusPill`, `EmptyState`, `nav`), `.claude/hooks/pre-commit.sh` (runs the frontend lint and tests when `node_modules` exists)
+- **Files:** `frontend/app/`, `frontend/components/`, `frontend/components/layout/nav.ts`, `frontend/package.json` and its configuration files, `frontend/__tests__/` (`StatusPill`, `EmptyState`, `nav`), `.claude/hooks/pre-commit.sh` (runs the frontend lint and tests when `node_modules` exists)
 - **Done when:** `npm run lint` and `npm run build` pass; the app shows the navigation.
 - **Note:** the shell holds placeholder pages for eight console routes, `/login` and `/api/health`; `customers/[id]` and `tickets/[id]` arrive with P12-4 and P13-1, and `frontend/lib/` with P12-2.
 
@@ -891,7 +891,7 @@ The longest dependency chain is 16 tasks long.
 | P14-1 · Evaluation thresholds | F2, F5, F8, F10 | `feature/eval-thresholds` | Completed ✅ |
 | P14-2 · Backend and frontend Dockerfiles | N8 | `feature/docker-images` | Completed ✅ |
 | P14-3 · Compose stack | N8 | `feature/docker-compose` | Completed ✅ |
-| P14-4 · Terraform and CI scaffolds | N8 | `feature/delivery-terraform-ci` | Completed ✅ |
+| P14-4 · Terraform and continuous integration (CI) scaffolds | N8 | `feature/delivery-terraform-ci` | Completed ✅ |
 | P14-5 · Deployment hygiene tests | N8 | `feature/deployment-hygiene-tests` | Completed ✅ |
 
 #### Task definitions
@@ -905,7 +905,7 @@ The longest dependency chain is 16 tasks long.
 **P14-2 · Backend and frontend Dockerfiles**
 - **Needs:** `P1-1`, `P12-1`
 - **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run, so the Needs line was relaxed from `P10-5` to `P1-1` and `P12-1`. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built when the task merged: the Docker daemon was not running. On 2026-11-27 both images were built and reported healthy inside the Compose stack (`MEMORY.md`, First Docker bring-up). The backend Dockerfile copies only the packages that exist today.
-- **Build:** Dockerfiles: the backend is multi-stage `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, built from the repo root; the frontend is `node:22-alpine` with `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
+- **Build:** Dockerfiles: the backend is multi-stage `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, built from the repository root; the frontend is `node:22-alpine` with `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
 - **Files:** `backend/Dockerfile`, `frontend/Dockerfile`, `.dockerignore`, `frontend/.dockerignore`, `tests/deployment/test_dockerfiles.py`
 - **Done when:** Both images build and report healthy.
 
@@ -916,9 +916,9 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `docker-compose.yml`, `tests/deployment/test_compose.py`
 - **Done when:** `docker compose config -q` succeeds and the stack comes up healthy.
 
-**P14-4 · Terraform and CI scaffolds**
+**P14-4 · Terraform and continuous integration (CI) scaffolds**
 - **Needs:** `P14-2`
-- **Build:** Terraform for AWS, Azure, and GCP from shared modules (networking, container registry, secrets, compute, load balancer, monitoring, redis) with `environments/{dev,staging,prod}` var-files, the five deploy scripts (`--auto-approve` refused for staging and prod), and five GitHub workflows (`test`, `security`, `docker-build`, `terraform-validate`, `_deploy`).
+- **Build:** Terraform for Amazon Web Services (AWS), Azure, and Google Cloud Platform (GCP) from shared modules (networking, container registry, secrets, compute, load balancer, monitoring, redis) with `environments/{dev,staging,prod}` var-files, the five deploy scripts (`--auto-approve` refused for staging and prod), and five GitHub workflows (`test`, `security`, `docker-build`, `terraform-validate`, `_deploy`).
 - **Files:** `deployment/`, `.github/workflows/`, `Makefile`
 - **Done when:** `make terraform-validate` passes locally. Nothing is applied and no workflow is claimed to have run.
 

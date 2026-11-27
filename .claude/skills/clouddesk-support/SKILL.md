@@ -3,33 +3,33 @@ name: clouddesk-support
 description: >-
   Implements the CloudDesk autonomous customer-support platform in this
   repository. Use when adding or changing tickets, agents, the LangGraph
-  workflow, RAG, tools, memory, guardrails, the Next.js console, API routes,
+  workflow, retrieval-augmented generation (RAG), tools, memory, guardrails, the Next.js console, application programming interface (API) routes,
   tests, or deployment, and when the user mentions CloudDesk, CLAUDE.md,
   TASKS.md, requirements F1-F14 or N1-N8, approvals, escalations, or DEMO_MODE.
 ---
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 21:56 +0530_
 
 ## The files, and which one to trust
 
 | File | Holds |
 |---|---|
-| `CLAUDE.md` | The spec: layers, agents, tools, rules. **Wins over every other file, including this one.** |
+| `CLAUDE.md` | The specification: layers, agents, tools, rules. **Wins over every other file, including this one.** |
 | `TASKS.md` | Every task: what to build, files, **Needs**, **Done when**, branch, and the order. |
 | `PLAN.md` | Requirement IDs (F1-F14, N1-N8) and each phase's exit criteria and demo checkpoint. |
 | `MEMORY.md` | The honest status, locked decisions, open questions, and working agreements. |
 | `docs/design/05_ARCHITECTURE.md` | Component and infrastructure diagrams. |
 | `docs/design/06_API_CONTRACT.md` | Every route and payload type. |
 | `docs/07_GIT_WORKFLOW.md` | Branches, pull requests, promotion. |
-| `docs/01_BRD.md`, `02_PRD.md`, `03_HLD.md`, `04_LLD.md` | The upstream design of **ACSRP**, the full product this repo is a v1 of. Read for intent. |
+| `docs/01_BRD.md`, `02_PRD.md`, `03_HLD.md`, `04_LLD.md` | The upstream design of **Autonomous Customer Support and Resolution Platform (ACSRP)**, the full product this repository is a v1 of. Read for intent. |
 
 If a change would contradict `CLAUDE.md`, update `CLAUDE.md` first, then the plan, then the code.
 
 ### Do not “fix” CloudDesk to match the upstream documents
 
-The documents in `docs/01`–`04` specify the full multi-tenant product. This repo is a deliberately
+The documents in `docs/01`–`04` specify the full multi-tenant product. This repository is a deliberately
 scoped single-tenant v1, and `CLAUDE.md` §1.1 tables every difference. CloudDesk's own vocabulary is
 built and under test: severity is `low`/`medium`/`high`/`critical` (not `P1`–`P4`), statuses are
 `waiting_on_*` (not `awaiting_*`), the channels are email/chat/web/api, and environment variables
@@ -37,7 +37,7 @@ carry no `ACSRP_` prefix. Renaming any of these to match a document breaks the s
 contract and the tests at once. Change `CLAUDE.md` §5 or §10.1 first if it is genuinely wanted.
 
 Of the six larger differences, **D1 (multi-tenancy) is settled**: every data table carries a not-null,
-indexed `tenant_id` from P2-1, the RLS policies are keyed on it from P2-2, one tenant is seeded, and no tenant
+indexed `tenant_id` from P2-1, the row-level security (RLS) policies are keyed on it from P2-2, one tenant is seeded, and no tenant
 features are built. Repositories are the only place the filter lives, so SQLite's lack of RLS still
 leaves one enforcement point. See `CLAUDE.md` §6.
 
@@ -65,10 +65,10 @@ assuming a file exists, and do not describe a planned file as present.
 5. A route or payload change updates `docs/design/06_API_CONTRACT.md`, `backend/app/schemas/`, and
    `frontend/lib/types.ts` in the same change.
 6. Stay inside one layer (`CLAUDE.md` section 4.2):
-   - `backend/app/api/` handles HTTP, validation, auth, RBAC, and background tasks. No business rules.
+   - `backend/app/api/` handles Hypertext Transfer Protocol (HTTP), validation, auth, role-based access control (RBAC), and background tasks. No business rules.
    - `backend/app/services/` orchestrates repositories and the graph. It does not speak HTTP.
-   - `backend/app/repositories/` owns all SQL. It never calls a model.
-   - `backend/app/core/` owns config, security, logging, Redis, guardrails, and the database. It does
+   - `backend/app/repositories/` owns all Structured Query Language (SQL). It never calls a model.
+   - `backend/app/core/` owns configuration, security, logging, Redis, guardrails, and the database. It does
      not import `agents/` or `integrations/`.
    - `backend/app/tools/` exposes tools only through `ToolRegistry`.
    - `agents/` owns state, graph, nodes, specialists, rules, and prompts. It reads and writes data
@@ -123,7 +123,7 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 - `make test` and `make lint` after every task.
 - `make demo` once the workflow exists. `TICKET=CD-1002` must pause for approval; `TICKET=CD-1005`
   must escalate by policy.
-- A UI change is verified in the browser: run the ticket flow, confirm role-disabled actions, and
+- A user interface (UI) change is verified in the browser: run the ticket flow, confirm role-disabled actions, and
   confirm Approve and Reject appear only when `approval_status` is `pending`.
 
 ## Done when
@@ -133,7 +133,7 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 - The active phase's demo checkpoint still runs.
 - The diff holds no `.env`, `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or secret.
 - Update `TASKS.md` in the same pull request as the task: set the row to `Completed ✅` and update
-  the Progress summary (phase count and total). A task is not done until its PR includes this.
+  the Progress summary (phase count and total). A task is not done until its pull request (PR) includes this.
   Add a line to the Honest status in `MEMORY.md`, saying only what was actually run, and when a
   whole phase is finished also update the Build phases table in `PLAN.md`.
 - If the task adds a significant component, or changes an architectural boundary, networking or an important flow,
@@ -142,13 +142,13 @@ with `;`, and set `PYTHONIOENCODING=utf-8`.
 
 ## Hard stops
 
-- A customer reply containing internal URLs, secrets, or another customer's data.
+- A customer reply containing internal uniform resource locators (URLs), secrets, or another customer's data.
 - A refund, deletion, or setting reset running without a recorded approval.
 - A `viewer` able to approve, reply, or run a workflow.
 - Ticket text changing the workflow route.
 - Memory notes containing card numbers, keys, passwords, or raw ticket bodies.
 - Deploying production from the dev var-file, or applying an unreviewed plan.
-- Writing "deployed", "passes in CI", or "validated" before it is true.
+- Writing "deployed", "passes in continuous integration (CI)", or "validated" before it is true.
 - Building any of decisions D2–D6, or renaming a status, severity, channel or environment variable to
   match an upstream document, without that decision being taken in `CLAUDE.md` first. (D1 is settled
   and P2-1 onward **does** build it.)

@@ -6,8 +6,8 @@ Accepted on 2026-11-27 (owner approval in chat). This is decision D5 in `CLAUDE.
 
 ## Context
 
-The upstream HLD makes Kubernetes and one Helm chart the parity target across EKS, AKS and GKE, and treats
-serverless containers as the lighter profile. This repository builds the serverless profile first: ECS
+The upstream high-level design (HLD) makes Kubernetes and one Helm chart the parity target across Elastic Kubernetes Service (EKS), Azure Kubernetes Service (AKS) and Google Kubernetes Engine (GKE), and treats
+serverless containers as the lighter profile. This repository builds the serverless profile first: Elastic Container Service (ECS)
 Fargate, Container Apps and Cloud Run, with Terraform modules shared across the three clouds.
 
 ## Decision

@@ -4,11 +4,11 @@
 
 ## A. Overview
 
-Phase 12 puts a console in front of the API.
+Phase 12 puts a console in front of the application programming interface (API).
 
 ## B. Initial architecture
 
-P12-1 delivered the app shell, a UI kit and placeholder pages for eight routes, `/login` and `/api/health`.
+P12-1 delivered the app shell, a user interface (UI) kit and placeholder pages for eight routes, `/login` and `/api/health`.
 
 ## C. Evolution by task
 
@@ -37,11 +37,11 @@ Own UI kit over a library (fewer dependencies, more code to maintain). Token in 
 
 ## G. Improvements
 
-A Home link and a scroll-to-top button; model cost shown in USD and INR together; refund amounts shown in INR.
+A Home link and a scroll-to-top button; model cost shown in United States dollars (USD) and Indian rupees (INR) together; refund amounts shown in INR.
 
 ## H. Limitations
 
-Inbox filters are in the API but the filter bar is minimal. There is no analytics page, no memory-erasure control and no tools or policy pages (PRD items listed in CLAUDE.md section 20).
+Inbox filters are in the API but the filter bar is minimal. There is no analytics page, no memory-erasure control and no tools or policy pages (product requirements document (PRD) items listed in CLAUDE.md section 20).
 
 ## I. Completion summary
 
