@@ -175,6 +175,8 @@ AGGREGATES = [
     (tickets.TicketRepository, "count_resolved_since", {"since": NOW - timedelta(days=1)}),
     (tickets.TicketRepository, "count_by_severity", {}),
     (tickets.TicketRepository, "count_by_category", {}),
+    (tickets.TicketRepository, "count_by_status", {}),
+    (tickets.TicketRepository, "count_by_channel", {}),
     (tickets.TicketRepository, "resolution_spans", {}),
     (approvals.ApprovalRepository, "count_pending", {}),
     (approvals.EscalationRepository, "count_open", {}),
@@ -320,6 +322,12 @@ async def test_aggregates_count_only_their_own_tenant(session, worlds, cls, meth
         assert owner == 1 and seen == 0
     elif method in {"count_by_severity", "count_by_category"}:
         assert sum(owner.values()) == 1 and seen == {}
+    elif method == "count_by_status":
+        # theirs is resolved, mine is new: neither sees the other's ticket
+        assert owner == {TicketStatus.resolved: 1} and seen == {TicketStatus.new: 1}
+    elif method == "count_by_channel":
+        # one ticket each; a leak between tenants would make a count 2
+        assert sum(owner.values()) == 1 and sum(seen.values()) == 1
     else:
         assert len(owner) == 1 and seen == []
 

@@ -1,6 +1,6 @@
 # Phase 9: system design evolution
 
-> **Status of this phase:** in progress. P9-1 to P9-8 are done and checked locally; the graph nodes that call the agents are not built. Nothing is deployed.
+> **Status of this phase:** complete and validated locally. All ten tasks (P9-1 to P9-10) are done; the graph that joins the agents is Phase 10. P9-9 added the in-process Euron router and P9-10 the Euron embeddings provider (ADR 0010, accepted in limited form). Nothing is deployed.
 
 ---
 

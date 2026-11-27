@@ -7,6 +7,7 @@ describe("nav", () => {
     expect(hrefs).toEqual([
       "/dashboard",
       "/tickets",
+      "/approvals",
       "/customers",
       "/knowledge",
       "/escalations",

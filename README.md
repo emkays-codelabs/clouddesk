@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 15:23 +0530_
+_Last updated: 2026-11-27 16:38 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-27 15:23 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 74 of 84 tasks done. Phase 9 (the specialist agents) has all its tasks done and awaits its four documents; phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: All 14 phases and all 84 tasks are done and validated locally: the backend, the six-agent LangGraph workflow with human approval, the console and landing page, the evaluation thresholds, Docker and Compose, and validated (never applied) Terraform for AWS, Azure and GCP. Not done: any real cloud deployment, any GitHub Actions run, Postgres and RLS against a live database, the approval timeout and the PRD items listed in `CLAUDE.md` section 20. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -105,25 +105,16 @@ answers requests. What exists today:
 - An offline test suite (no network, no API key), a linter (Ruff) and a `Makefile`.
 - Tests that keep the documents honest: the task tracker's counters and dependencies, every link, the roadmap in this
   file, and the decision records are all checked, so a document that drifts fails the build.
-- A Claude Code setup in `.claude/` (see [6.2](#62-working-with-claude-code)). It has not yet been used in a
-  live session.
+- A Claude Code setup in `.claude/` (see [6.2](#62-working-with-claude-code)).
 - The written specification and plan (see [7](#7-where-to-find-things)).
 - Architecture decision records in `docs/adr/`: seven decisions taken, and five open questions recorded as proposed.
-- The system diagrams and the API contract in `docs/design/`. The contract describes routes that are not built
-  yet (the workflow, approvals, escalations and agents routes).
+- The system diagrams and the API contract in `docs/design/`. The routes in the contract are built.
 
 - **Language-model layer and agents (Phase 9):** a `get_llm()` factory with a deterministic fake provider and an
   OpenAI-compatible provider (`openai`, or `euron`, Euron's euri API), `call_structured`, the six specialist agents and a
-  16-case evaluation dataset. They are called directly in tests; no graph runs them yet. The OpenAI-compatible path
-  has only been tested against a stubbed client.
+  16-case evaluation dataset. The LangGraph workflow (Phase 10), approvals and escalations (Phase 11), the console and ticket screen (Phases 12 and 13) and the evaluation and delivery files (Phase 14) are built on top.
 
-Not built yet: the workflow graph, its state and trace, approvals and escalation routing, the real console
-screens, the evaluation thresholds, the demo, smoke-test and Terraform-validate make targets, and the
-Terraform and CI files. Planned next on the language-model side, with no key available yet: an in-process LLM
-router over Euron's three euri chat models with a fallback chain, and an euri embeddings provider. No real
-language-model call has been made: the application runs on the fake provider.
-
-No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
+Nothing is deployed. Not built or not run: a real cloud deployment (the Terraform is validated, never applied), any GitHub Actions run, Postgres and the row-level-security policies against a live database, the approval timeout and the PRD extras in `CLAUDE.md` section 20. The real Euron model was exercised by hand through Docker; the test suite stays on the fake provider.
 
 [↑ Back to top](#clouddesk-ai)
 
@@ -143,7 +134,7 @@ The six agents are the Support Supervisor, Customer, Knowledge, Troubleshooting,
 agents.
 
 The whole stack is designed to run offline with a fake language model, so the tests and the demo need no
-API key. The real model is planned to be Euron's OpenAI-compatible euri API, reached through a small router
+API key. The real model is Euron's OpenAI-compatible euri API, reached through a small router
 inside the backend rather than a separate gateway service.
 
 [↑ Back to top](#clouddesk-ai)
@@ -160,14 +151,14 @@ inside the backend rather than a separate gateway service.
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
-| 9 | Specialist agents | in progress |
-| 10 | Workflow graph and trace | in progress |
-| 11 | Approval and escalation | in progress |
-| 12 | Console shell | in progress |
-| 13 | Ticket workflow screen | not started |
-| 14 | Evaluation and delivery | in progress |
+| 9 | Specialist agents | validated locally |
+| 10 | Workflow graph and trace | validated locally |
+| 11 | Approval and escalation | validated locally |
+| 12 | Console shell | validated locally |
+| 13 | Ticket workflow screen | validated locally |
+| 14 | Evaluation and delivery | validated locally |
 
-Phase 9, the specialist agents, is built and checked locally (the six agents and the evaluation dataset; 74 of 84 tasks overall). The task list is in `TASKS.md`.
+All 14 phases are built and checked locally (84 of 84 tasks). The task list is in `TASKS.md`.
 
 [↑ Back to top](#clouddesk-ai)
 
@@ -285,6 +276,7 @@ request also updates `TASKS.md`. The full flow is in [`docs/07_GIT_WORKFLOW.md`]
 | Every task, its branch and its status | `TASKS.md` |
 | Honest status, decisions and open questions | `MEMORY.md` |
 | The business case, product, high-level and low-level design | `docs/01` to `docs/04` |
+| How to use the console, from sign-in to resolution | [`docs/11_USER_GUIDE.md`](docs/11_USER_GUIDE.md) |
 | Git and GitHub flow | `docs/07_GIT_WORKFLOW.md` |
 | The system diagrams and the API contract | `docs/design/` |
 | Why an architecture choice was made | `docs/adr/` |

@@ -1,0 +1,75 @@
+name: _deploy
+
+# Reusable pipeline: bootstrap-registry -> build-and-push -> plan -> [approval] -> apply -> smoke.
+# Cloud authentication is OIDC, so there are no long-lived keys. Prod applies through the GitHub
+# Environment "prod-apply", which needs required reviewers. NOT run yet: no cloud account is connected.
+on:
+  workflow_call:
+    inputs:
+      cloud:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  bootstrap-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=deployment/${{ inputs.cloud }} init -input=false -backend-config=backend.hcl
+      - name: Create the registry first so images have somewhere to go
+        if: inputs.environment == 'dev'
+        run: |
+          case "${{ inputs.cloud }}" in
+            aws) target=aws_ecr_repository.app ;;
+            azure) target=azurerm_container_registry.main ;;
+            gcp) target=google_artifact_registry_repository.main ;;
+          esac
+          terraform -chdir=deployment/${{ inputs.cloud }} apply -input=false -target="$target" -var-file=../environments/dev.tfvars -auto-approve
+  build-and-push:
+    needs: bootstrap-registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: deployment/scripts/build_and_push.sh ${{ inputs.cloud }} ${{ vars.REGISTRY_URL }}
+  plan:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=deployment/${{ inputs.cloud }} init -input=false -backend-config=backend.hcl
+      - run: >
+          terraform -chdir=deployment/${{ inputs.cloud }} plan -input=false
+          -var-file=../environments/${{ inputs.environment }}.tfvars
+          -var image_tag=${{ github.sha }} -out=tfplan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ inputs.cloud }}-${{ inputs.environment }}
+          path: deployment/${{ inputs.cloud }}/tfplan
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment == 'prod' && 'prod-apply' || inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ inputs.cloud }}-${{ inputs.environment }}
+          path: deployment/${{ inputs.cloud }}
+      - run: terraform -chdir=deployment/${{ inputs.cloud }} init -input=false -backend-config=backend.hcl
+      - run: terraform -chdir=deployment/${{ inputs.cloud }} apply -input=false tfplan
+  smoke:
+    needs: apply
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: BASE_URL=${{ vars.BASE_URL }} deployment/scripts/smoke_test.sh

@@ -12,7 +12,7 @@ describe("StatusPill", () => {
 
   it("uses a distinct tone for escalated tickets", () => {
     render(<StatusPill status="escalated" />);
-    expect(screen.getByText("escalated").className).toContain("bg-red-100");
+    expect(screen.getByText("escalated").className).toContain("bg-rose-100");
   });
 
   it("falls back to a neutral tone for an unknown status", () => {

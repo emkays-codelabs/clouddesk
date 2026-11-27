@@ -16,7 +16,7 @@ from app.repositories.approvals import EscalationRepository
 from app.repositories.customers import CustomerRepository, SubscriptionRepository
 from app.repositories.tickets import TicketMessageRepository, TicketRepository
 from app.repositories.workflow import ResolutionActionRepository, WorkflowRunRepository
-from app.schemas.common import MessageRole, Severity, TicketStatus
+from app.schemas.common import ApprovalStatus, Channel, MessageRole, Severity, TicketStatus
 from app.schemas.customer import Customer, Subscription
 from app.schemas.ticket import (
     Ticket,
@@ -139,9 +139,21 @@ async def list_tickets(
     search: str | None,
     page: int,
     page_size: int,
+    channel: Channel | None = None,
+    assigned_to: str | None = None,
+    approval_status: ApprovalStatus | None = None,
+    escalated: bool | None = None,
 ) -> TicketPage:
     rows, total = await TicketRepository(session).list(
-        status=status, severity=severity, search=search, page=page, page_size=page_size
+        status=status,
+        severity=severity,
+        search=search,
+        page=page,
+        page_size=page_size,
+        channel=channel,
+        assigned_to=assigned_to,
+        approval_status=approval_status,
+        escalated=escalated,
     )
     names = await CustomerRepository(session).get_many(list({t.customer_id for t in rows}))
     return TicketPage(
