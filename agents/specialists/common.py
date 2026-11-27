@@ -20,11 +20,18 @@ class ToolCallRecord:
 
 
 async def call_tool(
-    registry: ToolRegistry, calls: list[ToolCallRecord], name: str, args: dict[str, Any]
+    registry: ToolRegistry,
+    calls: list[ToolCallRecord],
+    name: str,
+    args: dict[str, Any],
+    **execute_kwargs: Any,
 ) -> ToolCallRecord:
-    """Run a read tool through the registry and append its record to `calls`."""
+    """Run a tool through the registry and append its record to `calls`.
+
+    `execute_kwargs` (ticket_id, workflow_id, approved, trusted_values) reach `registry.execute`.
+    """
     started = time.perf_counter()
-    result = await registry.execute(name, args)
+    result = await registry.execute(name, args, **execute_kwargs)
     record = ToolCallRecord(
         name=name,
         args=args,

@@ -1,0 +1,18 @@
+[
+  {"id": "ev-01", "ticket": "CD-1001", "expected_category": "login_issue", "expected_escalation": false, "expected_article": "sso-login-failures", "expected_actions": ["update_ticket"]},
+  {"id": "ev-02", "ticket": "CD-1002", "expected_category": "billing", "expected_escalation": false, "expected_article": "refunds-and-seat-billing", "expected_actions": ["create_refund_request", "update_ticket"]},
+  {"id": "ev-03", "ticket": "CD-1003", "expected_category": "api_failure", "expected_escalation": false, "expected_article": "api-rate-limits", "expected_actions": ["update_ticket"]},
+  {"id": "ev-04", "ticket": "CD-1004", "expected_category": "storage_quota", "expected_escalation": false, "expected_article": "storage-quota", "expected_actions": ["update_ticket"]},
+  {"id": "ev-05", "ticket": "CD-1005", "expected_category": "security", "expected_escalation": true, "expected_team": "Security team", "expected_article": "suspicious-logins-security", "expected_actions": []},
+  {"id": "ev-06", "ticket": "CD-1006", "expected_category": "account", "expected_escalation": true, "expected_team": "Data protection team", "expected_article": "data-loss-and-restore", "expected_actions": []},
+  {"id": "ev-07", "ticket": "CD-1007", "expected_category": "workspace_permissions", "expected_escalation": false, "expected_article": "external-sharing-permissions", "expected_actions": ["update_ticket"]},
+  {"id": "ev-08", "ticket": "CD-1008", "expected_category": "integration", "expected_escalation": false, "expected_article": "slack-integration", "expected_actions": ["update_ticket"]},
+  {"id": "ev-09", "ticket": "CD-1009", "expected_category": "account", "expected_escalation": true, "expected_team": "Privacy team", "expected_article": "account-deletion-and-data-erasure", "expected_actions": []},
+  {"id": "ev-10", "ticket": "CD-1010", "expected_category": "feature_request", "expected_escalation": false, "expected_article": "dark-mode-and-feature-requests", "expected_actions": ["update_ticket"]},
+  {"id": "ev-11", "ticket": "CD-1011", "expected_category": "billing", "expected_escalation": true, "expected_team": "Billing disputes team", "expected_article": "payment-disputes", "expected_actions": []},
+  {"id": "ev-12", "ticket": "CD-1012", "expected_category": "login_issue", "expected_escalation": false, "expected_article": "mfa-recovery", "expected_actions": ["update_ticket"]},
+  {"id": "ev-13", "ticket": "CD-1013", "expected_category": "security", "expected_escalation": false, "expected_article": "suspicious-logins-security", "expected_actions": ["update_ticket"], "injection": true},
+  {"id": "ev-14", "text": "Our API token stopped working and every call returns 401 since yesterday.", "expected_category": "api_failure", "expected_escalation": false, "expected_article": "api-keys-and-authentication", "expected_actions": ["update_ticket"]},
+  {"id": "ev-15", "text": "Our whole workspace is down. This is an outage for our company.", "plan_name": "enterprise", "expected_category": "other", "expected_escalation": true, "expected_team": "Enterprise support team", "expected_article": "workspace-roles-and-permissions", "expected_actions": []},
+  {"id": "ev-16", "text": "Please change our plan and send the latest invoice for the upgrade.", "expected_category": "billing", "expected_escalation": false, "expected_article": "invoices-and-plan-changes", "expected_actions": ["update_ticket"]}
+]

@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 10:56 +0530_
+_Last updated: 2026-11-27 11:05 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -159,7 +159,7 @@ API key.
 | 13 | Ticket workflow screen | not started |
 | 14 | Evaluation and delivery | in progress |
 
-Phase 9, the specialist agents, is in progress (the supervisor, customer, knowledge and troubleshooting agents are done). The task list is in `TASKS.md`.
+Phase 9, the specialist agents, is built and checked locally (the six agents and the evaluation dataset; 59 of 82 tasks overall). The task list is in `TASKS.md`.
 
 [↑ Back to top](#clouddesk-ai)
 

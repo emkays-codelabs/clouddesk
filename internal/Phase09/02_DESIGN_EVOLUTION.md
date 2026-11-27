@@ -1,6 +1,6 @@
 # Phase 9: system design evolution
 
-> **Status of this phase:** in progress. P9-1 to P9-5 are done and checked locally; P9-6 to P9-8 are not started. Nothing is deployed.
+> **Status of this phase:** in progress. P9-1 to P9-8 are done and checked locally; the graph nodes that call the agents are not built. Nothing is deployed.
 
 ---
 
@@ -22,3 +22,19 @@
 - **Knowledge.** Evidence comes from `search_docs`; any chunk that trips `scan_for_injection` is dropped. Similar cases are Jaccard overlap against `sample_data/previous_resolutions.json` only (resolved tickets in the database carry no resolution text).
 - **Troubleshooting.** The model drafts a `Diagnosis`; a per-category playbook and an active incident from `check_service_status` enrich it, and steps are numbered. The model failure fallback is the playbook alone.
 - **Not done.** No real model call; the service name per category is a small fixed map.
+
+---
+
+## P9-6: the Resolution agent
+
+- **Actions are policy, not prose.** `ResolutionAgent.plan_actions` is the only source of `ResolutionPlan.actions`; whatever actions a model returns are discarded. A seat refund is planned for a billing ticket that asks for one, with `customer_id`, `subscription_id` and the amount (unused seats times the per-seat price) computed from the subscription and workspace, and each argument is checked with `validate_provenance` before it is planned. A workspace setting reset is planned only when the ticket names one. A policy escalation plans nothing. Each action carries `requires_approval` from `ToolPolicy`, and one `update_ticket` sets the status.
+- **Grounded reply.** The model drafts wording; `_ground_response` keeps only draft sentences the evidence and diagnosis steps support, then adds the steps and the cited article titles. `validate_customer_output` runs; a groundedness miss is revised once (steps and citation only); a second miss or any leak replaces the reply with a holding message and writes `OUTPUT_VALIDATION_FAILED` into the internal notes, which `reply_failed_validation` reads, so the Phase 10 risk node can escalate.
+- **Not done.** Nothing is executed here (the execute node, Phase 10) and no real model call has been made.
+
+## P9-7: the Escalation agent
+
+- **Policy first.** A matching escalation rule names the team and no model is called. Otherwise a model escalation is kept only at high or critical severity with confidence of 0.6 or more; doubt (below 0.6) on a high or critical ticket escalates to Tier 2 support; anything else, including a failed model call, does not escalate. The decision is recorded through `create_escalation` in the registry, so a retry adds no second row.
+
+## P9-8: the evaluation dataset
+
+- `datasets/eval_cases.json` holds 16 cases: every demo ticket plus three text cases (an enterprise outage, an invoice question, an API token). Each has an expected category, escalation flag, article slug and action tools. The test rejects an invalid category or a missing article and checks that the labels agree with the policy rules. The metric thresholds that use it are Phase 14.
