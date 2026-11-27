@@ -1,4 +1,4 @@
-"""P9-6: the Resolution agent plans actions deterministically and grounds a validated reply."""
+"""P9-6 (F8, F9, N5): the Resolution agent plans actions by rule and grounds a validated reply."""
 
 import pytest
 

@@ -70,7 +70,7 @@ Exceeding one is a signal to split the task. Scale up for a larger repository.
 | Skipped | Why | Add it when |
 |---|---|---|
 | `architect` agent | Decisions are recorded in `docs/adr/` (`backend/app/`, `rag/`, `agents/` and `frontend/` now all exist, and the records have not outgrown it) | The records outgrow `docs/adr/` |
-| `wait` skill | No job runs for more than a few minutes (the suite takes about 3 seconds) | Phase 14 adds Terraform and image builds |
+| `wait` skill | No job runs for more than a few minutes (the whole suite takes about two minutes on 2026-11-27) | Phase 14 adds Terraform and image builds |
 | `fix-issue` skill | No issue tracker is referenced: `TASKS.md` is the tracker | GitHub Issues is adopted |
 
 ## 6. Where the prompt and the official docs disagree

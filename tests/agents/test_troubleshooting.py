@@ -1,4 +1,4 @@
-"""P9-5: the Troubleshooting agent returns causes and numbered steps, with playbook and status."""
+"""P9-5 (F7): the Troubleshooting agent returns causes and numbered steps."""
 
 import re
 

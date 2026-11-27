@@ -1,4 +1,4 @@
-"""P9-3: the Customer agent builds a full context from tools and memory, with no model call."""
+"""P9-3 (F4): the Customer agent builds a full context from tools and memory, with no model call."""
 
 import pytest
 import sqlalchemy as sa

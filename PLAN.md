@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 11:35 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -14,7 +14,7 @@ Ship an agent console where a support agent opens a CloudDesk ticket, runs one w
 |---|---|
 | Viewer | Can read tickets, customers, knowledge, and audit, and cannot run, reply, or approve |
 | Agent | Can run the workflow, reply, request information, approve or reject, and escalate from one ticket screen |
-| Admin | Can reindex knowledge and change settings |
+| Admin | Can reindex knowledge. Settings are read-only in v1 (`GET /settings`); nothing edits them |
 | Platform | Records an audit row for every state-changing request and an event for every node, tool call, and model call |
 
 ## Non-goals for v1
@@ -123,7 +123,7 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | FR-36 | Admin: knowledge sources, ingestion jobs, policies, tool registry, users and roles | `GET /settings` is read-only; nothing edits sources, policies, tools or users. |
 | FR-41 | Feature flags per tenant: copilot, supervised or autonomous | `AUTONOMY_MODE` is listed in `CLAUDE.md` §10.2 as a later setting; no requirement, task or test. |
 | NFR-05 | 99.9% availability; a human-handoff mode if the model provider fails | No handoff mode and no availability target. |
-| NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is built (P10-1), but runs are in process and a restart can drop one (ADR-0007). |
+| NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is planned (P10-1, not built), and runs will be in process and a restart can drop one (ADR-0007). |
 | NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13); routing is decision D4 (ADR-0010). |
 
 Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a

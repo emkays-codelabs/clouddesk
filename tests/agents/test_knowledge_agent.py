@@ -1,4 +1,4 @@
-"""P9-4: the Knowledge agent returns cited evidence through search_docs and similar cases."""
+"""P9-4 (F5, F6): the Knowledge agent returns cited evidence and similar cases."""
 
 from agents.specialists.knowledge import KnowledgeAgent, jaccard
 from app.tools.factory import build_read_registry

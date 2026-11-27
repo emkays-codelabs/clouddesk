@@ -107,7 +107,7 @@ Before: an unfiltered retriever and no policy. After: a screened retriever, a ru
 
 - Paraphrased, encoded or non-English attacks and obfuscated secrets are not caught.
 - `CD-1001` relies on the model and incident check for its outage handling; the rule table needs explicit outage words.
-- The guards have no caller on the live path except retrieval; the graph (planned, Phase 10) must call them.
+- The guards have no caller on the live path except retrieval; the graph (planned, Phase 10) must call them. Since Phase 9 the specialist agents call them too, but only tests run the agents.
 - Recommendations, not built: a judge model for groundedness, a red-team set and the harder bar (D6), the `prohibited` tier (D2).
 
 ## I. Phase completion summary

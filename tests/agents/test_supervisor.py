@@ -1,4 +1,4 @@
-"""P9-2: the Supervisor classifies, only raises severity and carries the injection scan."""
+"""P9-2 (F2, F3, N4): the Supervisor classifies, only raises severity, scans for injection."""
 
 import agents.specialists.supervisor as sup
 from agents.specialists.supervisor import SupervisorAgent

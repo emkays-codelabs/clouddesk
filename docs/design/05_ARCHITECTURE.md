@@ -1,6 +1,6 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 11:35 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -48,7 +48,7 @@ Three roles share one console. The browser talks only to Next.js. Next.js calls 
 |---|---|---|
 | Viewer | Console | Read tickets, customers, knowledge, and audit |
 | Agent | Console | Run a workflow, reply, request information, approve or reject, escalate |
-| Admin | Console | Reindex knowledge and change settings |
+| Admin | Console | Reindex knowledge. Settings are read-only in v1 |
 
 Role rank is `viewer 1 < agent 2 < admin 3`, enforced by `require_role`. Demo users are `admin@clouddesk.demo`, `sam.agent@clouddesk.demo`, and `vic.viewer@clouddesk.demo`.
 

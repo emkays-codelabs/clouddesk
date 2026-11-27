@@ -240,7 +240,7 @@ class TestRequiredDocuments:
         names = required_documents(3, qna_required=False)
 
         assert len(names) == 3
-        assert not any("interview_qna" in n for n in names)
+        assert not any("interview_qna" in n.lower() for n in names)
 
 
 class TestCompletion:
