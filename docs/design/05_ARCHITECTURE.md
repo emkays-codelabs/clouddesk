@@ -1,6 +1,6 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-27 11:20 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -8,7 +8,7 @@ These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. T
 high-level and low-level designs for the full product are [`03_HLD.md`](../03_HLD.md) and [`04_LLD.md`](../04_LLD.md) one folder up;
 `CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
 
-This is the design to build. Only Phase 1 of the application exists (the runtime skeleton: health routes, request ids, settings and logging); the rest is not built yet. No cloud account has been applied, and nothing in these diagrams is deployed.
+This is the design to build. Phases 1 to 9 exist: the service, data layer, auth and guards, the support API, retrieval, tools and mocks, rules and guardrails, memory, and the six specialist agents with the fake LLM. Not built yet: the workflow graph, state and tracer, the run, workflow, events, approvals, escalations and agents routes, the real console screens, the Terraform and CI files. No cloud account has been applied, and nothing in these diagrams is deployed.
 
 The product is used by support agents of the fictional SaaS **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
 
@@ -518,7 +518,7 @@ Never stored: card numbers, API keys, passwords, raw ticket bodies, or anything 
 
 ## 5. Data model
 
-Two forms on purpose. SQLAlchemy models in `backend/app/models/entities.py` use JSON columns and `String(36)` UUIDs so the same code runs on SQLite and Postgres. `database/schema.sql` is the Postgres DDL. `schema.sql` is the authority for the table list once it is written. Until then the logical tables are the ones below.
+Two forms on purpose. SQLAlchemy models in `backend/app/models/entities.py` use JSON columns and `String(36)` UUIDs so the same code runs on SQLite and Postgres. `database/schema.sql` is the Postgres DDL. `schema.sql` is the authority for the table list: 17 tables, the 16 below plus `tenants`.
 
 `profiles`, `customers`, `subscriptions`, `workspaces`, `products`, `tickets`, `ticket_messages`, `support_articles`, `incidents`, `workflow_runs`, `workflow_events`, `resolution_actions`, `approval_requests`, `escalations`, `customer_memory`, `audit_logs`.
 

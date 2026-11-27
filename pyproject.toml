@@ -9,8 +9,8 @@ keywords = ["ai", "agents", "rag", "langgraph", "fastapi"]
 # Each task in TASKS.md adds the packages it introduces (for example pydantic-settings in P1-1,
 # SQLAlchemy in P2-1, qdrant-client in P5-2). Vectors are Qdrant and the console is Next.js, so
 # chromadb and streamlit are not part of this design.
-# langchain, langchain-openai, langgraph and openai are installed up front because Phases 9 and 10 build on
-# them; nothing imports them yet.
+# langchain, langchain-openai and langgraph are installed up front because Phase 10 builds on them; nothing
+# imports them yet. `openai` is imported lazily in backend/app/core/llm.py for the OpenAI-compatible providers.
 dependencies = [
     "aiosqlite>=0.22.1",
     "fakeredis>=2.26",
@@ -46,7 +46,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# backend/ holds the `app` package; the repo root holds agents/, rag/, memory/ (later phases).
+# backend/ holds the `app` package; the repo root holds agents/, rag/, memory/ and integrations/.
 pythonpath = ["backend", "."]
 # Async tests need no marker, and all of them share one event loop for the whole session.
 asyncio_mode = "auto"

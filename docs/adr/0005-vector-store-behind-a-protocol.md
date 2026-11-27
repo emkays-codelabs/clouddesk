@@ -20,4 +20,5 @@ implementations, `InMemoryVectorStore` and `QdrantVectorStore`, chosen by `VECTO
 - Tests and the demo run with the in-memory store; the cloud uses Qdrant Cloud.
 - Changing the embedding model requires an admin reindex, which recreates the collection.
 - The `/health/ready` vector-store check currently tests configuration only.
-- Nothing of this exists yet. It is built in Phase 5.
+- Built in Phase 5: both stores, the selector and fake embeddings. Qdrant has only been constructed against a
+  stubbed client, not a real server.

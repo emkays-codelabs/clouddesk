@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-22 01:51 +0530_
+_Last updated: 2026-11-27 11:20 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -12,6 +12,11 @@ This is the v1 surface. The upstream LLD §4 also specifies routes this contract
 editable approval decision, customer feedback, analytics, memory erasure, the widget session and the
 SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk requirement” in
 `PLAN.md` and needs a decision before it is added here.
+
+**Built and planned.** Built today: health, auth, dashboard, tickets (list, create, read, `/reply`,
+`/request-info`, `/escalate`, PATCH), customers, knowledge, audit, settings and `/mcp/tools`. **Planned, not built
+yet** (marked below): `/tickets/{id}/run`, `/workflow` and `/events` (Phase 10), `/approvals` (Phase 11),
+`/escalations` (P11-6) and `/agents` (P10-7). The Workflow state and Approvals shapes describe those planned routes.
 
 ## Health (no prefix, no auth)
 | Method | Path | Response |
@@ -39,9 +44,9 @@ SSE stream. Each is listed under “Upstream Must requirements with no CloudDesk
 | GET | `/tickets?status=&severity=&search=&page=1&page_size=20` | `{ items: TicketSummary[], total, page, page_size }`, newest first. `search` matches subject or ticket number, case-insensitively. `page` is at least 1 and `page_size` 1–100, else **422**. Any authenticated role may read |
 | POST | `/tickets` | body `{ customer_id, subject, body, channel?: "email"|"chat"|"web"|"api" }` (`channel` defaults to `"web"`; `subject` 1–300 characters, `body` non-empty; unknown keys are **422**) → **201** `Ticket` (also creates first `ticket_messages` row; does **not** start the workflow; unknown `customer_id` is **404**). The first message has role `customer` and the customer's name as author |
 | GET | `/tickets/{id}` | `TicketDetail`; **404** `{ "detail": "Ticket not found" }` for an unknown id. `history` is the customer's other tickets, newest first, at most 10 |
-| POST | `/tickets/{id}/run` | starts the LangGraph workflow (background task). **202** `{ workflow_id, status:"running" }`. **409** when the ticket is already `waiting_on_approval` |
-| GET | `/tickets/{id}/workflow` | `WorkflowState` (latest run) |
-| GET | `/tickets/{id}/events` | `WorkflowEvent[]` (node transitions, tool calls, timings) |
+| POST | `/tickets/{id}/run` | **Planned (P10-5).** Starts the LangGraph workflow (background task). **202** `{ workflow_id, status:"running" }`. **409** when the ticket is already `waiting_on_approval` |
+| GET | `/tickets/{id}/workflow` | **Planned (P10-5).** `WorkflowState` (latest run) |
+| GET | `/tickets/{id}/events` | **Planned (P10-6).** `WorkflowEvent[]` (node transitions, tool calls, timings) |
 | POST | `/tickets/{id}/reply` | body `{ body: string, internal?: boolean }` → `TicketMessage` (sends the final/edited reply; role `agent`) |
 | POST | `/tickets/{id}/request-info` | body `{ questions: string[] }` → `TicketMessage` and ticket status `waiting_on_customer` |
 | POST | `/tickets/{id}/escalate` | body `{ reason, priority?: "normal"|"urgent" }` → `Escalation` |
@@ -64,11 +69,13 @@ TicketDetail = Ticket & { messages: TicketMessage[], customer: Customer, subscri
 ## Schema source and frontend types
 The Pydantic models for the ticket and customer shapes above live in `backend/app/schemas/`
 (`ticket.py`, `ticket_detail.py`, `customer.py`, `workflow.py`; enums in `common.py`). `TicketDetail.workflow`
-is typed as a minimal `WorkflowState` (ids, status, `current_node`, `completed_nodes`, `errors`, timing) that
-keeps extra keys, until the agent phases define the rest. `frontend/lib/types.ts` will mirror this contract
-when the frontend lands; `frontend/` does not exist yet, so the contract and the schemas are the source today.
+is typed as the full `WorkflowState` (P9-1), which keeps extra keys. `frontend/lib/types.ts` will mirror this contract
+when the typed client lands (P12-2); `frontend/` has only the app shell today, so the contract and the schemas
+are the source.
 
 ## Workflow state (what the right-hand panel renders)
+
+The full `WorkflowState` model exists in `backend/app/schemas/workflow.py` (P9-1). No route fills it yet: `TicketDetail.workflow` is `null` until the graph (Phase 10) runs, and `/workflow` is planned.
 ```ts
 WorkflowState = {
   workflow_id, ticket_id, status: "running"|"waiting_for_approval"|"completed"|"failed"|"escalated",
@@ -98,7 +105,7 @@ ResolutionAction = { id, ticket_id, tool, arguments: object, status: "planned"|"
 WorkflowEvent = { id, workflow_id, ticket_id, event_type: "node_started"|"node_completed"|"tool_called"|"llm_called"|"approval_requested"|"approval_resolved"|"error"|"workflow_completed", node: string|null, tool: string|null, message: string, duration_ms: number|null, payload: object, created_at }
 ```
 
-## Approvals (human-in-the-loop)
+## Approvals (human-in-the-loop) - planned, not built (Phase 11)
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/approvals?status=pending` | `ApprovalRequest[]` |
@@ -131,7 +138,7 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 
 `Article = { id, slug, title, category, tags: string[], summary, updated_at }`
 
-## Escalations
+## Escalations - planned, not built (P11-6)
 | Method | Path |
 |---|---|
 | GET | `/escalations?status=` → `Escalation[]` |
@@ -139,7 +146,7 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 
 `Escalation = { id, ticket_id, ticket_number, reason, priority, status: "open"|"acknowledged"|"resolved", created_by: string /* "ai" or the acting user */, assigned_team, created_at, resolved_at? }`
 
-## Agents (observability page)
+## Agents (observability page) - planned, not built (P10-7)
 `GET /agents` → `{ agents: AgentInfo[], graph: { nodes: {id,label}[], edges: {source,target,label?}[] }, recent_runs: WorkflowState[], stats: { runs_total, runs_completed, runs_failed, avg_duration_ms, total_tokens, total_estimated_cost_usd } }`
 `AgentInfo = { name, role, description, tools: string[], last_run_at?, runs: number, avg_duration_ms: number }`
 
@@ -149,4 +156,4 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 
 ## Settings
 `GET /settings` → `{ demo_mode, environment, llm: {llm_provider, llm_model, embedding_provider, embedding_model, api_key_configured, tracing}, vector_store, redis: "real"|"fake", database: "sqlite"|"postgres", approval_policy: { refunds_require_approval, max_refund_without_approval, approval_required_tools: string[] } }`
-`GET /mcp/tools` → `{ tools: {name, description, requires_approval}[] }` (MCP server introspection, optional)
+`GET /mcp/tools` → `{ tools: {name, description, requires_approval}[] }` (MCP server introspection; built, any signed-in role)

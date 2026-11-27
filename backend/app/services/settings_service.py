@@ -3,7 +3,7 @@
 from app.core.config import get_settings
 from app.schemas.settings import ApprovalPolicy, LlmSettings, SettingsView
 
-# CLAUDE.md 7.4. Moves to the ToolRegistry policy when that lands (Phase 6).
+# CLAUDE.md 7.4. A copy of the tool policy's approval bits; it could read `ToolPolicy` instead.
 APPROVAL_REQUIRED_TOOLS = ["create_refund_request", "reset_demo_setting"]
 
 

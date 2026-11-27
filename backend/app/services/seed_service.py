@@ -3,7 +3,7 @@
 Loads `sample_data/*.json` through the repositories, in one transaction, only when `DEMO_MODE` is
 on and the database holds no customers or tickets. Ids are `uuid5` of the record key, so a record
 has the same id on every machine. `previous_resolutions.json` is validated but not loaded: no table
-holds it yet (the Knowledge Agent reads it in Phase 9).
+holds it; the Knowledge Agent reads the file directly for similar cases.
 
 Run by hand with `make seed`, or by the app lifespan at startup.
 """

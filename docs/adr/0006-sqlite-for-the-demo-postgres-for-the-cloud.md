@@ -21,4 +21,5 @@ SQLite, created at startup, with the workflow checkpointer in `AsyncSqliteSaver`
 - SQLite has no row-level security, so the repository tenant filter is the boundary there (see
   [ADR-0001](0001-tenant-id-on-every-table.md)).
 - A restart can drop an in-memory pause, and file checkpoints survive only on a volume.
-- `database/schema.sql` becomes the authority for the table list once it exists (Phase 2).
+- `database/schema.sql` is the authority for the table list (written in Phase 2; 17 tables). The checkpointer is
+  not built yet (Phase 10).

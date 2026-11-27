@@ -1,6 +1,6 @@
 # CloudDesk AI: Git & GitHub Workflow Guide
 
-_Last updated: 2026-11-03 09:19 +0530_
+_Last updated: 2026-11-27 11:20 +0530_
 
 CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
 
@@ -99,6 +99,12 @@ Read these before the first feature branch. CLAUDE.md wins if another file disag
 # 3. First-time setup
 
 The GitHub repository already has main, development, and testing, so you normally clone it (see "Clone the repository" below) instead of seeding it. The steps in the next section are only for re-seeding a remote that has been emptied.
+
+## Install the document-stamp hook (once per clone)
+
+`make setup` runs `git config core.hooksPath .githooks`. The committed hook `.githooks/pre-commit` stamps the
+`_Last updated:` line of each staged document listed in `scripts/stamp_docs.py`. Do not edit those lines by
+hand. Commit with `--no-verify` to skip the stamp once. Pull requests are merged with a merge commit, not a squash.
 
 ## Configure your identity (once per machine)
 
