@@ -122,6 +122,7 @@ READS = [
         lambda w: {"customer_id": w.customer, "memory_type": MemoryType.note, "content": "n"},
         True,
     ),
+    (memory.CustomerMemoryRepository, "ids_for_customer", lambda w: {"customer_id": w.customer}, True),  # noqa: E501
     (audit.AuditLogRepository, "list", lambda w: {}, False),
 ]  # fmt: skip
 

@@ -63,8 +63,8 @@ def test_named_volumes_are_declared_and_mounted():
 
 
 def test_ports_are_published_for_the_web_and_the_api():
-    assert "3000:3000" in SERVICES["frontend"]["ports"]
-    assert "8000:8000" in SERVICES["backend"]["ports"]
+    assert "${FRONTEND_PORT:-3000}:3000" in SERVICES["frontend"]["ports"]
+    assert "${BACKEND_PORT:-8000}:8000" in SERVICES["backend"]["ports"]
 
 
 def test_build_contexts_and_dockerfiles_exist():
@@ -78,7 +78,7 @@ def test_build_contexts_and_dockerfiles_exist():
 def test_the_browser_facing_api_url_is_the_host_port():
     args = SERVICES["frontend"]["build"]["args"]
 
-    assert args["NEXT_PUBLIC_API_URL"] == "http://localhost:8000"
+    assert args["NEXT_PUBLIC_API_URL"] == "http://localhost:${BACKEND_PORT:-8000}"
 
 
 def test_the_backend_runs_the_offline_demo_defaults():
@@ -89,9 +89,16 @@ def test_the_backend_runs_the_offline_demo_defaults():
     assert env["VECTOR_STORE"] == "memory"
     assert env["USE_FAKE_REDIS"] == "false"
     assert env["REDIS_URL"] == "redis://redis:6379/0"
-    assert env["CORS_ORIGINS"] == "http://localhost:3000"
+    assert env["CORS_ORIGINS"] == "http://localhost:${FRONTEND_PORT:-3000}"
     assert env["DATABASE_URL"].endswith("//app/data/support.db")
     assert env["CHECKPOINT_DB_PATH"].startswith("/app/data/")
+
+
+def test_host_ports_default_to_8000_and_3000_and_are_compose_only_variables():
+    # Not read by Settings, so they must not be listed in .env.example (test_env_example).
+    assert "BACKEND_PORT" not in (ROOT / ".env.example").read_text(encoding="utf-8")
+    assert "FRONTEND_PORT" not in (ROOT / ".env.example").read_text(encoding="utf-8")
+    assert "compose-only" in TEXT
 
 
 def test_the_data_directory_is_a_named_volume():

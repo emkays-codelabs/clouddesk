@@ -21,9 +21,11 @@ ENV PATH="/app/.venv/bin:$PATH" \
 RUN useradd --create-home --uid 10001 app && mkdir -p /app/data && chown app:app /app /app/data
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
-# Only the packages that exist today. When agents/ and memory/ land, add their COPY lines.
+# Every top-level package the backend imports: backend/ plus the shared packages beside it.
 COPY --chown=app:app backend/ ./backend/
 COPY --chown=app:app rag/ ./rag/
+COPY --chown=app:app agents/ ./agents/
+COPY --chown=app:app memory/ ./memory/
 COPY --chown=app:app integrations/ ./integrations/
 COPY --chown=app:app sample_data/ ./sample_data/
 COPY --chown=app:app database/ ./database/

@@ -123,6 +123,15 @@ def test_frontend_dockerignore_excludes_env_and_build_output():
     assert {".env", ".env.*", "node_modules", ".next"} <= lines
 
 
+def test_backend_image_copies_the_agents_and_memory_packages():
+    copies = [
+        i for i in _instructions(_read("backend/Dockerfile")) if i.upper().startswith("COPY ")
+    ]
+    for pkg in ("agents", "memory"):
+        assert any(f"{pkg}/" in c and f"./{pkg}/" in c for c in copies), pkg
+        assert (ROOT / pkg).is_dir()
+
+
 def test_backend_image_copies_the_integrations_package_the_tools_import():
     # backend/app/tools imports `integrations`; without this COPY the image fails at import time.
     copies = [

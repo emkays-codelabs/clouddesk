@@ -1,6 +1,10 @@
 # CloudDesk local stack: frontend -> backend -> redis, qdrant.
 #   docker compose up --build
 # Image tags are pinned by tag only: pin by digest before production.
+# Host ports: BACKEND_PORT (default 8000) and FRONTEND_PORT (default 3000) pick the host side of each
+# mapping when a port is busy, e.g. BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build.
+# They are compose-only variables: Settings does not read them. The frontend image inlines the API
+# port at build time, so rebuild it after changing BACKEND_PORT.
 # Secrets come from the environment or an optional .env (git-ignored); nothing secret is written here.
 name: clouddesk
 
@@ -42,7 +46,7 @@ services:
     environment:
       DEMO_MODE: "true"
       ENVIRONMENT: development
-      CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-3000}
       JWT_SECRET: ${JWT_SECRET:-change-me-demo-only}
       DATABASE_URL: sqlite+aiosqlite:////app/data/support.db
       CHECKPOINT_DB_PATH: /app/data/checkpoints.db
@@ -53,7 +57,7 @@ services:
       VECTOR_STORE: memory
       QDRANT_URL: http://qdrant:6333
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - backend-data:/app/data
     depends_on:
@@ -79,10 +83,10 @@ services:
       dockerfile: Dockerfile
       args:
         # The browser, not the container, calls the API, so this is the host-published port
-        # (localhost:8000), not the Docker service name "backend". It is inlined at build time.
-        NEXT_PUBLIC_API_URL: http://localhost:8000
+        # (localhost:${BACKEND_PORT}), not the Docker service name "backend". It is inlined at build time.
+        NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-8000}
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy

@@ -42,3 +42,15 @@ async def test_delete_for_customer_removes_only_that_customers_rows(session, ten
     await session.commit()
     assert await mem.list_for_customer(a.id) == []
     assert len(await mem.list_for_customer(b.id)) == 1
+
+
+async def test_ids_for_customer_lists_every_row_beyond_the_recall_limit(session, tenants):
+    a, b = await _seed(session)
+    mem = CustomerMemoryRepository(session)
+    made = [
+        (await mem.add(customer_id=a.id, memory_type=MemoryType.note, content=f"a{i}")).id
+        for i in range(12)
+    ]
+    await mem.add(customer_id=b.id, memory_type=MemoryType.note, content="b0")
+    await session.commit()
+    assert sorted(await mem.ids_for_customer(a.id)) == sorted(made)
