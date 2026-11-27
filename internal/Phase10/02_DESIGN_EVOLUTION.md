@@ -51,3 +51,12 @@ No worker process, so a restart loses a run in flight. Only the 12-step and 0.6-
 ## I. Completion summary
 
 Seven tasks done; 1320 backend tests pass offline; the graph ran end to end in Docker on the real model.
+
+
+---
+
+## QA remediation, 2026-11-27: one live run per ticket
+
+The local audit found that `create_run` only refused a run while the ticket waited on an approval, so a second run could start while one was live and two runs could race on one ticket. `backend/app/services/workflow_service.py` now returns a conflict (409) when the latest run is still `running`, unless it started more than 15 minutes ago (`RUN_STALE_AFTER`), because a restart drops in-flight runs and must not block a ticket forever. Regression test: `tests/workflow/test_graph_run.py`.
+
+Latency findings (measured, not changed): a real-model run takes about 165 seconds in five sequential model calls (classification, severity, diagnosis, resolution plan, escalation judgement), over 90 percent of it provider time; everything else totals under 0.3 seconds. The escalation-judgement call records a duration of 0 ms although its node takes about 30 seconds, an instrumentation gap. Candidate savings, none applied: classification and severity in parallel, a faster tier for the resolution plan, and skipping the escalation judgement when a policy rule already decides (a safety path, so it needs an owner decision).

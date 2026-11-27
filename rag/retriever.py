@@ -36,6 +36,19 @@ TITLE_WEIGHT = 0.5
 MIN_TOP_SCORE = 0.3  # below this the best hit is not good enough
 MIN_COVERAGE = 0.5  # share of query terms that must appear in the top hits
 SNIPPET_CHARS = 240
+# Relevance cut-off. The ranking `score` is rank-based, so an unanswerable question still scores
+# 0.93-0.96 and cannot be thresholded. What separates answers from padding is how many of the
+# query's content words the ARTICLE contains (all its chunks, so the answer does not depend on
+# which chunk happened to rank first). Measured over the 16 evaluation cases the expected article
+# covers 0.36-0.83 of them (5 or more words in 15 cases); the padding next to it mostly covers
+# 0.05-0.3. On four unanswerable questions no article covers more than 0.5 or more than 2 words,
+# and three of the four stay at 0.25 or below.
+MIN_TERM_COVERAGE = 0.3  # an article below this is not about the query
+MIN_MATCHED_TERMS = 2  # one shared word is a coincidence (capped at the number of query words)
+RELATIVE_COVERAGE = 0.5  # drop neighbours covering under half of what the best hit covers
+STRONG_COVERAGE = 0.4  # "strong" needs this share of the query's words ...
+STRONG_MATCHED_TERMS = 3  # ... at least this many words ...
+STRONG_RELATIVE = 0.75  # ... and to be close to the best hit, so a neighbour never looks as good
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 _STOPWORDS = frozenset(
@@ -138,14 +151,39 @@ def cache_key(mode: str, category: str | None, top_k: int, query: str) -> str:
     return f"rag:{mode}:{category or ''}:{top_k}:{query}"
 
 
+_SENTENCE_END = re.compile(r"""[.!?]["')\]]?(?=\s|$)""")
+
+
+def snippet_of(text: str, limit: int = SNIPPET_CHARS) -> str:
+    """A readable excerpt of at most `limit` characters plus an ellipsis, never cut inside a word.
+
+    Prefers the last sentence end past the halfway point, then the last word break; a single
+    unbroken run longer than `limit` is hard-cut. The ellipsis marks that more text exists.
+    """
+    text = text.strip()
+    if len(text) <= limit:
+        return text
+    window = text[:limit]
+    ends = [m.end() for m in _SENTENCE_END.finditer(window)]
+    if ends and ends[-1] >= limit // 2:
+        return window[: ends[-1]].rstrip() + "…"
+    # Cut at a word break unless the window already ends exactly at one.
+    if not text[limit].isspace():
+        space = window.rfind(" ")
+        if space > 0:
+            window = window[:space]
+    return window.rstrip().rstrip(",;:-–—(") + "…"
+
+
 def _evidence(doc: Document, score: float) -> dict[str, Any]:
-    body = doc.text.split("\n", 1)[-1]
+    body = doc.text.split("\n", 1)[-1].strip()
     article = doc.metadata["article_id"]
     return {
         "id": doc.id,
         "title": doc.metadata["title"],
         "source": doc.metadata["source"],
-        "snippet": body[:SNIPPET_CHARS].strip(),
+        "snippet": snippet_of(body),
+        "passage": body,
         "score": round(score, 4),
         "url": f"/knowledge/{article}",
         "article_id": article,
@@ -168,6 +206,11 @@ class HybridRetriever:
         self._embeddings = embeddings
         self._docs = {d.id: d for d in documents}
         self._order = [d.id for d in documents]
+        # Every word of every chunk of an article, for the relevance cut-off.
+        self._article_words: dict[str, set[str]] = {}
+        for d in documents:
+            words = self._article_words.setdefault(d.metadata["article_id"], set())
+            words.update(tokenize(f"{d.text} {d.metadata.get('title', '')}"))
         corpus = [
             tokenize(f"{d.text} {' '.join(d.metadata.get('tags', []))}") or ["_"] for d in documents
         ]
@@ -213,6 +256,11 @@ class HybridRetriever:
             rankings += await self._rank([" ".join(gaps)], mode, flt)
             hits = await self._finish(query, rankings, category, top_k)
             sufficient, gaps = self._check(query, hits)
+
+        # The cut-off runs last, so the sufficiency passes above see the same ranking as before.
+        hits = self._relevant(query, hits)
+        if not any(h["strength"] == "strong" for h in hits):
+            sufficient = False
 
         if self._cache is not None:
             payload = {"evidence": hits, "sufficient": sufficient, "gaps": gaps, "passes": passes}
@@ -289,6 +337,39 @@ class HybridRetriever:
         if self._llm_rerank is not None:
             evidence = await _maybe_await(self._llm_rerank(query, evidence))
         return evidence[:top_k]
+
+    def _coverage(self, terms: list[str], evidence: dict[str, Any]) -> tuple[int, float]:
+        """(matched words, share of the query's words) found anywhere in the hit's article."""
+        seen = self._article_words.get(evidence.get("article_id") or "", set())
+        if not seen or not terms:
+            return 0, 0.0
+        # A prefix match tolerates "lockout" vs "locked" without a real stemmer (as `_check` does).
+        matched = sum(1 for t in terms if any(s[:5] == t[:5] for s in seen))
+        return matched, matched / len(terms)
+
+    def _relevant(self, query: str, evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Keep only hits about the query: fewer than `top_k`, or none, when evidence is thin.
+
+        Each kept hit is labelled "strong" or "partial" so a neighbour that only shares a few
+        words is never shown as if it were as good as the answer.
+        """
+        terms = list(dict.fromkeys(tokenize(query)))
+        if not terms:
+            return evidence
+        need = min(MIN_MATCHED_TERMS, len(terms))
+        measured = [(e, *self._coverage(terms, e)) for e in evidence]
+        best = max((cov for _, _, cov in measured), default=0.0)
+        kept: list[dict[str, Any]] = []
+        for e, matched, cov in measured:
+            if matched < need or cov < MIN_TERM_COVERAGE or cov < best * RELATIVE_COVERAGE:
+                continue
+            strong = (
+                cov >= STRONG_COVERAGE
+                and matched >= min(STRONG_MATCHED_TERMS, len(terms))
+                and cov >= best * STRONG_RELATIVE
+            )
+            kept.append({**e, "strength": "strong" if strong else "partial"})
+        return kept
 
     @staticmethod
     def _rerank_score(base: float, doc: Document, q_terms: set[str], category: str | None) -> float:

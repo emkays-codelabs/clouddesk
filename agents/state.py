@@ -12,6 +12,8 @@ Must NOT: hold behaviour, large documents in the reducer fields, or any database
 import operator
 from typing import Annotated, Any, TypedDict
 
+from app.schemas.workflow import combine_basis
+
 # Budgets that end a run instead of letting it loop (CLAUDE.md 7.2, upstream FR-22).
 MAX_GRAPH_STEPS = 12
 ESCALATE_CONFIDENCE = 0.6
@@ -25,6 +27,9 @@ def merge_usage(left: dict[str, Any] | None, right: dict[str, Any] | None) -> di
     merged: dict[str, Any] = {k: int(left.get(k, 0)) + int(right.get(k, 0)) for k in _USAGE_KEYS}
     cost = float(left.get("estimated_cost_usd", 0.0)) + float(right.get("estimated_cost_usd", 0.0))
     merged["estimated_cost_usd"] = round(cost, 8)
+    merged["cost_basis"] = combine_basis(
+        left.get("cost_basis", "none"), right.get("cost_basis", "none")
+    )
     return merged
 
 

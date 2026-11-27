@@ -102,3 +102,4 @@ docs/10_PROMPT_COST.md
 internal/Phase*/04_INTERVIEW_QNA.md
 e2e/last-run.png
 test-results/
+frontend/e2e/shots/

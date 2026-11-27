@@ -26,8 +26,12 @@ class Evidence(BaseModel):
     source: str
     snippet: str
     score: float
+    # The whole retrieved passage; `snippet` is a short excerpt of it, ending in an ellipsis if cut.
+    passage: str | None = None
     url: str | None = None
     article_id: str | None = None
+    # How well the passage covers the query: "strong", or "partial" (related, not conclusive).
+    strength: Literal["strong", "partial"] | None = None
 
 
 class SearchRequest(BaseModel):

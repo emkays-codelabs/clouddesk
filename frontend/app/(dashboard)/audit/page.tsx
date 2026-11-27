@@ -7,6 +7,20 @@ import { api } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { usePolling } from "@/lib/hooks";
 
+/** "POST /api/v1/tickets/x/run" as a small method badge plus the path. */
+function ActionText({ action }: { action: string }) {
+  const [method, ...rest] = action.split(" ");
+  if (rest.length === 0) return <>{action}</>;
+  return (
+    <span className="flex items-center gap-2">
+      <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-brand-700">
+        {method}
+      </span>
+      <span className="break-all">{rest.join(" ")}</span>
+    </span>
+  );
+}
+
 export default function AuditPage() {
   const [actor, setActor] = useState("");
   const { data, error, loading } = usePolling(() => api.audit({ actor, page_size: 50 }), [actor]);
@@ -16,7 +30,7 @@ export default function AuditPage() {
       <input
         aria-label="Filter by actor"
         placeholder="Filter by actor"
-        className="mb-4 rounded border border-slate-300 px-3 py-2 text-sm"
+        className="mb-4 w-64 rounded-xl border border-sand-200 bg-white px-3 py-2 text-sm"
         value={actor}
         onChange={(e) => setActor(e.target.value)}
       />
@@ -36,10 +50,14 @@ export default function AuditPage() {
             <tbody className="divide-y divide-slate-100 bg-white">
               {data?.items.map((a) => (
                 <tr key={a.id}>
-                  <td className="py-2">{formatDate(a.created_at)}</td>
-                  <td>{a.actor}</td>
-                  <td>{a.action}</td>
-                  <td className="font-mono text-xs">{a.request_id ?? "-"}</td>
+                  <td className="whitespace-nowrap py-2 text-slate-600">{formatDate(a.created_at)}</td>
+                  <td className="whitespace-nowrap">{a.actor}</td>
+                  <td>
+                    <ActionText action={a.action} />
+                  </td>
+                  <td className="whitespace-nowrap font-mono text-xs text-slate-500" title={a.request_id ?? undefined}>
+                    {a.request_id ? a.request_id.slice(0, 8) : "-"}
+                  </td>
                 </tr>
               ))}
             </tbody>

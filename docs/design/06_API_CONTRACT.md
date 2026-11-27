@@ -1,6 +1,6 @@
 # Project 1 – Backend API Contract (v1)
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 20:27 +0530_
 
 Base URL: `http://localhost:8000` (env `NEXT_PUBLIC_API_URL`). All routes below are prefixed with `/api/v1`
 except the health routes. All non-auth routes require `Authorization: Bearer <jwt>`.
@@ -85,7 +85,7 @@ WorkflowState = {
   severity: Severity | null,
   severity_reason: string | null,
   customer_context: { customer: Customer, subscription: Subscription|null, workspace: Workspace|null, previous_tickets: TicketSummary[], memory_notes: string[] } | null,
-  retrieved_docs: Evidence[],           // { id, title, source, snippet, score, url?, article_id? }
+  retrieved_docs: Evidence[],           // { id, title, source, snippet, score, passage?, url?, article_id?, strength? }  strength: "strong" | "partial"; snippet ends in an ellipsis when cut, passage is the whole text; fewer than top_k hits, or none, when evidence is thin
   previous_cases: { ticket_number, subject, resolution_summary, similarity }[],
   diagnosis: { problem: string, probable_causes: string[], troubleshooting_steps: string[], confidence: number } | null,
   resolution_plan: { summary: string, customer_response: string, internal_notes: string, actions: PlannedAction[] } | null,
@@ -98,7 +98,7 @@ WorkflowState = {
   final_response: string|null,
   ticket_summary: string|null,
   errors: string[],
-  started_at, finished_at?, duration_ms?, token_usage: { prompt_tokens, completion_tokens, total_tokens, estimated_cost_usd }
+  started_at, finished_at?, duration_ms?, token_usage: { prompt_tokens, completion_tokens, total_tokens, estimated_cost_usd, cost_basis }  cost_basis: "none" | "actual" | "estimated" | "unavailable" (unavailable = no verified price; the cost is not a total)
 }
 PlannedAction = { tool: string, arguments: object, requires_approval: boolean, description: string }
 ResolutionAction = { id, ticket_id, tool, arguments: object, status: "planned"|"pending_approval"|"approved"|"executed"|"rejected"|"failed", result: object|null, requires_approval, created_at, executed_at? }
@@ -147,7 +147,7 @@ CustomerMemory = { id, customer_id, memory_type: "preference"|"past_issue"|"trou
 `Escalation = { id, ticket_id, ticket_number, reason, priority, status: "open"|"acknowledged"|"resolved", created_by: string /* "ai" or the acting user */, assigned_team, created_at, resolved_at? }`
 
 ## Agents (observability page) - planned, not built (P10-7)
-`GET /agents` → `{ agents: AgentInfo[], graph: { nodes: {id,label}[], edges: {source,target,label?}[] }, recent_runs: WorkflowState[], stats: { runs_total, runs_completed, runs_failed, avg_duration_ms, total_tokens, total_estimated_cost_usd } }`
+`GET /agents` → `{ agents: AgentInfo[], graph: { nodes: {id,label}[], edges: {source,target,label?}[] }, recent_runs: WorkflowState[], stats: { runs_total, runs_completed, runs_failed, avg_duration_ms, total_tokens, total_estimated_cost_usd, cost_basis } }`
 `AgentInfo = { name, role, description, tools: string[], last_run_at?, runs: number, avg_duration_ms: number }`
 
 ## Audit

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { ActionCard } from "@/components/tickets/ActionCard";
 import { ApprovalDiff } from "@/components/tickets/ApprovalDiff";
+import { DiagnosisPanel } from "@/components/tickets/DiagnosisPanel";
 import { EvidencePanel } from "@/components/tickets/EvidencePanel";
 import { TicketTimeline } from "@/components/tickets/TicketTimeline";
 import { WorkflowSteps } from "@/components/tickets/WorkflowSteps";
@@ -20,6 +21,8 @@ import type { WorkflowState } from "@/lib/types";
 
 const FINISHED = ["completed", "escalated", "failed"];
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 function Chip({ children }: { children: string }) {
   return <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">{children}</span>;
 }
@@ -30,10 +33,17 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
   const act = canAct(user);
   const ticket = usePolling(() => api.ticket(id), [id]);
   // Poll the workflow every 2 s until the run finishes (it also stops while the tab is hidden).
+  // After "Run", keep polling until the NEW run shows up and ends; otherwise a stale finished state
+  // from the previous run would stop the polling and leave the button enabled.
+  const [expectedRun, setExpectedRun] = useState<string | null>(null);
   const workflow = usePolling<WorkflowState | null>(
     () => api.workflow(id).catch((e) => (e?.status === 404 ? null : Promise.reject(e))),
     [id],
-    { intervalMs: 2000, stopWhen: (w) => !!w && FINISHED.includes(w.status) },
+    {
+      intervalMs: 2000,
+      stopWhen: (w) =>
+        !!w && FINISHED.includes(w.status) && (expectedRun === null || w.workflow_id === expectedRun),
+    },
   );
   const events = usePolling(() => api.events(id), [id, workflow.data?.status, workflow.data?.completed_nodes?.length], {
     intervalMs: 2000,
@@ -50,6 +60,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
   const [reply, setReply] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const replyBox = useRef<HTMLTextAreaElement>(null);
   const state = workflow.data;
 
   useEffect(() => {
@@ -57,10 +68,34 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.final_response]);
 
+  // Grow the reply box with its text, up to a maximum; beyond that it scrolls.
+  useEffect(() => {
+    const el = replyBox.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 150), 320)}px`;
+  }, [reply]);
+
   useEffect(() => {
     if (state) void ticket.refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.status]);
+
+  async function startRun() {
+    setBusy(true);
+    setNote(null);
+    try {
+      const run = await api.runWorkflow(id);
+      setExpectedRun(run.workflow_id);
+      setNote("Workflow started.");
+      await sleep(400);
+      await Promise.all([ticket.refresh(), workflow.refresh()]);
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : "That did not work.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function guarded(action: () => Promise<unknown>, done: string) {
     setBusy(true);
@@ -78,6 +113,9 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
 
   const t = ticket.data;
   const pending = state?.approval_status === "pending" && !!state.approval_request_id;
+  const runStale = expectedRun !== null && state?.workflow_id !== expectedRun;
+  const running = state?.status === "running" || runStale;
+  const runLabel = running ? "Workflow running…" : state ? "Run workflow again" : "Run AI workflow";
   return (
     <div>
       <Link href="/tickets" className="text-sm text-slate-600 hover:underline">
@@ -98,7 +136,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                 {note}
               </p>
             ) : null}
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr_1.4fr]">
               <div className="space-y-4">
                 <Card title="Conversation">
                   <ul className="space-y-3 text-sm">
@@ -119,12 +157,14 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                   </label>
                   <textarea
                     id="reply"
-                    className="h-32 w-full rounded border border-slate-300 p-2 text-sm"
+                    ref={replyBox}
+                    rows={6}
+                    className="min-h-[150px] max-h-80 w-full resize-none rounded-xl border border-sand-200 bg-white p-3 text-sm"
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     placeholder="Write a reply, or run the workflow for a draft"
                   />
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2 [&>button]:whitespace-nowrap [&>button]:px-3">
                     <Button
                       disabled={!act || busy || !reply.trim()}
                       onClick={() => guarded(() => api.reply(id, reply), "Reply sent.")}
@@ -156,22 +196,61 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
               </div>
 
               <Card title="Customer">
-                <div className="space-y-2 text-sm">
-                  <div className="font-medium">
+                <div className="space-y-3 text-sm">
+                  <div className="text-base font-semibold">
                     <Link className="hover:underline" href={`/customers/${t.customer.id}`}>
                       {t.customer.name}
                     </Link>
                   </div>
-                  <div>
-                    {t.customer.company} · {t.customer.plan_name}
-                  </div>
-                  {t.subscription ? (
-                    <div>
-                      {t.subscription.seats} seats · {t.subscription.status} · storage {t.subscription.storage_used_gb}/
-                      {t.subscription.storage_quota_gb} GB
+                  <dl className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-xl bg-sand-50 p-2">
+                      <dt className="text-slate-500">Company</dt>
+                      <dd className="font-semibold">{t.customer.company}</dd>
                     </div>
-                  ) : null}
-                  <div className="pt-2 font-medium">Earlier tickets</div>
+                    <div className="rounded-xl bg-sand-50 p-2">
+                      <dt className="text-slate-500">Plan</dt>
+                      <dd className="font-semibold capitalize">{t.customer.plan_name}</dd>
+                    </div>
+                    {t.subscription ? (
+                      <>
+                        <div className="rounded-xl bg-sand-50 p-2">
+                          <dt className="text-slate-500">Account status</dt>
+                          <dd>
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold capitalize text-emerald-800">
+                              {t.subscription.status}
+                            </span>
+                          </dd>
+                        </div>
+                        <div className="rounded-xl bg-sand-50 p-2">
+                          <dt className="text-slate-500">Seats</dt>
+                          <dd className="font-semibold">{t.subscription.seats}</dd>
+                        </div>
+                        <div className="col-span-2 rounded-xl bg-sand-50 p-2">
+                          <dt className="text-slate-500">Storage</dt>
+                          <dd className="font-semibold">
+                            {t.subscription.storage_used_gb} / {t.subscription.storage_quota_gb} GB
+                          </dd>
+                        </div>
+                      </>
+                    ) : null}
+                  </dl>
+                  <dl className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-xl bg-sand-50 p-2">
+                      <dt className="text-slate-500">Customer since</dt>
+                      <dd className="font-semibold">{formatDate(t.customer.created_at)}</dd>
+                    </div>
+                    {t.customer.region ? (
+                      <div className="rounded-xl bg-sand-50 p-2">
+                        <dt className="text-slate-500">Region</dt>
+                        <dd className="font-semibold">{t.customer.region}</dd>
+                      </div>
+                    ) : null}
+                    <div className="col-span-2 rounded-xl bg-sand-50 p-2">
+                      <dt className="text-slate-500">Customer ID</dt>
+                      <dd className="break-all font-mono text-[11px]">{t.customer.id}</dd>
+                    </div>
+                  </dl>
+                  <div className="pt-2 font-medium">Earlier tickets ({t.history.length})</div>
                   {t.history.length === 0 ? (
                     <div className="text-slate-500">None.</div>
                   ) : (
@@ -189,29 +268,29 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                 </div>
               </Card>
 
-              <Card title="AI workflow">
-                <div className="space-y-3 text-sm">
-                  <Button
-                    disabled={!act || busy || state?.status === "running" || t.status === "waiting_on_approval"}
-                    onClick={() => guarded(() => api.runWorkflow(id), "Workflow started.")}
-                  >
-                    {state ? "Run again" : "Run AI workflow"}
-                  </Button>
-                  <WorkflowSteps state={state} />
-                  {state?.classification ? (
-                    <div className="flex flex-wrap gap-2">
-                      <Chip>{humanize(state.classification.category)}</Chip>
-                      {state.severity ? <Chip>{`severity ${state.severity}`}</Chip> : null}
-                      {state.risk ? <RiskBadge level={state.risk.level} /> : null}
-                      <Chip>{`${state.token_usage.total_tokens} tokens`}</Chip>
-                    </div>
-                  ) : null}
-                  {state?.escalation_required ? (
-                    <p className="rounded bg-red-50 p-2 text-red-800">Escalated: {state.escalation_reason}</p>
-                  ) : null}
+              <Card title="AI workflow" className="lg:self-start">
+                <div className="space-y-4 text-sm">
+                  <section aria-label="Workflow status" className="sticky top-16 z-10 -mx-5 -mt-1 space-y-3 border-b border-sand-200 bg-white/95 px-5 pb-3 pt-1 backdrop-blur">
+                    <Button
+                      disabled={!act || busy || running || t.status === "waiting_on_approval"}
+                      onClick={() => void startRun()}
+                    >
+                      {runLabel}
+                    </Button>
+                    <WorkflowSteps state={state} />
+                    {state?.classification ? (
+                      <div className="flex flex-wrap gap-2">
+                        <Chip>{humanize(state.classification.category)}</Chip>
+                        {state.severity ? <Chip>{`severity ${state.severity}`}</Chip> : null}
+                        {state.risk ? <RiskBadge level={state.risk.level} /> : null}
+                        <Chip>{`${state.token_usage.total_tokens} tokens`}</Chip>
+                      </div>
+                    ) : null}
+                  </section>
+
                   {pending && state ? (
-                    <div className="rounded border border-amber-300 bg-amber-50 p-3">
-                      <div className="mb-2 font-medium">Waiting for your approval</div>
+                    <section aria-label="Approval" className="rounded-xl border border-amber-300 bg-amber-50 p-3">
+                      <div className="mb-2 font-semibold">Waiting for your approval</div>
                       {approval.data ? (
                         <ApprovalDiff
                           action={approval.data.action}
@@ -223,7 +302,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                           .filter((a) => a.requires_approval)
                           .map((a) => <div key={a.tool}>{a.description}</div>)
                       )}
-                      <div className="mt-2 flex gap-2">
+                      <div className="mt-3 flex gap-2">
                         <Button
                           disabled={!act || busy}
                           onClick={() => guarded(() => api.approve(state.approval_request_id!), "Approved. Running the action.")}
@@ -238,41 +317,76 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                           Reject
                         </Button>
                       </div>
-                    </div>
+                    </section>
                   ) : null}
-                  {state?.retrieved_docs.length ? (
-                    <div>
-                      <div className="mb-1 font-medium">Evidence</div>
-                      <EvidencePanel evidence={state.retrieved_docs} />
-                    </div>
+
+                  {state?.escalation_required ? (
+                    <section aria-label="Escalation" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-rose-900">
+                      <div className="font-semibold">Escalated to a person</div>
+                      <p>Escalated: {state.escalation_reason}</p>
+                    </section>
                   ) : null}
+
+                  {state?.retrieved_docs.length || state?.completed_nodes.includes("knowledge_retrieval") ? (
+                    <details open className="group">
+                      <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Evidence ({state?.retrieved_docs.length ?? 0})
+                      </summary>
+                      <div className="mt-2">
+                        <EvidencePanel evidence={state?.retrieved_docs ?? []} />
+                      </div>
+                    </details>
+                  ) : null}
+
                   {state?.diagnosis ? (
-                    <div>
-                      <div className="font-medium">Diagnosis</div>
-                      <p>{state.diagnosis.problem}</p>
-                      <ol className="list-decimal pl-5">
-                        {state.diagnosis.troubleshooting_steps.map((s) => (
-                          <li key={s}>{s.replace(/^\d+[.)]\s*/, "")}</li>
-                        ))}
-                      </ol>
-                    </div>
+                    <details open>
+                      <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Diagnosis and recommended actions
+                      </summary>
+                      <div className="mt-2">
+                        <DiagnosisPanel diagnosis={state.diagnosis} />
+                      </div>
+                    </details>
                   ) : null}
+
                   {state?.actions.length ? (
-                    <div className="space-y-2">
-                      <div className="font-medium">Actions</div>
-                      {state.actions.map((a) => (
-                        <ActionCard
-                          key={a.id}
-                          action={{ tool: a.tool, requires_approval: a.requires_approval }}
-                          status={a.status}
-                        />
-                      ))}
-                    </div>
+                    <details open>
+                      <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Actions ({state.actions.length})
+                      </summary>
+                      <div className="mt-2 space-y-2">
+                        {state.actions.map((a) => (
+                          <ActionCard
+                            key={a.id}
+                            action={{ tool: a.tool, requires_approval: a.requires_approval }}
+                            status={a.status}
+                          />
+                        ))}
+                      </div>
+                    </details>
                   ) : null}
-                  <div>
-                    <div className="mb-1 font-medium">Timeline</div>
-                    <TicketTimeline events={events.data ?? []} />
-                  </div>
+
+                  {state?.ticket_summary ? (
+                    <details open>
+                      <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Summary
+                      </summary>
+                      <p className="mt-2 whitespace-pre-wrap text-slate-700">{state.ticket_summary}</p>
+                      {state.completed_nodes.includes("memory_update") ? (
+                        <p className="mt-1 text-xs text-slate-500">Safe customer notes were saved for next time.</p>
+                      ) : null}
+                    </details>
+                  ) : null}
+
+                  <details>
+                    <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Timeline ({events.data?.length ?? 0} events)
+                    </summary>
+                    <div className="mt-2">
+                      <TicketTimeline events={events.data ?? []} />
+                    </div>
+                  </details>
+
                   {state?.errors.length ? (
                     <p role="alert" className="text-red-700">
                       {state.errors.join("; ")}

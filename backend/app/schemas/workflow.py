@@ -44,12 +44,19 @@ __all__ = [
 
 
 class TokenUsage(BaseModel):
-    """Tokens and an estimated cost. The fake provider is always 0.0 (an estimate, never a bill)."""
+    """Tokens and a cost, with how much to trust the cost.
+
+    `cost_basis`: "none" (no model was called), "actual" (the provider reported it), "estimated"
+    (from a price the owner configured; the offline fake provider is a known 0.0) or "unavailable"
+    (tokens were used but no verified price exists, so `estimated_cost_usd` is NOT a total and must
+    not be shown as one).
+    """
 
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
     estimated_cost_usd: float = 0.0
+    cost_basis: Literal["none", "actual", "estimated", "unavailable"] = "none"
 
     def __add__(self, other: "TokenUsage") -> "TokenUsage":
         return TokenUsage(
@@ -57,7 +64,19 @@ class TokenUsage(BaseModel):
             completion_tokens=self.completion_tokens + other.completion_tokens,
             total_tokens=self.total_tokens + other.total_tokens,
             estimated_cost_usd=round(self.estimated_cost_usd + other.estimated_cost_usd, 8),
+            cost_basis=combine_basis(self.cost_basis, other.cost_basis),
         )
+
+
+def combine_basis(a: str, b: str) -> Literal["none", "actual", "estimated", "unavailable"]:
+    """The weakest basis of two: any unavailable part makes the total unavailable."""
+    if a == "none":
+        return b  # type: ignore[return-value]
+    if b == "none" or a == b:
+        return a  # type: ignore[return-value]
+    if "unavailable" in (a, b):
+        return "unavailable"
+    return "estimated"
 
 
 class Classification(BaseModel):

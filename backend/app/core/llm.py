@@ -42,8 +42,25 @@ EURON_BASE_URL = "https://api.euron.one/api/v1/euri"
 OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 REQUEST_TIMEOUT_SECONDS = 60.0
 
-# USD per million tokens (input, output). Estimates only; a model not listed is costed at 0.0.
+# USD per million tokens (input, output), published list prices. A model not listed has NO verified
+# price: its cost is unavailable unless the owner sets LLM_PRICING. Euron prices are not listed.
 PRICE_PER_MILLION: dict[str, tuple[float, float]] = {"gpt-4o-mini": (0.15, 0.60)}
+
+
+def configured_cost(
+    model: str, prompt_tokens: int, completion_tokens: int, pricing: str
+) -> float | None:
+    """Cost from the owner's LLM_PRICING for `model`; None when empty, invalid or silent."""
+    if not pricing.strip():
+        return None
+    try:
+        rates = json.loads(pricing).get(model)
+        rate_in, rate_out = float(rates[0]), float(rates[1])
+    except (ValueError, TypeError, IndexError, KeyError, AttributeError):
+        return None
+    if len(rates) != 2 or rate_in < 0 or rate_out < 0:
+        return None
+    return (prompt_tokens * rate_in + completion_tokens * rate_out) / 1_000_000
 
 
 class LLMError(Exception):
@@ -62,6 +79,7 @@ class Completion:
     completion_tokens: int = 0
     model: str = ""  # set by the router: the model that served this call
     tier: str = ""  # set by the router: the tier that served it (may be below the one asked for)
+    reported_cost_usd: float | None = None  # a cost the provider itself reported, if it does
 
 
 @dataclass
@@ -81,7 +99,7 @@ class LLMProvider(Protocol):
     name: str
     model: str
 
-    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float: ...
+    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float | None: ...
 
     async def complete(
         self,
@@ -241,8 +259,8 @@ class FakeProvider:
     name = "fake"
     model = "fake"
 
-    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float:
-        return 0.0
+    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float | None:
+        return 0.0  # known: the offline provider is free
 
     async def complete(
         self,
@@ -283,9 +301,12 @@ class OpenAICompatibleProvider:
             max_retries=0,
         )
 
-    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float:
-        rate_in, rate_out = PRICE_PER_MILLION.get(self.model, (0.0, 0.0))
-        return (prompt_tokens * rate_in + completion_tokens * rate_out) / 1_000_000
+    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float | None:
+        """None when no verified price exists for this model: unknown is never zero."""
+        rates = PRICE_PER_MILLION.get(self.model)
+        if rates is None:
+            return None
+        return (prompt_tokens * rates[0] + completion_tokens * rates[1]) / 1_000_000
 
     async def complete(
         self,
@@ -300,10 +321,12 @@ class OpenAICompatibleProvider:
             temperature=temperature,
         )
         usage = response.usage
+        reported = getattr(usage, "cost", None)
         return Completion(
             text=response.choices[0].message.content or "",
             prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
             completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            reported_cost_usd=float(reported) if isinstance(reported, int | float) else None,
         )
 
 
@@ -369,6 +392,19 @@ def _system_with_schema(system: str, schema: type[BaseModel]) -> str:
     return f"{system}\n\nReply with one JSON object only, matching this JSON Schema:\n{spec}"
 
 
+def _cost_of(provider: LLMProvider, completion: Completion) -> tuple[float | None, str]:
+    """(cost, basis) for one call: provider-reported, else configured price, else unavailable."""
+    if completion.reported_cost_usd is not None:
+        return completion.reported_cost_usd, "actual"
+    model = completion.model or getattr(provider, "model", "")
+    cost = configured_cost(
+        model, completion.prompt_tokens, completion.completion_tokens, get_settings().llm_pricing
+    )
+    if cost is None:
+        cost = provider.estimate_cost(completion.prompt_tokens, completion.completion_tokens)
+    return (cost, "estimated") if cost is not None else (None, "unavailable")
+
+
 async def call_structured[T: BaseModel](
     schema: type[T],
     *,
@@ -415,12 +451,13 @@ async def call_structured[T: BaseModel](
             # A RouterError names only models and exception classes, so it is safe to show.
             detail = str(exc) if isinstance(exc, RouterError) else type(exc).__name__
             raise LLMError(f"{provider.name} call failed: {detail}", usage, elapsed()) from exc
-        cost = provider.estimate_cost(completion.prompt_tokens, completion.completion_tokens)
+        cost, basis = _cost_of(provider, completion)
         usage = usage + TokenUsage(
             prompt_tokens=completion.prompt_tokens,
             completion_tokens=completion.completion_tokens,
             total_tokens=completion.prompt_tokens + completion.completion_tokens,
-            estimated_cost_usd=cost,
+            estimated_cost_usd=cost or 0.0,
+            cost_basis=basis,
         )
         try:
             output = schema.model_validate(_extract_json(completion.text))

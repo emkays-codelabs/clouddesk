@@ -92,6 +92,8 @@ class AgentStats(BaseModel):
     avg_duration_ms: float = 0.0
     total_tokens: int = 0
     total_estimated_cost_usd: float = 0.0
+    # "none", "actual", "estimated" or "unavailable": how far to trust the cost above.
+    cost_basis: str = "none"
 
 
 class AgentsOverview(BaseModel):

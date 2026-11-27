@@ -206,3 +206,16 @@ Scalability is not demonstrated: no load test, and the index is per process.
 - **Verified outcomes (2026-11-22):** 893 tests passed, `ruff check .` clean, hit-rate@3 of 1.0 on the 11 demo queries (offline), 15 articles and 75 chunks indexed.
 - **Outstanding:** a real Qdrant run, a real Redis run, real embeddings, chunk screening, F6.
 - **Carried forward:** the retriever's evidence shape and `chunk_filter` hook (Phase 7 screening, Phase 9 Knowledge Agent); the `VectorStoreService` protocol; the Redis cache adapter; the knowledge routes (Phase 12 knowledge page).
+
+
+---
+
+## QA remediation, 2026-11-27: relevance cut-off and readable passages
+
+Found during the local QA audit: retrieval always returned `top_k` articles, so a refund ticket showed sharing and roles articles next to the refund article, and an unanswerable question still returned five hits.
+
+- **Root cause.** The evidence `score` is rank-based (reciprocal-rank fusion normalised by its ceiling), so an unanswerable question scored 0.93 to 0.96, above several correct hits. No score threshold can separate answers from padding.
+- **Fix.** `rag/retriever.py` now measures how many of the query's content words the whole article contains and keeps only hits above `MIN_TERM_COVERAGE` (0.3), with at least two matched words and at least half the best hit's coverage. The constants come from measurement over the 16 evaluation cases (expected article 0.36 to 0.83; unanswerable questions at most 0.5 and two words), recorded in the module and in `tests/rag/test_relevance_cutoff.py`. Each kept hit is labelled `strong` or `partial`; with no strong hit the result is marked insufficient.
+- **Passages.** `snippet_of` cuts at a sentence end or word break and adds an ellipsis; the full text travels as `passage` (`tests/rag/test_snippet.py`).
+- **Known limit.** A question that shares two real words with an article ("password" with a security article) still returns one partial hit, because lexical overlap cannot tell that apart. It is labelled partial and the result is insufficient.
+- **Contract.** `strength` and `passage` were added to the evidence shape in `docs/design/06_API_CONTRACT.md`.

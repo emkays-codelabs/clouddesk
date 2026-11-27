@@ -57,3 +57,65 @@ async def test_model_failure_falls_back_to_playbook(tool_env):
 def test_every_category_has_a_playbook_and_numbering_is_idempotent():
     assert set(PLAYBOOKS) == set(Category)
     assert number_steps(["1. a", "- b", "  "]) == ["1. a", "2. b"]
+
+
+# --- QA defect: playbook steps that only restate a model step were appended as duplicates ---
+
+from agents.specialists.troubleshooting import is_duplicate_step, merge_steps  # noqa: E402
+
+MODEL_BILLING = [
+    "1. Compare the billed seat count with the active workspace member count",
+    "2. Review the last invoices for duplicates or mis-timed charges",
+    "3. Prepare a refund request for the unused seats for human approval",
+]
+
+
+def test_an_exact_restatement_is_a_duplicate_ignoring_case_and_numbering():
+    assert is_duplicate_step("Confirm the token is valid", "2. confirm the TOKEN is valid.")
+
+
+def test_a_paraphrase_that_adds_words_is_a_duplicate():
+    assert is_duplicate_step("Compare billed seats with active workspace members", MODEL_BILLING[0])
+    assert is_duplicate_step("Review the last invoices for duplicates", MODEL_BILLING[1])
+    assert is_duplicate_step("Prepare any refund request for human approval", MODEL_BILLING[2])
+
+
+def test_materially_different_steps_are_not_duplicates():
+    assert not is_duplicate_step(
+        "Add backoff and retry to the client", "Confirm the token is valid"
+    )
+    assert not is_duplicate_step(
+        "Check the request rate against the plan's API limit", "Check the token has not expired"
+    )
+    # Same opening verb, different object: a different diagnostic action.
+    assert not is_duplicate_step("Check the SSO settings", "Check the storage quota")
+
+
+def test_short_steps_need_an_exact_match_to_count_as_duplicates():
+    assert not is_duplicate_step("Reset it", "Reset the password for the affected user")
+
+
+def test_merge_drops_restated_playbook_steps_and_keeps_new_ones_after_the_model_steps():
+    playbook = (
+        "Compare billed seats with active workspace members",
+        "Review the last invoices for duplicates",
+        "Prepare any refund request for human approval",
+        "Confirm the plan's seat price before quoting an amount",
+    )
+    merged = merge_steps(MODEL_BILLING, playbook)
+    assert merged[:3] == MODEL_BILLING
+    assert merged[3:] == ["Confirm the plan's seat price before quoting an amount"]
+
+
+def test_merge_also_removes_duplicates_inside_the_model_steps():
+    merged = merge_steps(["Check the token", "1. check the token."], ())
+    assert merged == ["Check the token"]
+
+
+async def test_a_billing_diagnosis_has_no_repeated_steps(tool_env, text_of):
+    agent = TroubleshootingAgent(build_read_registry(tool_env))
+    d, *_ = await agent.run(text_of("CD-1002"), _cls(Category.billing), [])
+    bodies = [re.sub(r"^\d+\.\s*", "", s) for s in d.troubleshooting_steps]
+    for i, a in enumerate(bodies):
+        for b in bodies[i + 1 :]:
+            assert not is_duplicate_step(a, b), (a, b)

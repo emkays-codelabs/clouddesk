@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 16:50 +0530_
+_Last updated: 2026-11-27 20:27 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -448,6 +448,7 @@ USE_FAKE_REDIS          true in tests (docker-compose.yml sets false and a real 
 LLM_PROVIDER            fake (default) | openai | euron (OpenAI-compatible) | anthropic (not implemented)
 LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
 LLM_MODEL_FAST, LLM_MODEL_SMART, LLM_MODEL_REASONING   Euron router tiers; each falls back to LLM_MODEL
+LLM_PRICING             empty = no verified price, so cost shows unavailable; or a map {"model": [usd_per_million_in, usd_per_million_out]}
 EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS      fake (default, tests) | euron
 EMBEDDING_BASE_URL      empty falls back to the LLM base URL
 VECTOR_STORE            memory | qdrant

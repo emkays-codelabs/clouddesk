@@ -46,3 +46,10 @@ Inbox filters are in the API but the filter bar is minimal. There is no analytic
 ## I. Completion summary
 
 Four tasks done; the console signs in, lists data for every route and enforces roles in the UI.
+
+
+---
+
+## Console cleanup, 2026-11-27
+
+The Audit page no longer wraps timestamps, shows a short request id and a method badge, and the Agents page uses the same headline cards as the dashboard. Model cost reads "Cost unavailable" until a verified price is configured and is described as separate from refund amounts (`frontend/lib/format.ts`, `describeCost`).

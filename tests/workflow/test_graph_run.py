@@ -171,3 +171,21 @@ def test_escalations_can_be_listed_and_updated(client, agent_headers, viewer_hea
         f"/api/v1/escalations/{mine['id']}", headers=viewer_headers, json={"status": "resolved"}
     )
     assert forbidden.status_code == 403
+
+
+def test_a_second_run_while_one_is_running_is_a_conflict(client, agent_headers, monkeypatch):
+    """A run that has started and not finished blocks another: no two runs race on a ticket."""
+    from app.services import workflow_service
+
+    async def never_finishes(run_id: str) -> None:
+        return None
+
+    monkeypatch.setattr(workflow_service, "start_workflow", never_finishes)
+    ticket_id = _ticket_id(client, agent_headers, "CD-1010")
+
+    first = client.post(f"{TICKETS}/{ticket_id}/run", headers=agent_headers)
+    second = client.post(f"{TICKETS}/{ticket_id}/run", headers=agent_headers)
+
+    assert first.status_code == 202
+    assert second.status_code == 409
+    assert "in progress" in second.json()["detail"]

@@ -10,6 +10,7 @@ export type TicketStatus =
   | "resolved"
   | "closed";
 export type Severity = "low" | "medium" | "high" | "critical";
+export type CostBasis = "none" | "actual" | "estimated" | "unavailable";
 export type Channel = "email" | "chat" | "web" | "api";
 export type ApprovalStatus = "not_required" | "pending" | "approved" | "rejected";
 export type WorkflowStatus =
@@ -114,8 +115,10 @@ export type Evidence = {
   source: string;
   snippet: string;
   score: number;
+  passage?: string | null;
   url?: string | null;
   article_id?: string | null;
+  strength?: "strong" | "partial" | null;
 };
 
 export type PlannedAction = {
@@ -183,6 +186,7 @@ export type WorkflowState = {
     completion_tokens: number;
     total_tokens: number;
     estimated_cost_usd: number;
+    cost_basis?: CostBasis;
   };
 };
 
@@ -258,6 +262,7 @@ export type AgentsOverview = {
     avg_duration_ms: number;
     total_tokens: number;
     total_estimated_cost_usd: number;
+    cost_basis?: CostBasis;
   };
 };
 

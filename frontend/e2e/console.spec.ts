@@ -15,7 +15,7 @@ test("landing, sign in as an agent, open a ticket and run the workflow", async (
   await page.getByRole("link", { name: /CD-1010/ }).first().click();
   await expect(page.getByText("CD-1010").first()).toBeVisible();
 
-  await page.getByRole("button", { name: /Run AI workflow|Run again/ }).click();
+  await page.getByRole("button", { name: /Run AI workflow|Run workflow again/ }).click();
   await expect(page.getByText("Workflow started.")).toBeVisible();
   // The real model is slow: wait for the run to finish, or to stop for a person.
   await expect(page.getByText(/completed|waiting for approval|escalated/i).first()).toBeVisible({
@@ -23,7 +23,8 @@ test("landing, sign in as an agent, open a ticket and run the workflow", async (
   });
 
   await page.getByRole("link", { name: "Agents" }).first().click();
-  await expect(page.getByText(/Est\. cost/)).toBeVisible();
+  // The label is "Actual cost", "Est. cost" or plain "Cost" (with "Cost unavailable" when unpriced).
+  await expect(page.getByText(/cost/i).first()).toBeVisible();
   await page.screenshot({ path: "e2e/last-run.png", fullPage: true });
 });
 
@@ -33,5 +34,5 @@ test("a viewer cannot run workflows", async ({ page }) => {
   await page.waitForURL("**/dashboard");
   await page.getByRole("link", { name: "Tickets" }).first().click();
   await page.getByRole("link", { name: /CD-1010/ }).first().click();
-  await expect(page.getByRole("button", { name: /Run AI workflow|Run again/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Run AI workflow|Run workflow again|Workflow running/ })).toBeDisabled();
 });

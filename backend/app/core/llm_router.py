@@ -115,8 +115,8 @@ class LLMRouter:
     def is_open(self, model: str) -> bool:
         return self._breaker.is_open(model)
 
-    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float:
-        return 0.0  # Euron models carry no price table entry; costs are estimates only
+    def estimate_cost(self, prompt_tokens: int, completion_tokens: int) -> float | None:
+        return None  # no Euron price is verified; set LLM_PRICING to get an estimate
 
     def _provider(self, model: str) -> Any:
         if model not in self._providers:

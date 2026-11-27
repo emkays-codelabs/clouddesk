@@ -1,6 +1,6 @@
 # MEMORY.md — CloudDesk AI
 
-_Last updated: 2026-11-27 16:50 +0530_
+_Last updated: 2026-11-27 20:27 +0530_
 
 Durable facts for this repository: what is really done, what has been decided, and what is still open. `CLAUDE.md` wins if this file drifts. Update it in place when a decision or the status changes. Do not store secrets, customer payloads, or raw ticket bodies here.
 
@@ -115,3 +115,4 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - When a demo ticket’s expected behaviour changes, change `CLAUDE.md` §5 and the matching test together.
 - Leave secrets, tokens, connection strings, and ticket bodies out of this file.
 - 2026-11-27, deployment target: CloudDesk will be deployed on **AWS** first, on **ECR (registry), ECS Fargate (compute) and an ALB**, not EKS (owner decision in chat); that is the serverless profile the Terraform scaffold already targets, and Kubernetes with Helm (D5) follows later. Nothing is deployed yet. `deployment/aws/main.tf` is validated only and does not yet provision an application database (RDS or Supabase), a frontend ECS service, HTTPS certificate wiring or the Qdrant store; those, an AWS account with OIDC, the registry bootstrap and a real `terraform plan` are the gaps before a first apply.
+- 2026-11-27, local QA remediation (owner-approved batch): fixed a backend gap where a second run was accepted while one was live (now 409, 15-minute stale limit); playbook steps that restated a model step are no longer appended (word-overlap duplicate check); retrieval now drops articles that share too few of the query's words and labels the rest strong or partial (thresholds measured over the 16 evaluation cases, see `tests/rag/test_relevance_cutoff.py`); evidence snippets end at a sentence or word boundary with an ellipsis and the full passage is kept; cost reporting says unavailable when no verified price exists instead of showing zero (`LLM_PRICING` for owner-verified prices, `cost_basis` on usage). Euron prices are NOT verified, so real runs show Cost unavailable until the owner sets `LLM_PRICING`. Latency (report only): a real run is about 165 s, 5 sequential model calls, over 90 percent of it provider time; the escalation-judgement call logs 0 ms. Ticket screen and Audit and Agents pages tidied; the browser suite passes (7 tests) against the Docker stack on the real model.

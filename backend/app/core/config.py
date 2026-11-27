@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     llm_model_fast: str = ""
     llm_model_smart: str = ""
     llm_model_reasoning: str = ""
+    # Verified prices only: JSON {"model": [usd_per_million_input, usd_per_million_output]}.
+    # Empty means unknown, and a call is then reported as cost unavailable, never as zero.
+    llm_pricing: str = ""
     embedding_provider: str = "fake"
     embedding_model: str = ""
     embedding_base_url: str = ""  # P9-10: empty falls back to llm_base_url

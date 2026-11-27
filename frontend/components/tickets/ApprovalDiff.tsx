@@ -1,5 +1,6 @@
 import type { PlannedAction } from "@/lib/types";
 import { RiskBadge } from "@/components/ui/RiskBadge";
+import { formatMoney } from "@/lib/format";
 
 function show(value: unknown): string {
   if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
@@ -38,7 +39,9 @@ export function ApprovalDiff({
           {Object.entries(action.arguments).map(([name, value]) => (
             <tr key={name}>
               <td className="py-1 font-mono text-xs">{name}</td>
-              <td className="font-mono text-xs">{show(value)}</td>
+              <td className="font-mono text-xs">
+                {name === "amount" && typeof value === "number" ? formatMoney(value) : show(value)}
+              </td>
             </tr>
           ))}
         </tbody>

@@ -18,6 +18,7 @@ from app.schemas.approval import (
     GraphNode,
 )
 from app.schemas.common import WorkflowStatus
+from app.schemas.workflow import combine_basis
 from app.services.ticket_service import _to_workflow
 
 RECENT_RUNS = 10
@@ -78,6 +79,9 @@ async def overview(session: AsyncSession) -> AgentsOverview:
     durations = [r.duration_ms for r in runs if r.duration_ms]
     tokens = sum(int((r.token_usage or {}).get("total_tokens", 0)) for r in runs)
     cost = sum(float((r.token_usage or {}).get("estimated_cost_usd", 0.0)) for r in runs)
+    basis = "none"
+    for r in runs:
+        basis = combine_basis(basis, (r.token_usage or {}).get("cost_basis", "none"))
 
     agents: list[AgentInfo] = []
     for name, role, description, tools, nodes in _AGENTS:
@@ -108,5 +112,6 @@ async def overview(session: AsyncSession) -> AgentsOverview:
             avg_duration_ms=round(sum(durations) / len(durations), 1) if durations else 0.0,
             total_tokens=tokens,
             total_estimated_cost_usd=round(cost, 6),
+            cost_basis=basis,
         ),
     )

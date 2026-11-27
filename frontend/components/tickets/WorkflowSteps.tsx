@@ -40,6 +40,27 @@ export function deriveSteps(state: WorkflowState | null | undefined): Step[] {
   });
 }
 
+export type Summary = { label: string; done: number; total: number; percent: number; tone: string };
+
+const OVERALL: Record<string, { label: string; tone: string }> = {
+  running: { label: "Running", tone: "text-teal-700" },
+  waiting_for_approval: { label: "Waiting for approval", tone: "text-amber-700" },
+  completed: { label: "Completed", tone: "text-emerald-700" },
+  escalated: { label: "Escalated to a person", tone: "text-rose-700" },
+  failed: { label: "Failed; handed to a person", tone: "text-rose-700" },
+};
+
+/** The overall status line and progress for the workflow header: steps done out of those that ran or can still run. */
+export function summarise(state: WorkflowState | null | undefined): Summary {
+  const steps = deriveSteps(state);
+  const done = steps.filter((s) => s.status === "done").length;
+  const skipped = steps.filter((s) => s.status === "skipped").length;
+  const total = steps.length - skipped;
+  const overall = OVERALL[state?.status ?? ""] ?? { label: "Not run yet", tone: "text-slate-500" };
+  const percent = !state ? 0 : FINISHED.has(state.status) ? 100 : Math.round((done / total) * 100);
+  return { label: overall.label, done, total, percent, tone: overall.tone };
+}
+
 const MARK: Record<StepStatus, string> = {
   done: "✓",
   running: "…",
@@ -49,7 +70,28 @@ const MARK: Record<StepStatus, string> = {
 };
 
 export function WorkflowSteps({ state }: { state: WorkflowState | null | undefined }) {
+  const summary = summarise(state);
   return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-xs">
+        <span className={`font-semibold ${summary.tone}`}>{summary.label}</span>
+        <span className="text-slate-500">
+          {summary.done} of {summary.total} steps · {summary.percent}%
+        </span>
+      </div>
+      <div
+        role="progressbar"
+        aria-label="Workflow progress"
+        aria-valuenow={summary.percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="mb-3 h-1.5 overflow-hidden rounded-full bg-sand-100"
+      >
+        <div
+          className={`h-full rounded-full bg-gradient-to-r from-brand-500 to-teal-400 transition-all duration-500 ${state?.status === "running" ? "animate-pulse" : ""}`}
+          style={{ width: `${summary.percent}%` }}
+        />
+      </div>
     <ol aria-label="Workflow steps" className="space-y-1 text-sm">
       {deriveSteps(state).map((s) => (
         <li
@@ -71,5 +113,6 @@ export function WorkflowSteps({ state }: { state: WorkflowState | null | undefin
         </li>
       ))}
     </ol>
+    </div>
   );
 }

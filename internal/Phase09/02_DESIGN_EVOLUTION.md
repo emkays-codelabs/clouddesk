@@ -38,3 +38,11 @@
 ## P9-8: the evaluation dataset
 
 - `datasets/eval_cases.json` holds 16 cases: every demo ticket plus three text cases (an enterprise outage, an invoice question, an API token). Each has an expected category, escalation flag, article slug and action tools. The test rejects an invalid category or a missing article and checks that the labels agree with the policy rules. The metric thresholds that use it are Phase 14.
+
+
+---
+
+## QA remediation, 2026-11-27: duplicate steps and honest cost
+
+- **Duplicate diagnosis steps.** The playbook merge in `agents/specialists/troubleshooting.py` compared steps by exact text, so a model step such as "Compare the billed seat count with the active workspace member count" and the playbook's "Compare billed seats with active workspace members" both appeared. `is_duplicate_step` and `merge_steps` now treat a step as a duplicate when nearly all of the shorter step's content words appear in the longer one; short steps must match exactly. Model steps stay first and distinct playbook steps are kept (`tests/agents/test_troubleshooting.py`).
+- **Cost reporting.** No Euron price is verified, so real runs reported `$0.0000`. `TokenUsage` now carries `cost_basis` (`none`, `actual`, `estimated`, `unavailable`); a provider-reported cost is actual, a price from the owner's `LLM_PRICING` setting gives an estimate, and tokens with no price are unavailable. Nothing is invented, and unknown is never shown as zero (`tests/unit/test_cost_reporting.py`).

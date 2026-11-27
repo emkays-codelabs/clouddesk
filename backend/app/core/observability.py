@@ -128,5 +128,6 @@ class WorkflowTracer:
                 "completion_tokens": usage.get("completion_tokens", 0),
                 "total_tokens": usage.get("total_tokens", 0),
                 "estimated_cost_usd": usage.get("estimated_cost_usd", 0.0),
+                "cost_basis": usage.get("cost_basis", "none"),
             },
         )

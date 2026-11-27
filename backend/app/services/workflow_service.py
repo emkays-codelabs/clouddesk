@@ -51,6 +51,8 @@ logger = logging.getLogger(__name__)
 
 AI_AUTHOR = "CloudDesk AI"
 APPROVAL_TTL = timedelta(hours=24)
+# A run still marked running after this long is treated as dead (a restart drops in-flight runs).
+RUN_STALE_AFTER = timedelta(minutes=15)
 
 _memory_saver: InMemorySaver | None = None
 
@@ -92,15 +94,23 @@ def _deps() -> GraphDeps:
 
 
 async def create_run(session: AsyncSession, ticket_id: str) -> str:
-    """Write the run row and return its id. 409 while the ticket waits on an approval."""
+    """Write the run row and return its id. 409 while an approval is pending or a run is live."""
     tickets = TicketRepository(session)
     ticket = await tickets.get(ticket_id)
     if ticket is None:
         raise TicketNotFound
     if ticket.status == TicketStatus.waiting_on_approval:
         raise RunConflict("The ticket is waiting on an approval.")
+    runs = WorkflowRunRepository(session)
+    latest = await runs.latest_for_ticket(ticket.id)
+    if latest is not None and latest.status == WorkflowStatus.running:
+        started = latest.started_at
+        if started is not None and started.tzinfo is None:
+            started = started.replace(tzinfo=UTC)
+        if started is None or datetime.now(UTC) - started < RUN_STALE_AFTER:
+            raise RunConflict("A run is already in progress for this ticket.")
     run_id = str(uuid.uuid4())
-    await WorkflowRunRepository(session).create(
+    await runs.create(
         id=run_id,
         ticket_id=ticket.id,
         thread_id=run_id,

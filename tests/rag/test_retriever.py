@@ -66,7 +66,18 @@ async def test_hit_rate_at_3_over_demo_queries(retriever):
 async def test_evidence_shape(retriever):
     result = await retriever.retrieve("Locked out after MFA attempts", top_k=3)
     e = result.evidence[0]
-    assert set(e) == {"id", "title", "source", "snippet", "score", "url", "article_id"}
+    assert set(e) == {
+        "id",
+        "title",
+        "source",
+        "snippet",
+        "score",
+        "url",
+        "article_id",
+        "strength",
+        "passage",
+    }
+    assert e["strength"] in {"strong", "partial"}
     assert e["source"].startswith(f"kb://{e['article_id']}#")
     assert e["url"] == f"/knowledge/{e['article_id']}"
     assert 0 < e["score"]
@@ -169,8 +180,11 @@ async def test_llm_rerank_hook_reorders(index):
 
     plain = HybridRetriever(store, emb, docs)
     hooked = HybridRetriever(store, emb, docs, llm_rerank=reverse)
-    a = _ids(await plain.retrieve("MFA lockout recovery", top_k=50))
-    b = _ids(await hooked.retrieve("MFA lockout recovery", top_k=50))
+    # A query with several genuinely related articles: the relevance cut-off no longer pads a
+    # narrow query such as "MFA lockout recovery" up to three hits, so the reorder test needs one.
+    query = "billing invoice charge plan refund seats"
+    a = _ids(await plain.retrieve(query, top_k=50))
+    b = _ids(await hooked.retrieve(query, top_k=50))
     assert len(a) >= 3
     assert b == list(reversed(a))
 

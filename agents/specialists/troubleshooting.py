@@ -102,6 +102,55 @@ STATUS_SERVICE: dict[Category, str] = {
 }
 
 
+_WORD = re.compile(r"[a-z0-9]+")
+_FILLER = frozenset(
+    (
+        "a an the and or of to for with in on at by is are be any all it its this that your their"
+    ).split()
+)
+# Both sentences must share at least this fraction of the SHORTER one's content words.
+_DUPLICATE_CONTAINMENT = 0.8
+# A step with fewer content words than this is too short to judge by overlap: it must match exactly.
+_MIN_WORDS_FOR_OVERLAP = 3
+
+
+def _content_words(step: str) -> list[str]:
+    """Lower-cased words without numbering, filler or a plural 's', in order."""
+    words = _WORD.findall(_NUMBERING.sub("", step).lower())
+    return [w[:-1] if len(w) > 3 and w.endswith("s") else w for w in words if w not in _FILLER]
+
+
+def is_duplicate_step(a: str, b: str) -> bool:
+    """True when two steps say the same thing: identical, or one restates the other.
+
+    The model rewords the playbook ("Compare the billed seat count with the active workspace
+    member count" vs "Compare billed seats with active workspace members"), so the shorter step's
+    content words must almost all appear in the longer one. Short steps must match exactly, and
+    steps that only share an opening verb stay distinct.
+    """
+    wa, wb = _content_words(a), _content_words(b)
+    if wa == wb:
+        return True
+    shorter, longer = sorted((set(wa), set(wb)), key=len)
+    if len(shorter) < _MIN_WORDS_FOR_OVERLAP:
+        return False
+    return len(shorter & longer) / len(shorter) >= _DUPLICATE_CONTAINMENT
+
+
+def merge_steps(model_steps: list[str], playbook_steps: tuple[str, ...] | list[str]) -> list[str]:
+    """Model steps first, in order, then playbook steps the model did not already cover.
+
+    Duplicates inside the model's own list are dropped too; the first wording wins.
+    """
+    merged: list[str] = []
+    for step in [*model_steps, *playbook_steps]:
+        if not _NUMBERING.sub("", step).strip():
+            continue
+        if not any(is_duplicate_step(step, kept) for kept in merged):
+            merged.append(step)
+    return merged
+
+
 def number_steps(steps: list[str]) -> list[str]:
     clean = [_NUMBERING.sub("", s).strip() for s in steps]
     return [f"{n}. {s}" for n, s in enumerate([s for s in clean if s][:MAX_STEPS], 1)]
@@ -152,9 +201,7 @@ class TroubleshootingAgent:
 
         probable = [f"Active incident: {i['title']}" for i in incidents]
         probable += [c for c in [*diagnosis.probable_causes, *causes] if c not in probable]
-        raw_steps = [*diagnosis.troubleshooting_steps]
-        have = {_NUMBERING.sub("", s).strip().lower() for s in raw_steps}
-        raw_steps += [s for s in steps if s.lower() not in have]
+        raw_steps = merge_steps([*diagnosis.troubleshooting_steps], steps)
         enriched = diagnosis.model_copy(
             update={"probable_causes": probable, "troubleshooting_steps": number_steps(raw_steps)}
         )

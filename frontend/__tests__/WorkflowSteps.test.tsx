@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { STEPS, WorkflowSteps, deriveSteps } from "@/components/tickets/WorkflowSteps";
+import { STEPS, WorkflowSteps, deriveSteps, summarise } from "@/components/tickets/WorkflowSteps";
 import type { WorkflowState } from "@/lib/types";
 
 function state(over: Partial<WorkflowState>): WorkflowState {
@@ -67,5 +67,32 @@ describe("deriveSteps", () => {
     render(<WorkflowSteps state={state({ completed_nodes: ["understand_ticket"] })} />);
     expect(screen.getAllByRole("listitem")).toHaveLength(12);
     expect(screen.getByText("Understand ticket").closest("li")?.getAttribute("data-status")).toBe("done");
+  });
+});
+
+describe("summarise", () => {
+  it("says not run yet at 0 percent with no state", () => {
+    expect(summarise(null)).toMatchObject({ label: "Not run yet", percent: 0 });
+  });
+
+  it("reports progress while running", () => {
+    const s = summarise(state({ completed_nodes: ["understand_ticket", "classify_severity"] }));
+    expect(s.label).toBe("Running");
+    expect(s.done).toBe(2);
+    expect(s.percent).toBeGreaterThan(0);
+    expect(s.percent).toBeLessThan(100);
+  });
+
+  it("is 100 percent when the run has finished", () => {
+    expect(summarise(state({ status: "completed", completed_nodes: ["understand_ticket"] })).percent).toBe(100);
+  });
+
+  it("names a run that is waiting for a person", () => {
+    expect(summarise(state({ status: "waiting_for_approval" })).label).toBe("Waiting for approval");
+  });
+
+  it("renders a progress bar", () => {
+    const { container } = render(<WorkflowSteps state={state({ completed_nodes: ["understand_ticket"] })} />);
+    expect(container.querySelector('[role="progressbar"]')).not.toBeNull();
   });
 });
