@@ -29,7 +29,7 @@ def build_read_tools(ctx: ToolContext) -> list[Any]:
     async def get_customer(customer_id: str) -> dict[str, Any]:
         """Load a customer's profile by id.
 
-        Returns {id, name, email, company, plan_name, status, region, lifetime_value}.
+        Returns {id, name, email, company, plan_name, status, region, lifetime_value, created_at}.
         """
         async with ctx.session_factory() as session:
             row = await CustomerRepository(session).get(customer_id)
@@ -44,6 +44,7 @@ def build_read_tools(ctx: ToolContext) -> list[Any]:
             "status": row.status,
             "region": row.region,
             "lifetime_value": row.lifetime_value,
+            "created_at": _iso(row.created_at),
         }
 
     async def get_subscription(customer_id: str) -> dict[str, Any]:
@@ -74,7 +75,8 @@ def build_read_tools(ctx: ToolContext) -> list[Any]:
     ) -> list[dict[str, Any]]:
         """List a customer's previous tickets, newest first.
 
-        Returns a list of {id, ticket_number, subject, status, severity, category, created_at}.
+        Returns a list of {id, ticket_number, subject, status, severity, category, channel,
+        escalation_required, created_at, updated_at}.
         """
         async with ctx.session_factory() as session:
             rows = await TicketRepository(session).list_for_customer(
@@ -88,7 +90,10 @@ def build_read_tools(ctx: ToolContext) -> list[Any]:
                 "status": str(t.status),
                 "severity": str(t.severity) if t.severity else None,
                 "category": str(t.category) if t.category else None,
+                "channel": str(t.channel),
+                "escalation_required": bool(t.escalation_required),
                 "created_at": _iso(t.created_at),
+                "updated_at": _iso(t.updated_at),
             }
             for t in rows
         ]
