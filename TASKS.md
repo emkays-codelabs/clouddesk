@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 15:07 +0530_
+_Last updated: 2026-11-27 15:23 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -691,13 +691,13 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P10-1 · Support state and checkpointer | F11 | `feature/graph-state-checkpointer` | Pending ❌ |
-| P10-2 · Supervisor graph nodes | F2, F3 | `feature/graph-nodes-supervisor` | Pending ❌ |
-| P10-3 · Investigate graph nodes | F4, F5, F7 | `feature/graph-nodes-investigate` | Pending ❌ |
-| P10-4 · Resolution and risk nodes | F9, F10 | `feature/graph-nodes-resolution` | Pending ❌ |
-| P10-5 · Graph wiring and run API | F11 | `feature/graph-run-api` | Pending ❌ |
-| P10-6 · Workflow tracer and events API | F13 | `feature/workflow-tracer-events` | Pending ❌ |
-| P10-7 · Agents overview API (`GET /agents`) | F13 | `feature/api-agents` | Pending ❌ |
+| P10-1 · Support state and checkpointer | F11 | `feature/graph-state-checkpointer` | Completed ✅ |
+| P10-2 · Supervisor graph nodes | F2, F3 | `feature/graph-nodes-supervisor` | Completed ✅ |
+| P10-3 · Investigate graph nodes | F4, F5, F7 | `feature/graph-nodes-investigate` | Completed ✅ |
+| P10-4 · Resolution and risk nodes | F9, F10 | `feature/graph-nodes-resolution` | Completed ✅ |
+| P10-5 · Graph wiring and run API | F11 | `feature/graph-run-api` | Completed ✅ |
+| P10-6 · Workflow tracer and events API | F13 | `feature/workflow-tracer-events` | Completed ✅ |
+| P10-7 · Agents overview API (`GET /agents`) | F13 | `feature/api-agents` | Completed ✅ |
 
 #### Task definitions
 
@@ -752,12 +752,12 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P11-1 · Human approval interrupt | F9 | `feature/workflow-human-approval` | Pending ❌ |
-| P11-2 · Approval decide and resume API | F9 | `feature/api-approvals-resume` | Pending ❌ |
-| P11-3 · Escalation routing | F10 | `feature/workflow-escalation-routing` | Pending ❌ |
-| P11-4 · Execute resolution on the shared tool path | F9 | `feature/workflow-execute-resolution` | Pending ❌ |
-| P11-5 · Demo script for CD-1002 and CD-1005 | F9, F10 | `feature/demo-approval-escalation` | Pending ❌ |
-| P11-6 · Escalations API (list and update) | F10 | `feature/api-escalations` | Pending ❌ |
+| P11-1 · Human approval interrupt | F9 | `feature/workflow-human-approval` | Completed ✅ |
+| P11-2 · Approval decide and resume API | F9 | `feature/api-approvals-resume` | Completed ✅ |
+| P11-3 · Escalation routing | F10 | `feature/workflow-escalation-routing` | Completed ✅ |
+| P11-4 · Execute resolution on the shared tool path | F9 | `feature/workflow-execute-resolution` | Completed ✅ |
+| P11-5 · Demo script for CD-1002 and CD-1005 | F9, F10 | `feature/demo-approval-escalation` | Completed ✅ |
+| P11-6 · Escalations API (list and update) | F10 | `feature/api-escalations` | Completed ✅ |
 
 #### Task definitions
 
@@ -977,9 +977,9 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 7 | Rules and guardrails | 4 | 4 |
 | 8 | Memory | 3 | 3 |
 | 9 | Specialist agents | 10 | 10 |
-| 10 | Workflow graph and trace | 7 | 0 |
-| 11 | Approval and escalation | 6 | 0 |
+| 10 | Workflow graph and trace | 7 | 7 |
+| 11 | Approval and escalation | 6 | 6 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **84** | **61** |
+| **Total** | | **84** | **74** |

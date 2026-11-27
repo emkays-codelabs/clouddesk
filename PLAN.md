@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 15:23 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -147,8 +147,8 @@ D2, D3, D5 and D6 in `CLAUDE.md` §20; model tiering (D4) is resolved in a limit
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
 | 9 | Specialist agents | in progress |
-| 10 | Workflow graph and trace | not started |
-| 11 | Approval and escalation | not started |
+| 10 | Workflow graph and trace | in progress |
+| 11 | Approval and escalation | in progress |
 | 12 | Console shell | in progress |
 | 13 | Ticket workflow screen | not started |
 | 14 | Evaluation and delivery | in progress |
