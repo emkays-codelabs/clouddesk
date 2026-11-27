@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 10:37 +0530_
+_Last updated: 2026-11-27 10:47 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -427,7 +427,7 @@ CHECKPOINT_DB_PATH      ./data/checkpoints.db  |  :memory: (tests)
 REDIS_URL               empty → fakeredis  |  redis://redis:6379/0
 USE_FAKE_REDIS          true in tests
 LLM_PROVIDER            fake (default) | openai | anthropic | …
-LLM_API_KEY, LLM_MODEL
+LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
 EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 VECTOR_STORE            memory | qdrant
 QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)

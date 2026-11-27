@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     llm_provider: str = "fake"
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
+    llm_base_url: str = ""
     embedding_provider: str = "fake"
     embedding_model: str = ""
     embedding_dimensions: int = 384

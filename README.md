@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 10:37 +0530_
+_Last updated: 2026-11-27 10:47 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-27 10:37 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 51 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 52 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -78,14 +78,30 @@ account change waits for a recorded human approval.
 
 ## 2. Project status
 
-Phase 1, the runtime skeleton, is complete and validated locally. The service starts offline and answers
-health checks. What exists today:
+Phases 1 to 8 are complete and validated locally. The service starts offline, seeds a demo database and
+answers requests. What exists today:
 
-- Three health routes: `GET /health`, `GET /health/live` (no outside calls) and `GET /health/ready`
-  (checks configuration, returns `503` when something is wrong).
-- An `X-Request-ID` on every response, errors included, repeated on every log line of that request.
-- Settings for every variable in `.env.example`, with secrets and URL passwords hidden when printed.
-- JSON logging that carries `request_id` and `workflow_id`.
+- **Service basics:** health routes (`/health`, `/health/live`, `/health/ready`), an `X-Request-ID` on every
+  response and log line, redacted settings and JSON logging.
+- **Data:** SQLAlchemy models for 17 tables, tenant-scoped repositories, the Postgres schema, row-level
+  security policies and a first migration (the SQL is text-checked only, never run against Postgres), and demo
+  data: 13 tickets and 8 customers.
+- **Identity and guards:** JWT sign-in for three demo users (viewer, agent, admin), role checks, a Redis rate
+  limit and an audit log of every non-GET request.
+- **Support API:** create, list and read tickets and customers, reply, request information, escalate and update
+  a ticket, plus the dashboard summary, audit and settings views.
+- **Knowledge:** 15 fictional articles, a chunker, a vector store (in memory, with a Qdrant option), hybrid
+  retrieval (semantic plus BM25) and search and reindex routes.
+- **Tools:** a tool registry with approval, timeout, idempotency and provenance checks, mock integrations
+  (nothing real is sent or refunded), read and write tools, and a read-only MCP server.
+- **Guardrails:** policy rules for escalation and severity, prompt-injection defence, customer-output
+  validation and a secret scrubber.
+- **Memory:** short-term memory in Redis and long-term customer memory in the database, with duplicate
+  skipping, a confidence floor and erasure.
+- **Console shell:** a Next.js app with navigation, a small UI kit and placeholder pages. It has no real screens
+  yet and has not been opened in a browser.
+- **Containers:** Dockerfiles for the backend and frontend and a Compose stack. On 2026-11-27 the stack was built
+  and brought up once (see `MEMORY.md`).
 - An offline test suite (no network, no API key), a linter (Ruff) and a `Makefile`.
 - Tests that keep the documents honest: the task tracker's counters and dependencies, every link, the roadmap in this
   file, and the decision records are all checked, so a document that drifts fails the build.
@@ -93,10 +109,12 @@ health checks. What exists today:
   live session.
 - The written specification and plan (see [7](#7-where-to-find-things)).
 - Architecture decision records in `docs/adr/`: seven decisions taken, and five open questions recorded as proposed.
-- The system diagrams and the API contract in `docs/design/`. The contract describes routes that are not built yet.
+- The system diagrams and the API contract in `docs/design/`. The contract describes routes that are not built
+  yet (the workflow, approvals, escalations and agents routes).
 
-Not built yet: the database and demo data, sign-in, the support API, the knowledge pipeline, tools,
-agents, the workflow, approvals, memory and the web console.
+Not built yet: the language-model layer, the six specialist agents, the workflow graph and its trace,
+approvals and escalation routing, the real console screens, the evaluation suite, and the Terraform and
+CI files. There is no language model in the application yet: it runs on a fake provider.
 
 No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
 
@@ -141,7 +159,7 @@ API key.
 | 13 | Ticket workflow screen | not started |
 | 14 | Evaluation and delivery | in progress |
 
-The next task is `P2-1` in `TASKS.md`.
+The next phase is Phase 9, the specialist agents. The task list is in `TASKS.md`.
 
 [↑ Back to top](#clouddesk-ai)
 
@@ -207,10 +225,16 @@ These two are compose-only variables, so they are not in `.env.example` and `Set
 ### 6.1 Everyday commands
 
 ```bash
-make test               # run the tests, fully offline (or: uv run pytest)
-make lint               # check the code with ruff (or: uv run ruff check .)
+make test               # run the tests, fully offline (or: uv run python -m pytest)
+make lint               # check the code with ruff (or: uv run python -m ruff check .)
 make format             # format the code with ruff
+make seed               # load the demo data into the database
+make ingest             # chunk and index the knowledge base
+make mcp                # start the read-only MCP server
+cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
 ```
+
+On some Windows machines `uv run pytest` fails with a "trampoline" path error. `uv run python -m pytest` works.
 
 ### 6.2 Working with Claude Code
 
