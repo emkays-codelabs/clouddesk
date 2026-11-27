@@ -61,7 +61,11 @@ class EscalationAgent:
             model: EscalationDecision | None = None
             try:
                 result = await call_structured(
-                    EscalationDecision, system=ESCALATION_SYSTEM, user=user, llm=self._llm
+                    EscalationDecision,
+                    system=ESCALATION_SYSTEM,
+                    user=user,
+                    tier="smart",
+                    llm=self._llm,
                 )
                 usage, model = result.usage, result.output
             except LLMError as exc:

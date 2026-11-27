@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 15:07 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -42,7 +42,7 @@ Work every task the same way:
 | 7 | `P5-3`, `P12-4`, `P14-5` |
 | 8 | `P5-4`, `P6-2` |
 | 9 | `P6-5`, `P9-1` |
-| 10 | `P9-2`, `P9-3`, `P9-4`, `P9-5`, `P9-6`, `P9-7`, `P9-8`, `P10-1` |
+| 10 | `P9-2`, `P9-3`, `P9-4`, `P9-5`, `P9-6`, `P9-7`, `P9-8`, `P9-9`, `P9-10`, `P10-1` |
 | 11 | `P10-2`, `P10-3`, `P10-4`, `P10-6` |
 | 12 | `P10-5` |
 | 13 | `P10-7`, `P11-1`, `P11-3`, `P13-1` |
@@ -614,6 +614,8 @@ The longest dependency chain is 16 tasks long.
 | P9-6 · Resolution agent | F8 | `feature/phase-9-agents-2` | Completed ✅ |
 | P9-7 · Escalation agent | F10 | `feature/phase-9-agents-2` | Completed ✅ |
 | P9-8 · Eval case dataset | F2 | `feature/phase-9-agents-2` | Completed ✅ |
+| P9-9 · Euron LLM router | F14 | `feature/euron-router-embeddings` | Completed ✅ |
+| P9-10 · Euron embeddings provider | F5, F14 | `feature/euron-router-embeddings` | Completed ✅ |
 
 #### Task definitions
 
@@ -667,6 +669,18 @@ The longest dependency chain is 16 tasks long.
 - **Files:** `datasets/eval_cases.json`, `tests/evaluation/test_eval_cases.py`
 - **Done when:** A test rejects any case whose `expected_category` is not one of the 10 categories.
 - **Note:** P9-6 to P9-8 merged together on `feature/phase-9-agents-2` (PR #57). The dataset has 16 cases: the 13 demo tickets and 3 text cases.
+
+**P9-9 · Euron LLM router**
+- **Needs:** `P9-1`
+- **Build:** An in-process router in `backend/app/core/llm_router.py` (no separate gateway service; ADR-0010, accepted in a limited form on the owner's decision of 2026-11-27). Three tiers: `fast` = `euri-chat-fast` (Supervisor), `smart` = `euri-chat-smart` (Resolution, Escalation), `reasoning` = `euri-reasoning` (Troubleshooting). Settings `LLM_MODEL_FAST`, `LLM_MODEL_SMART`, `LLM_MODEL_REASONING`, each falling back to `LLM_MODEL` and then to the tier default. Fallback chain `reasoning` to `smart` to `fast`; a circuit breaker per model (5 failures in 60 s open it for 60 s); the tier and usage of every call are recorded; the fake provider ignores tiers. `call_structured` gains a `tier` argument (default `smart`) and each specialist passes its own.
+- **Files:** `backend/app/core/llm_router.py`, `backend/app/core/llm.py`, `backend/app/core/config.py`, `agents/specialists/` (each passes its tier), `CLAUDE.md` §10.1, `tests/unit/test_llm_router.py`, `tests/unit/test_env_settings.py`
+- **Done when:** A failing tier falls back along the chain, an open breaker skips a model without calling it, and the fake provider is unchanged. Tests use monkeypatched clients and never call Euron (F14).
+
+**P9-10 · Euron embeddings provider**
+- **Needs:** `P5-2`, `P9-1`
+- **Build:** `EuronEmbeddings` in `rag/embeddings.py` over the OpenAI-compatible embeddings endpoint, model `euri-embedding` by default, with batching. The vector dimension is read from the first response and checked against `EMBEDDING_DIMENSIONS`, with a clear error on a mismatch. Settings `EMBEDDING_PROVIDER=euron`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL` (falls back to `LLM_BASE_URL`); the key falls back to `LLM_API_KEY`. `rag/` receives these as arguments and imports nothing from `app`; the selector in `backend/app/services/` builds it.
+- **Files:** `rag/embeddings.py`, `backend/app/core/config.py`, `backend/app/services/vector_store_factory.py` (or the existing selector), `CLAUDE.md` §10.1, `tests/rag/test_euron_embeddings.py`, `tests/unit/test_env_settings.py`
+- **Done when:** Batching, the dimension check and the key and URL fallbacks are proven against a monkeypatched client (F5, F14). Switching providers needs `POST /knowledge/reindex`.
 
 ---
 
@@ -924,7 +938,7 @@ The whole project is finished only when all of these are true. The first three a
 - `make test` passes with no network and no API key, and the five evaluation thresholds are met.
 - `make demo` pauses on `CD-1002` for approval and escalates `CD-1005` by rule; `CD-1013` exports nothing; a viewer gets 403 on run, reply, and approve.
 - `docker compose config -q` and `make terraform-validate` pass locally.
-- All 82 tasks are Completed ✅ and the Progress summary reads 82 of 82.
+- All 84 tasks are Completed ✅ and the Progress summary reads 84 of 84.
 - The Honest status in `MEMORY.md` is still true: it must keep saying no cloud credentials were used, nothing was applied, and no GitHub Actions run happened, until they really have.
 
 ---
@@ -962,10 +976,10 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 6 | Tools and mocks | 5 | 5 |
 | 7 | Rules and guardrails | 4 | 4 |
 | 8 | Memory | 3 | 3 |
-| 9 | Specialist agents | 8 | 8 |
+| 9 | Specialist agents | 10 | 10 |
 | 10 | Workflow graph and trace | 7 | 0 |
 | 11 | Approval and escalation | 6 | 0 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **82** | **59** |
+| **Total** | | **84** | **61** |

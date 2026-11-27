@@ -147,3 +147,10 @@ async def test_the_escalation_is_idempotent_on_retry(tool_env, text_of):
     tid, _ = await _run(tool_env, "CD-1005", text_of, Scripted())
     await _run(tool_env, "CD-1005", text_of, Scripted())
     assert len(await _escalations(tool_env, tid)) == 1
+
+
+def test_the_default_team_is_spelled_the_same_in_the_agent_and_the_ticket_service():
+    from agents.specialists.escalation import DEFAULT_TEAM
+    from app.services.ticket_service import DEFAULT_ESCALATION_TEAM
+
+    assert DEFAULT_ESCALATION_TEAM == DEFAULT_TEAM == "Tier 2 support"

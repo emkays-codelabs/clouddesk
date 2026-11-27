@@ -133,8 +133,9 @@ def test_euron_uses_its_endpoint_and_model_without_network(monkeypatch):
     monkeypatch.setattr("openai.AsyncOpenAI", FakeClient)
     get_llm.__globals__["_build_provider"].cache_clear()
     p = get_llm(_settings(llm_provider="euron", llm_api_key="test-key"))
+    assert p.model == "euri-chat-smart"  # the router's default tier (P9-9)
+    p._provider(p.model)  # providers are built on first use, so the client is built here
     assert seen["base_url"] == EURON_BASE_URL
-    assert p.model == "euri-reasoning"
     custom = get_llm(
         _settings(llm_provider="openai", llm_api_key="k", llm_base_url="http://localhost:1/v1")
     )
@@ -183,9 +184,18 @@ def test_no_model_sdk_imported_outside_core_llm():
         for path in (ROOT / folder).rglob("*.py"):
             if path.name == "llm.py" and path.parent.name == "core":
                 continue
+            if path.name == "embeddings.py" and path.parent.name == "rag":
+                continue  # P9-10: the embeddings endpoint, checked in the test below
             if pattern.search(path.read_text(encoding="utf-8")):
                 offenders.append(str(path.relative_to(ROOT)))
     assert offenders == []
+
+
+def test_the_only_other_sdk_import_is_the_euron_embeddings_client_in_rag():
+    text = (ROOT / "rag" / "embeddings.py").read_text(encoding="utf-8")
+    imported = re.findall(r"^\s*(?:import|from)\s+(openai|langchain_openai|anthropic)", text, re.M)
+
+    assert imported == ["openai"]  # one lazy import, inside EuronEmbeddings.__init__
 
 
 def test_workflow_state_accepts_minimal_and_full_shapes():

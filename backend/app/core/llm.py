@@ -1,10 +1,12 @@
 """The LLM layer (F14): `get_llm()` picks a provider, `call_structured()` is the one way in.
 
 Does: offer one `LLMProvider` interface with three implementations: `fake` (offline, deterministic,
-cost 0.0, the default), and an OpenAI-compatible client for `openai` and for Euron's endpoint
-(`euron`). `call_structured` validates the reply against a Pydantic model, repairs an invalid reply
-at most twice, measures usage and latency, and raises only a typed `LLMError` (which still carries
-the usage spent). One model, no tiers, no gateway (ADR-0010, D4 not decided).
+cost 0.0, the default), and an OpenAI-compatible client for `openai` (one model) and for Euron's
+endpoint (`euron`), which goes through the in-process tier router in `llm_router.py` (P9-9,
+ADR-0010 accepted in a limited form: no separate gateway service). `call_structured` takes a `tier`
+(default `smart`), validates the reply against a Pydantic model, repairs an invalid reply at most
+twice, measures usage and latency, records the tier and the model that served it, and raises only a
+typed `LLMError` (which still carries the usage spent). The fake and openai providers ignore tiers.
 Must NOT: be bypassed. A static test fails when `openai` or `langchain_openai` is imported outside
 this file. Must not import `agents/` (core layer); callers pass rule results as `hints`. Must not
 log or return the API key, the prompt, or the base URL's credentials.
@@ -22,6 +24,14 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ValidationError
 
 from app.core.config import Settings, get_settings
+from app.core.llm_router import (
+    DEFAULT_TIER,
+    TIERS,
+    LLMRouter,
+    RouterError,
+    Tier,
+    tier_models,
+)
 from app.schemas.workflow import TokenUsage
 
 logger = logging.getLogger(__name__)
@@ -29,7 +39,6 @@ logger = logging.getLogger(__name__)
 MAX_REPAIRS = 2
 DECISION_TEMPERATURE_CAP = 0.2
 EURON_BASE_URL = "https://api.euron.one/api/v1/euri"
-EURON_DEFAULT_MODEL = "euri-reasoning"
 OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 REQUEST_TIMEOUT_SECONDS = 60.0
 
@@ -51,6 +60,8 @@ class Completion:
     text: str
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    model: str = ""  # set by the router: the model that served this call
+    tier: str = ""  # set by the router: the tier that served it (may be below the one asked for)
 
 
 @dataclass
@@ -61,6 +72,8 @@ class StructuredResult[T]:
     attempts: int = 1
     provider: str = ""
     model: str = ""
+    tier: str = ""  # the tier asked for
+    served_tier: str = ""  # the tier that answered; below `tier` after a fallback
     errors: list[str] = field(default_factory=list)
 
 
@@ -295,7 +308,15 @@ class OpenAICompatibleProvider:
 
 
 @lru_cache(maxsize=8)
-def _build_provider(provider: str, api_key: str, model: str, base_url: str) -> LLMProvider:
+def _build_provider(
+    provider: str,
+    api_key: str,
+    model: str,
+    base_url: str,
+    fast: str = "",
+    smart: str = "",
+    reasoning: str = "",
+) -> LLMProvider:
     if provider == "fake":
         return FakeProvider()
     if provider == "openai":
@@ -303,8 +324,10 @@ def _build_provider(provider: str, api_key: str, model: str, base_url: str) -> L
             "openai", api_key, base_url or None, model or OPENAI_DEFAULT_MODEL
         )
     if provider == "euron":
-        return OpenAICompatibleProvider(
-            "euron", api_key, base_url or EURON_BASE_URL, model or EURON_DEFAULT_MODEL
+        url = base_url or EURON_BASE_URL
+        return LLMRouter(  # type: ignore[return-value]
+            tier_models(model, fast, smart, reasoning),
+            lambda name: OpenAICompatibleProvider("euron", api_key, url, name),
         )
     if provider == "anthropic":
         raise LLMError("The anthropic provider is not implemented; use fake, openai or euron.")
@@ -318,7 +341,15 @@ def get_llm(settings: Settings | None = None) -> LLMProvider:
     key = s.llm_api_key.get_secret_value()
     if provider in ("openai", "euron") and not key:
         raise LLMError(f"LLM_API_KEY is not set for the {provider} provider.")
-    return _build_provider(provider, key, s.llm_model, s.llm_base_url)
+    return _build_provider(
+        provider,
+        key,
+        s.llm_model,
+        s.llm_base_url,
+        s.llm_model_fast,
+        s.llm_model_smart,
+        s.llm_model_reasoning,
+    )
 
 
 # ----------------------------------------------------------------------------- call_structured
@@ -345,14 +376,18 @@ async def call_structured[T: BaseModel](
     user: str,
     temperature: float = 0.0,
     hints: dict[str, Any] | None = None,
+    tier: Tier = DEFAULT_TIER,
     llm: LLMProvider | None = None,
 ) -> StructuredResult[T]:
     """Ask the model for a `schema` object. The only sanctioned way to call a model.
 
     Decisions run at temperature <= 0.2, so the value is capped. An invalid reply is sent back with
     the validation errors up to MAX_REPAIRS times. `hints` are rule results the fake provider
-    honours (a real model ignores them). Raises LLMError only, carrying the usage spent.
+    honours (a real model ignores them). `tier` picks the model on a tiered provider (the Euron
+    router) and is ignored by the others. Raises LLMError only, carrying the usage spent.
     """
+    if tier not in TIERS:
+        raise ValueError(f"unknown tier {tier!r}; use one of {', '.join(TIERS)}")
     started = time.perf_counter()
     usage = TokenUsage()
     temperature = min(max(temperature, 0.0), DECISION_TEMPERATURE_CAP)
@@ -362,18 +397,24 @@ async def call_structured[T: BaseModel](
         {"role": "user", "content": user},
     ]
     problems: list[str] = []
+    tiered = getattr(provider, "supports_tiers", False)
 
     def elapsed() -> int:
         return int((time.perf_counter() - started) * 1000)
 
     for attempt in range(1, MAX_REPAIRS + 2):
         try:
-            completion = await provider.complete(schema, messages, temperature, hints)
+            if tiered:
+                completion = await provider.complete(  # type: ignore[call-arg]
+                    schema, messages, temperature, hints, tier=tier
+                )
+            else:
+                completion = await provider.complete(schema, messages, temperature, hints)
         except Exception as exc:  # any provider failure, mapped to the one typed error
             logger.warning("llm provider call failed: %s", type(exc).__name__)
-            raise LLMError(
-                f"{provider.name} call failed: {type(exc).__name__}", usage, elapsed()
-            ) from exc
+            # A RouterError names only models and exception classes, so it is safe to show.
+            detail = str(exc) if isinstance(exc, RouterError) else type(exc).__name__
+            raise LLMError(f"{provider.name} call failed: {detail}", usage, elapsed()) from exc
         cost = provider.estimate_cost(completion.prompt_tokens, completion.completion_tokens)
         usage = usage + TokenUsage(
             prompt_tokens=completion.prompt_tokens,
@@ -398,9 +439,19 @@ async def call_structured[T: BaseModel](
             ]
             continue
         latency = elapsed()
+        model_used = completion.model or provider.model
+        served = completion.tier or tier
         logger.info(
             "llm call ok",
-            extra={"provider": provider.name, "schema": schema.__name__, "attempts": attempt},
+            extra={
+                "provider": provider.name,
+                "schema": schema.__name__,
+                "attempts": attempt,
+                "tier": tier,
+                "served_tier": served,
+                "model": model_used,
+                "total_tokens": usage.total_tokens,
+            },
         )
         return StructuredResult(
             output=output,
@@ -408,7 +459,9 @@ async def call_structured[T: BaseModel](
             latency_ms=latency,
             attempts=attempt,
             provider=provider.name,
-            model=provider.model,
+            model=model_used,
+            tier=tier,
+            served_tier=served,
             errors=problems,
         )
     raise LLMError(

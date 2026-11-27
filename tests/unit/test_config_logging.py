@@ -1,5 +1,6 @@
 """P1-1: settings and JSON logging (F14 settings hook; request_id / workflow_id log context)."""
 
+import datetime
 import json
 import logging
 import sys
@@ -172,6 +173,93 @@ class TestJsonLogging:
         line = json.loads(JsonFormatter().format(record))
 
         assert "ValueError: boom" in line["exception"]
+
+
+class TestExtraFields:
+    """D (2026-11-27): `extra={...}` fields reach the JSON line, secrets redacted."""
+
+    @staticmethod
+    def _with_extra(**extra) -> dict:
+        record = logging.LogRecord("test", logging.INFO, __file__, 1, "hello", None, None)
+        for key, value in extra.items():
+            setattr(record, key, value)
+        return json.loads(JsonFormatter().format(record))
+
+    def test_extra_fields_appear_in_the_line(self):
+        line = self._with_extra(provider="euron", attempts=2, tier="fast")
+
+        assert (line["provider"], line["attempts"], line["tier"]) == ("euron", 2, "fast")
+
+    def test_a_real_logger_call_with_extra_reaches_the_formatted_line(self):
+        logger = logging.getLogger("test.extra.real")
+        seen: list[str] = []
+
+        class Capture(logging.Handler):
+            def emit(self, record):
+                seen.append(JsonFormatter().format(record))
+
+        handler = Capture()
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        try:
+            logger.info("llm call ok", extra={"model": "euri-chat-fast", "total_tokens": 15})
+        finally:
+            logger.removeHandler(handler)
+
+        line = json.loads(seen[0])
+        assert line["model"] == "euri-chat-fast" and line["total_tokens"] == 15
+
+    def test_a_line_without_extra_has_exactly_the_standard_keys(self):
+        assert set(_format()) == {
+            "timestamp", "level", "logger", "message", "request_id", "workflow_id",
+        }  # fmt: skip
+
+    def test_standard_record_attributes_are_not_repeated_as_extra(self):
+        line = _format()
+
+        assert not {"msg", "args", "levelno", "pathname", "lineno", "process", "thread"} & set(line)
+
+    def test_extra_never_overrides_the_reserved_keys(self):
+        with log_context(request_id="req-1", workflow_id="wf-1"):
+            line = self._with_extra(request_id="forged", workflow_id="forged", level="DEBUG")
+
+        assert line["request_id"] == "req-1"
+        assert line["workflow_id"] == "wf-1"
+        assert line["level"] == "INFO"
+        assert line["extra_request_id"] == "forged"  # kept, under a prefixed key
+
+    def test_values_that_are_not_json_are_stringified_not_fatal(self):
+        line = self._with_extra(when=datetime.date(2026, 11, 27), thing=object)
+
+        assert line["when"] == "2026-11-27"
+        assert "object" in line["thing"]
+
+    @pytest.mark.parametrize(
+        "key",
+        ["password", "db_password", "client_secret", "API_KEY", "llm_api_key", "access_token",
+         "token", "Authorization", "x-api-key"],
+    )  # fmt: skip
+    def test_values_of_secret_looking_keys_are_redacted(self, key):
+        line = self._with_extra(**{key: "sk-live-abcdef"})
+
+        assert line[key] == "***"
+        assert "sk-live-abcdef" not in json.dumps(line)
+
+    def test_redaction_reaches_inside_a_dict_value(self):
+        line = self._with_extra(headers={"Authorization": "Bearer abc", "accept": "json"})
+
+        assert line["headers"] == {"Authorization": "***", "accept": "json"}
+
+    def test_token_counts_are_not_mistaken_for_secrets(self):
+        line = self._with_extra(total_tokens=15, prompt_tokens=10, completion_tokens=5)
+
+        usage = (line["total_tokens"], line["prompt_tokens"], line["completion_tokens"])
+        assert usage == (15, 10, 5)
+
+    def test_a_secret_never_appears_in_a_formatted_llm_log_line(self):
+        line = self._with_extra(provider="euron", api_key="sk-must-not-appear", model="m")
+
+        assert "sk-must-not-appear" not in json.dumps(line) and line["model"] == "m"
 
 
 class TestRedactUrl:

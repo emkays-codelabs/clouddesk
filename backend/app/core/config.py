@@ -46,8 +46,13 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
     llm_base_url: str = ""
+    # Tier models for the Euron router (P9-9); each falls back to llm_model, then the tier default.
+    llm_model_fast: str = ""
+    llm_model_smart: str = ""
+    llm_model_reasoning: str = ""
     embedding_provider: str = "fake"
     embedding_model: str = ""
+    embedding_base_url: str = ""  # P9-10: empty falls back to llm_base_url
     embedding_dimensions: int = 384
 
     # Vector store

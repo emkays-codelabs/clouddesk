@@ -11,10 +11,12 @@ import asyncio
 import logging
 import time
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.injection_guard import drop_injected_chunks
+from app.core.llm import EURON_BASE_URL
 from app.schemas.knowledge import (
     Article,
     ArticleDetail,
@@ -26,7 +28,13 @@ from app.schemas.knowledge import (
 from app.services.retrieval_cache import RedisRetrievalCache
 from rag.chunking import Article as SourceArticle
 from rag.chunking import load_article_files
-from rag.embeddings import FakeEmbeddings
+from rag.embeddings import (
+    EURON_EMBEDDING_MODEL,
+    EmbeddingError,
+    Embeddings,
+    EuronEmbeddings,
+    FakeEmbeddings,
+)
 from rag.ingest import IngestResult, get_vector_store, ingest, load_documents
 from rag.retriever import Document, HybridRetriever
 
@@ -47,8 +55,32 @@ def _directory() -> Path:
     return Path(get_settings().sample_data_dir) / "knowledge_base"
 
 
-def _embeddings() -> FakeEmbeddings:
-    return FakeEmbeddings(get_settings().embedding_dimensions)
+@lru_cache(maxsize=4)
+def _euron(api_key: str, base_url: str, model: str, dimensions: int) -> EuronEmbeddings:
+    return EuronEmbeddings(api_key, base_url, model=model, dimensions=dimensions)
+
+
+def build_embeddings(settings: Settings) -> Embeddings:
+    """The embeddings for `EMBEDDING_PROVIDER` (P9-10). The only place that reads those settings.
+
+    `euron` takes its base URL from `EMBEDDING_BASE_URL`, else the LLM base URL, else Euron's own,
+    and its key from `LLM_API_KEY`. Switching providers changes the vectors: reindex afterwards.
+    """
+    provider = settings.embedding_provider.strip().lower()
+    if provider == "fake":
+        return FakeEmbeddings(settings.embedding_dimensions)
+    if provider == "euron":
+        key = settings.llm_api_key.get_secret_value()
+        if not key:
+            raise EmbeddingError("LLM_API_KEY is not set for the euron embeddings provider.")
+        base_url = settings.embedding_base_url or settings.llm_base_url or EURON_BASE_URL
+        model = settings.embedding_model or EURON_EMBEDDING_MODEL
+        return _euron(key, base_url, model, settings.embedding_dimensions)
+    raise EmbeddingError(f"Unknown EMBEDDING_PROVIDER {provider!r}; use fake or euron.")
+
+
+def _embeddings() -> Embeddings:
+    return build_embeddings(get_settings())
 
 
 async def _build(*, recreate: bool) -> IngestResult:

@@ -34,7 +34,7 @@ from app.schemas.workflow import Escalation, ResolutionAction, WorkflowState
 
 HISTORY_LIMIT = 10
 NUMBER_ATTEMPTS = 3
-DEFAULT_ESCALATION_TEAM = "Tier 2 Support"
+DEFAULT_ESCALATION_TEAM = "Tier 2 support"
 CLOSED_STATUSES = {TicketStatus.resolved, TicketStatus.closed}
 
 

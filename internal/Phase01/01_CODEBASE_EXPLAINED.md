@@ -120,7 +120,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 455 lines across seven files today (it was 379 when the phase ended, because later phases added to `config.py`, `logging.py` and `main.py`), plus a 137-line test harness (106 when the phase ended). The line counts in the headings below are today's. Paths are relative to the project root.
+The Phase 1 application code is 495 lines across seven files today (it was 379 when the phase ended, because later phases added to `config.py`, `logging.py` and `main.py`), plus a 149-line test harness (106 when the phase ended). The line counts in the headings below are today's. Paths are relative to the project root.
 
 ### `backend/app/main.py` (96 lines today; 33 in Phase 1, later phases added the seed hook and the auth, tickets, customers, dashboard, audit, settings, knowledge and mcp routers, and the knowledge indexing at startup)
 
@@ -138,7 +138,7 @@ The Phase 1 application code is 455 lines across seven files today (it was 379 w
 
 The order matters. Each `add_middleware` call wraps the previous layers, so the *last* one added is the *outermost*. CORS is added last, so it sees the request first and the response last.
 
-### `backend/app/core/config.py` (99 lines)
+### `backend/app/core/config.py` (104 lines)
 
 | Item | Explanation |
 |---|---|
@@ -154,7 +154,7 @@ The order matters. Each `add_middleware` call wraps the previous layers, so the 
 
 Secrets are stored as `SecretStr`. When settings are shown, secrets become `***` (or empty if unset), and a password inside a connection URL is masked while the user and host remain. Code that genuinely needs a secret reads the attribute directly.
 
-### `backend/app/core/logging.py` (74 lines)
+### `backend/app/core/logging.py` (109 lines)
 
 | Item | Explanation |
 |---|---|
@@ -210,7 +210,7 @@ The reply shapes are typed models, so a response that does not match its documen
 
 The reasons name the setting at fault but never echo a URL, password or key. This is tested.
 
-### `tests/conftest.py` (137 lines)
+### `tests/conftest.py` (149 lines)
 
 | Item | Explanation |
 |---|---|
@@ -327,7 +327,7 @@ These are the decisions the code and the project record actually show.
 
 **Results, run while writing this document:**
 
-- Phase 1's own tests: **99 passed** in about 3 seconds, offline (the five files in the table below). This is the count today: it was 97 when the phase ended, and `tests/unit/test_makefile.py` has since grown from 9 to 11 tests. The table below shows the Phase 1 figures.
+- Phase 1's own tests: **117 passed** in about 3 seconds, offline (the five files in the table below). This is the count today: it was 97 when the phase ended, and `tests/unit/test_makefile.py` has since grown from 9 to 11 tests. The table below shows the Phase 1 figures.
 - The whole suite when this was updated, on 2026-11-03 (`make test`): **346 passed**. The extra 249 belong to later tooling and documentation tasks, not to Phase 1. It was 220 when this document was first written.
 - `uv run ruff check .`: **All checks passed**.
 

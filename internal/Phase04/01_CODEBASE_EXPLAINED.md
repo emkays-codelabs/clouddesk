@@ -97,7 +97,7 @@ Example: Sam, an agent, creates a ticket and then escalates it.
 3. The router checks the token (401 if missing or bad) and the role (403 for a viewer), and validates the body against `TicketCreate` (422 if wrong, for example an unknown field or an empty subject).
 4. `ticket_service.create_ticket` looks the customer up (404 `Customer not found` if unknown), asks the repository for the next ticket number (one past the highest `CD-` number, 1001 for an empty database), inserts the ticket with status `new`, inserts the customer's first message, and commits once. It never starts a workflow.
 5. The response is **201** with the `Ticket`. Audit then writes a row: action `POST /api/v1/tickets`, resource `tickets`.
-6. `POST /api/v1/tickets/{id}/escalate` with `{"reason": "...", "priority": "urgent"}`. The service writes an `escalations` row (created by `human`, team `Tier 2 Support`), sets the ticket to `escalated` with `escalation_required` true, adds an internal system message "Status changed from new to escalated by sam.agent@clouddesk.demo.", commits, and returns **201** with the `Escalation`.
+6. `POST /api/v1/tickets/{id}/escalate` with `{"reason": "...", "priority": "urgent"}`. The service writes an `escalations` row (created by `human`, team `Tier 2 support`), sets the ticket to `escalated` with `escalation_required` true, adds an internal system message "Status changed from new to escalated by sam.agent@clouddesk.demo.", commits, and returns **201** with the `Escalation`.
 7. `GET /api/v1/tickets/{id}` now shows the escalation, the new message and the status.
 
 ```mermaid
@@ -138,7 +138,7 @@ Errors: no token gives 401; viewer on a write route gives 403 and nothing is wri
 
 ## G. Design decisions and trade-offs
 
-Historical decisions (made while building): a separate `TicketDetail` module to break an import cycle; creating a ticket never starts a workflow; the service owns the transaction and repositories never commit; the three action POSTs return 201 (the contract did not state a code); transitions are recorded as internal system messages rather than a new table; escalation team is the constant `Tier 2 Support`; the average resolution time is computed in Python for SQLite and Postgres parity. The table with alternatives is in [section F of the design evolution](./02_DESIGN_EVOLUTION.md). Retrospective recommendations, not built: a status state machine, keyset pagination, SQL-side aggregates, per-route audit read restriction.
+Historical decisions (made while building): a separate `TicketDetail` module to break an import cycle; creating a ticket never starts a workflow; the service owns the transaction and repositories never commit; the three action POSTs return 201 (the contract did not state a code); transitions are recorded as internal system messages rather than a new table; escalation team is the constant `Tier 2 support`; the average resolution time is computed in Python for SQLite and Postgres parity. The table with alternatives is in [section F of the design evolution](./02_DESIGN_EVOLUTION.md). Retrospective recommendations, not built: a status state machine, keyset pagination, SQL-side aggregates, per-route audit read restriction.
 
 ---
 

@@ -53,6 +53,7 @@ class SupervisorAgent:
                 system=CLASSIFY_SYSTEM,
                 user=wrap_untrusted(text),
                 hints=hints,
+                tier="fast",
                 llm=self._llm,
             )
             usage = result.usage
@@ -81,7 +82,11 @@ class SupervisorAgent:
         status, usage, model = "ok", TokenUsage(), None
         try:
             result = await call_structured(
-                SeverityAssessment, system=SEVERITY_SYSTEM, user=wrap_untrusted(text), llm=self._llm
+                SeverityAssessment,
+                system=SEVERITY_SYSTEM,
+                user=wrap_untrusted(text),
+                tier="fast",
+                llm=self._llm,
             )
             usage, model = result.usage, result.output
         except LLMError as exc:

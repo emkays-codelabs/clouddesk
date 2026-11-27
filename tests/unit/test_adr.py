@@ -61,15 +61,26 @@ def test_the_index_lists_every_record_and_nothing_else():
 
 
 def test_the_undecided_questions_d2_to_d6_are_recorded_as_proposed_not_decided():
+    # D4 is listed because ADR-0010 names it; it is accepted in a limited form (test below).
     texts = " ".join(_text(p) for p in _records())
 
     for decision in ("D2", "D3", "D4", "D5", "D6"):
         assert decision in texts
     proposed = [p for p in _records() if "proposed" in _text(p).split("## Context")[0].lower()]
-    assert len(proposed) >= 5
+    assert len(proposed) >= 4  # D4 (0010) was accepted in a limited form on 2026-11-27
 
 
 def test_the_settled_tenancy_decision_d1_is_recorded_as_accepted():
     tenancy = next(p for p in _records() if "tenan" in p.name)
 
     assert "accepted" in _text(tenancy).split("## Context")[0].lower()
+
+
+def test_model_tiering_d4_is_accepted_in_a_limited_form_with_no_gateway_service():
+    record = next(p for p in _records() if p.name.startswith("0010-"))
+    text = _text(record)
+    status = text.split("## Context")[0].lower()
+
+    assert "accepted in a limited form" in status and "owner" in status
+    assert "no gateway service" in text.lower() or "does not add a gateway service" in text
+    assert "llm_router.py" in text and "P9-9" in text and "P9-10" in text

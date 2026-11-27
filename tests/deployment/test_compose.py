@@ -85,13 +85,54 @@ def test_the_backend_runs_the_offline_demo_defaults():
     env = SERVICES["backend"]["environment"]
 
     assert env["DEMO_MODE"] == "true"
-    assert env["LLM_PROVIDER"] == "fake"
+    assert env["LLM_PROVIDER"] == "${LLM_PROVIDER:-fake}"  # fake unless the host asks otherwise
     assert env["VECTOR_STORE"] == "memory"
     assert env["USE_FAKE_REDIS"] == "false"
     assert env["REDIS_URL"] == "redis://redis:6379/0"
     assert env["CORS_ORIGINS"] == "http://localhost:${FRONTEND_PORT:-3000}"
     assert env["DATABASE_URL"].endswith("//app/data/support.db")
     assert env["CHECKPOINT_DB_PATH"].startswith("/app/data/")
+
+
+# Passed from the host `.env` or environment by substitution. A machine without a key still comes up
+# on the offline defaults (fake provider, empty models, 384 dimensions).
+MODEL_SETTINGS = {
+    "LLM_PROVIDER": "fake",
+    "LLM_BASE_URL": "",
+    "LLM_MODEL": "",
+    "LLM_MODEL_FAST": "",
+    "LLM_MODEL_SMART": "",
+    "LLM_MODEL_REASONING": "",
+    "EMBEDDING_PROVIDER": "fake",
+    "EMBEDDING_MODEL": "",
+    "EMBEDDING_BASE_URL": "",
+    "EMBEDDING_DIMENSIONS": "384",
+    "LLM_API_KEY": "",
+}
+
+
+@pytest.mark.parametrize("name,default", MODEL_SETTINGS.items())
+def test_the_backend_receives_each_model_setting_with_an_offline_default(name, default):
+    env = SERVICES["backend"]["environment"]
+
+    assert env[name] == f"${{{name}:-{default}}}"
+
+
+def test_the_api_key_is_substituted_never_written_into_the_file():
+    assert SERVICES["backend"]["environment"]["LLM_API_KEY"] == "${LLM_API_KEY:-}"
+    assert not re.search(r"(?im)^\s*\w*api_key:\s*['\"]?[^\s'\"$]", TEXT)
+    assert not re.search(r"sk-[A-Za-z0-9]{8,}", TEXT)
+
+
+def test_every_substituted_model_setting_is_a_real_settings_field():
+    import sys
+
+    sys.path.insert(0, str(ROOT / "backend"))
+    from app.core.config import Settings
+
+    fields = {n.upper() for n in Settings.model_fields}
+
+    assert set(MODEL_SETTINGS) <= fields
 
 
 def test_host_ports_default_to_8000_and_3000_and_are_compose_only_variables():
