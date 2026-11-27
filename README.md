@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 11:05 +0530_
+_Last updated: 2026-11-27 11:20 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-27 11:05 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 52 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 59 of 82 tasks done. Phase 9 (the specialist agents) has all its tasks done and awaits its four documents; phases 12 and 14 are in progress. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -78,7 +78,7 @@ account change waits for a recorded human approval.
 
 ## 2. Project status
 
-Phases 1 to 8 are complete and validated locally. The service starts offline, seeds a demo database and
+Phases 1 to 8 are complete and validated locally, and Phase 9 is built and awaiting its documents. The service starts offline, seeds a demo database and
 answers requests. What exists today:
 
 - **Service basics:** health routes (`/health`, `/health/live`, `/health/ready`), an `X-Request-ID` on every
@@ -112,9 +112,13 @@ answers requests. What exists today:
 - The system diagrams and the API contract in `docs/design/`. The contract describes routes that are not built
   yet (the workflow, approvals, escalations and agents routes).
 
-Not built yet: the language-model layer, the six specialist agents, the workflow graph and its trace,
-approvals and escalation routing, the real console screens, the evaluation suite, and the Terraform and
-CI files. There is no language model in the application yet: it runs on a fake provider.
+- **Language-model layer and agents (Phase 9):** a `get_llm()` factory with a deterministic fake provider and an
+  OpenAI-compatible provider, `call_structured`, the six specialist agents and a 16-case evaluation dataset.
+  They are called directly in tests; no graph runs them yet.
+
+Not built yet: the workflow graph, its state and trace, approvals and escalation routing, the real console
+screens, the evaluation thresholds, and the Terraform and CI files. No real language-model call has been made:
+the application runs on the fake provider.
 
 No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
 
@@ -152,7 +156,7 @@ API key.
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
-| 9 | Specialist agents | not started |
+| 9 | Specialist agents | in progress |
 | 10 | Workflow graph and trace | not started |
 | 11 | Approval and escalation | not started |
 | 12 | Console shell | in progress |
@@ -250,7 +254,7 @@ keeps routine work cheap.
 | `/phase-docs 1` | Writes a finished phase's four documents |
 | `/pr-review 10`, `/consult-opus`, `/cost-report` | Reviews a pull request; asks one design question; shows cost and cache health |
 
-A hook runs `ruff` and `pytest` before Claude runs `git commit`, and blocks the commit if either fails. It
+A hook runs `ruff`, `pytest` and, when `frontend/node_modules` exists, the frontend lint and tests before Claude makes a commit, and blocks it if any fails. It
 does not run when you commit by hand. Setup notes and open checks are in
 [`docs/08_CLAUDE_SETUP.md`](docs/08_CLAUDE_SETUP.md).
 

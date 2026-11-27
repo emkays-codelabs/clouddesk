@@ -69,7 +69,7 @@ Exceeding one is a signal to split the task. Scale up for a larger repository.
 
 | Skipped | Why | Add it when |
 |---|---|---|
-| `architect` agent | One module today (`backend/app/`); decisions are recorded in `docs/adr/` | `rag/`, `agents/` and `frontend/` exist, or the records outgrow `docs/adr/` |
+| `architect` agent | Decisions are recorded in `docs/adr/` (`backend/app/`, `rag/`, `agents/` and `frontend/` now all exist, and the records have not outgrown it) | The records outgrow `docs/adr/` |
 | `wait` skill | No job runs for more than a few minutes (the suite takes about 3 seconds) | Phase 14 adds Terraform and image builds |
 | `fix-issue` skill | No issue tracker is referenced: `TASKS.md` is the tracker | GitHub Issues is adopted |
 
@@ -169,7 +169,7 @@ The docs won in each case. Source: `code.claude.com/docs`, read 2026-11-02.
 |---|---|
 | `env` keys: the three model pins, `CLAUDE_CODE_SUBAGENT_MODEL`, `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (v2.1.217 or later) | documented, untested here |
 | `effort` agent field | documented, untested |
-| Hook JSON format and exit code 2 | documented; the script's logic was run by hand, a live session was not |
+| Hook JSON format and exit code 2 | documented; the script's logic was run by hand, a live session was not. The hook runs `python -m ruff check .`, `python -m pytest -q -x` and, when `frontend/node_modules` exists, the frontend lint and tests (`python -m` avoids the uv trampoline); any failure exits 2 |
 | `omitClaudeMd` | needs v2.1.271 or later; unverified |
 | `Agent` tool in a subagent's `tools` | documented; unverified that `implementer` can spawn `opus-consultant` |
 | Unscoped rule `cost-and-delegation.md` loads every session | unverified |

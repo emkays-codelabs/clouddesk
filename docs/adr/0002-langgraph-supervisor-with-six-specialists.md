@@ -24,4 +24,5 @@ Customer, Knowledge, Troubleshooting, Resolution and Escalation. Each returns a 
 - A run is bounded: at most 12 graph steps, 2 investigation cycles and 2 clarifying questions, and it
   escalates below 0.6 confidence.
 - Code before `interrupt()` re-runs on resume, so it must stay small and idempotent.
-- Nothing of this exists yet. It is built in Phases 9 to 11.
+- The six specialists exist (Phase 9) and run offline through `call_structured`. The graph, its state, the
+  checkpointer and the `interrupt()` node are not built yet; they arrive in Phases 10 and 11.

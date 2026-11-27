@@ -1,8 +1,9 @@
 """Prompt building blocks shared by every agent (N4, CLAUDE.md 7.1 and 9).
 
 Does: `SECURITY_PREAMBLE` is the instruction block every agent prompt starts with, and
-`wrap_untrusted` delimits ticket text, emails, files and retrieved chunks as data. The full prompt
-set arrives with the specialists in Phase 9. Must NOT: contain secrets or customer data.
+`wrap_untrusted` delimits ticket text, emails, files and retrieved chunks as data. The system
+prompts for the specialists (classify, severity, diagnosis, resolution, escalation) follow.
+Must NOT: contain secrets or customer data.
 """
 
 import re

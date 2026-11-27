@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 10:47 +0530_
+_Last updated: 2026-11-27 11:20 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -178,6 +178,13 @@ internal/      one folder per phase, `Phase01/`, `Phase02/` and so on, with four
 (root)         CLAUDE.md · CLAUDE.local.md (optional personal overrides, git-ignored) · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
                .env.example · pyproject.toml · uv.lock
 ```
+
+The tree above is the target. **Not built yet** (each arrives with the `TASKS.md` task named): `agents/state.py`,
+`graph.py`, `checkpointer.py` and `nodes/` (P10-1 to P10-5); the approvals, escalations, agents, `/run`,
+`/workflow` and `/events` routes (P10, P11); `scripts/demo.py` (P11-5); `frontend/lib/`, the `/tickets/[id]` and
+`/customers/[id]` pages (P12-2, P13); `tests/workflow/` (P10); `.github/` and `deployment/` (P14-4).
+`sample_data/` also holds `profiles.json` (the three demo users), and `integrations/` is covered by
+`tests/integrations/`.
 
 ---
 
@@ -426,8 +433,8 @@ DATABASE_URL            sqlite+aiosqlite:///./data/support.db  |  postgresql+asy
 CHECKPOINT_DB_PATH      ./data/checkpoints.db  |  :memory: (tests)
 REDIS_URL               empty → fakeredis  |  redis://redis:6379/0
 USE_FAKE_REDIS          true in tests
-LLM_PROVIDER            fake (default) | openai | anthropic | …
-LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
+LLM_PROVIDER            fake (default) | openai | euron (OpenAI-compatible) | anthropic (not implemented)
+LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, LLM_BASE_URL
 EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 VECTOR_STORE            memory | qdrant
 QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)
@@ -477,6 +484,11 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 `/escalate`) · `/approvals` (+ approve/reject) · `/customers` · `/knowledge` (+ search, reindex) ·
 `/escalations` · `/agents` · `/audit` · `/settings` · `/mcp/tools`.
 
+**Built today:** `/auth`, `/dashboard/summary`, `/tickets` (list, create, read, `/reply`, `/request-info`,
+`/escalate`, PATCH), `/customers`, `/knowledge`, `/audit`, `/settings`, `/mcp/tools` and the health routes.
+**Planned, not built:** `/tickets/{id}/run`, `/workflow`, `/events` (P10), `/approvals` (P11), `/escalations`
+(P11-6), `/agents` (P10-7).
+
 Rule: if an endpoint changes, update `06_API_CONTRACT.md`, `backend/app/schemas/`, and `frontend/lib/types.ts`
 in the same change.
 
@@ -494,7 +506,8 @@ temp SQLite, `CHECKPOINT_DB_PATH=:memory:`). Auth fixtures: `agent_headers`, `ad
 | `tests/api/` | health, request id, auth, RBAC 403s, ticket CRUD, run→poll→complete, refund pause→approve, rejection→escalation, security auto-escalation, injection containment, 404s |
 | `tests/rag/` | ingest count, expected article for key queries, modes, cache, RRF, rerank, filters |
 | `tests/agents/` | one test per specialist behaviour |
-| `tests/workflow/` | graph shape, routing, risk levels, e2e low-risk, pause/resume, rejection, GDPR policy escalation |
+| `tests/integrations/` | mock integrations record calls and never reach a real system |
+| `tests/workflow/` (Phase 10, not built) | graph shape, routing, risk levels, e2e low-risk, pause/resume, rejection, GDPR policy escalation |
 | `tests/evaluation/` | threshold metrics over `datasets/eval_cases.json` |
 | `tests/deployment/` | compose services, Dockerfile hygiene (non-root, HEALTHCHECK), `.env.example` coverage, no committed `.env` |
 | `frontend/__tests__/` | StatusPill, EmptyState, WorkflowSteps.deriveSteps, api helpers |
@@ -540,6 +553,9 @@ docker compose config -q && docker compose up --build
 make terraform-validate
 BASE_URL=http://localhost:8000 make smoke
 ```
+
+Today's `Makefile` has `setup`, `backend`, `test`, `lint`, `format`, `seed`, `ingest` and `mcp`. `demo` (P11-5),
+`terraform-validate` and `smoke` (P14) are planned.
 
 In Claude Code: `/plan N` plans a task, `/implement path` runs the plan, `/test`, `/review`, `/consult-opus`, `/pr-review N`, `/cost-report`, and `/phase-docs N`, which writes a finished phase's four documents.
 
@@ -674,7 +690,7 @@ optional and is not a core exit criterion.
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
-| 9 | Specialist agents | not started |
+| 9 | Specialist agents | in progress |
 | 10 | Workflow graph and trace | not started |
 | 11 | Approval and escalation | not started |
 | 12 | Console shell | in progress |

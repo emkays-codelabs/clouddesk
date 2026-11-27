@@ -13,5 +13,5 @@ paths:
   once, confirm it goes red, then restore the original bytes.
 - Every requirement in `PLAN.md` (F1-F14, N1-N8) maps to at least one test.
 - Evaluation thresholds in `CLAUDE.md` section 13 fail the build. Do not lower one to make a run pass.
-- Tests live in the folder that matches what they prove: `unit/`, `api/`, `rag/`, `agents/`, `workflow/`,
-  `evaluation/`, `deployment/`.
+- Tests live in the folder that matches what they prove: `unit/`, `api/`, `rag/`, `agents/`, `integrations/`,
+  `workflow/` (arrives with Phase 10), `evaluation/`, `deployment/`.
