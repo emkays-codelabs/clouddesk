@@ -56,3 +56,10 @@ Same four containers; the backend now has outbound access to Euron when configur
 ## M. Verification
 
 Run: `docker compose config -q`, the Euron calls during the bring-up (classification returned in about 30 seconds per call on the real model). Not run: a load test, a failover drill against a real outage.
+
+
+---
+
+## Model switch, 2026-11-27
+
+The three tier variables (`LLM_MODEL_FAST`, `LLM_MODEL_SMART`, `LLM_MODEL_REASONING`) now name `openai/gpt-oss-120b-Turbo`, set in the git-ignored `.env`; `LLM_MODEL` stays the fallback. One real run took 71 seconds against 163 to 174 before. The model's price is in `backend/app/core/llm.py` so its cost is an estimate; the plan-hosted `euri-*` models publish no per-token price. Restarting every container kept all data: the same tickets, approvals, escalations, workflow runs and customers came back from the `backend-data` volume (checked 2026-11-27). Not checked: answer quality at scale, a restart during a running workflow.

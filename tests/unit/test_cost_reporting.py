@@ -91,3 +91,27 @@ def test_the_graph_state_merge_carries_the_basis():
     assert merged["cost_basis"] == "unavailable"
     assert merge_usage({}, {"cost_basis": "actual"})["cost_basis"] == "actual"
     assert merge_usage(None, None)["cost_basis"] == "none"
+
+
+class _EuronGptOss(_Provider):
+    """The router returns the served model on the completion; no price comes from the provider."""
+
+    async def complete(self, schema, messages, temperature, hints):
+        done = Completion(REPLY, 1000, 500)
+        done.model = "openai/gpt-oss-120b-Turbo"
+        return done
+
+
+async def test_the_owner_verified_gpt_oss_turbo_price_gives_an_estimate(monkeypatch):
+    """$0.15 per 1M input and $0.60 per 1M output, from the model's Euron page (2026-11-27)."""
+    monkeypatch.setattr("app.core.llm.get_settings", lambda: Settings(llm_pricing=""))
+    r = await call_structured(Classification, system="s", user="u", llm=_EuronGptOss())
+    assert r.usage.cost_basis == "estimated"
+    assert r.usage.estimated_cost_usd == (1000 * 0.15 + 500 * 0.60) / 1_000_000
+
+
+async def test_the_plan_hosted_euri_models_stay_unavailable(monkeypatch):
+    # euri-chat-* are included in an Euron plan; no per-token price is published for them.
+    monkeypatch.setattr("app.core.llm.get_settings", lambda: Settings(llm_pricing=""))
+    r = await call_structured(Classification, system="s", user="u", llm=_Provider())
+    assert r.usage.cost_basis == "unavailable"

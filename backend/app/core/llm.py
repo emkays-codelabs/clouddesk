@@ -42,9 +42,14 @@ EURON_BASE_URL = "https://api.euron.one/api/v1/euri"
 OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 REQUEST_TIMEOUT_SECONDS = 60.0
 
-# USD per million tokens (input, output), published list prices. A model not listed has NO verified
-# price: its cost is unavailable unless the owner sets LLM_PRICING. Euron prices are not listed.
-PRICE_PER_MILLION: dict[str, tuple[float, float]] = {"gpt-4o-mini": (0.15, 0.60)}
+# USD per million tokens (input, output). A model not listed has NO verified price: its cost is
+# unavailable unless the owner sets LLM_PRICING. The euri-* models are included in an Euron plan and
+# publish no per-token price, so they stay unavailable.
+PRICE_PER_MILLION: dict[str, tuple[float, float]] = {
+    "gpt-4o-mini": (0.15, 0.60),
+    # From the model's Euron page, supplied by the owner on 2026-11-27 (DeepInfra-hosted).
+    "openai/gpt-oss-120b-Turbo": (0.15, 0.60),
+}
 
 
 def configured_cost(
@@ -400,6 +405,11 @@ def _cost_of(provider: LLMProvider, completion: Completion) -> tuple[float | Non
     cost = configured_cost(
         model, completion.prompt_tokens, completion.completion_tokens, get_settings().llm_pricing
     )
+    if cost is None and model in PRICE_PER_MILLION:
+        rate_in, rate_out = PRICE_PER_MILLION[model]
+        cost = (
+            completion.prompt_tokens * rate_in + completion.completion_tokens * rate_out
+        ) / 1_000_000
     if cost is None:
         cost = provider.estimate_cost(completion.prompt_tokens, completion.completion_tokens)
     return (cost, "estimated") if cost is not None else (None, "unavailable")
