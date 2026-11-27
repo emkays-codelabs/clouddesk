@@ -61,8 +61,10 @@ class SupportState(TypedDict, total=False):
     ticket_summary: str
     memory_written: int
 
-    # Progress. These are the only fields that accumulate.
+    # Progress. `errors`, `completed_nodes`, `route_history`, `step_count` and `token_usage`
+    # are the only fields that accumulate.
     current_node: str
+    failed: bool
     errors: Annotated[list[str], operator.add]
     completed_nodes: Annotated[list[str], operator.add]
     route_history: Annotated[list[str], operator.add]

@@ -1,7 +1,8 @@
-.PHONY: setup backend test lint format seed ingest mcp
+.PHONY: setup backend test lint format seed ingest mcp demo
 
 # `uv run` uses .venv and the pytest `pythonpath` setting, so no PYTHONPATH juggling is needed.
-# Not built yet, each added by the task named: demo (P11-5), terraform-validate (P14-4), smoke (P14-5).
+# Not built yet, each added by the task named: terraform-validate (P14-4), smoke (P14-5).
+# `demo` runs scripts/demo.py on the offline fake model; `make demo TICKET=CD-1005` picks another ticket.
 # `seed` and `ingest` run the service modules directly and `mcp` starts the read-only MCP server over stdio.
 
 # Recipes only call `uv`, so they work in cmd.exe, PowerShell and sh alike (no `test`/`cp`/`&&`).
@@ -33,3 +34,6 @@ ingest:
 mcp: export PYTHONPATH = backend
 mcp:
 	uv run python -m integrations.mcp.server
+
+demo:
+	uv run python scripts/demo.py

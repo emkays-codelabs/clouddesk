@@ -30,6 +30,71 @@ class EscalationAgent:
         self._registry = registry
         self._llm = llm
 
+    async def decide(
+        self,
+        text: str,
+        plan_name: str | None,
+        classification: Classification,
+        severity: Severity,
+    ) -> tuple[EscalationDecision, str, TokenUsage]:
+        """The decision only: rules first, then the model's judgement. Nothing is recorded."""
+        status, usage = "ok", TokenUsage()
+        matched = matching_escalation_rules(text, plan_name)
+        if matched:
+            top = max((r.severity for r in matched), key=SEVERITY_ORDER.__getitem__)
+            return (
+                EscalationDecision(
+                    escalation_required=True,
+                    reason=" ".join(r.reason for r in matched),
+                    assigned_team=matched[0].team,
+                    priority=top,
+                    confidence=1.0,
+                ),
+                status,
+                usage,
+            )
+        user = (
+            f"Category: {classification.category.value}\nSeverity: {severity.value}\n"
+            f"Ticket:\n{wrap_untrusted(text)}"
+        )
+        model: EscalationDecision | None = None
+        try:
+            result = await call_structured(
+                EscalationDecision,
+                system=ESCALATION_SYSTEM,
+                user=user,
+                tier="smart",
+                llm=self._llm,
+            )
+            usage, model = result.usage, result.output
+        except LLMError as exc:
+            status, usage = "fallback", exc.usage
+        return self._judge(model, severity), status, usage
+
+    async def record(
+        self,
+        ticket_id: str,
+        decision: EscalationDecision,
+        workflow_id: str = "",
+        calls: list[ToolCallRecord] | None = None,
+    ) -> list[ToolCallRecord]:
+        """Write the escalation through the registry (idempotent: a retry adds no second row)."""
+        calls = calls if calls is not None else []
+        await call_tool(
+            self._registry,
+            calls,
+            "create_escalation",
+            {
+                "ticket_id": ticket_id,
+                "reason": decision.reason,
+                "assigned_team": decision.assigned_team,
+                "priority": decision.priority.value,
+            },
+            ticket_id=ticket_id,
+            workflow_id=workflow_id,
+        )
+        return calls
+
     async def run(
         self,
         ticket_id: str,
@@ -40,52 +105,10 @@ class EscalationAgent:
         workflow_id: str = "",
     ) -> tuple[EscalationDecision, str, TokenUsage, int, list[ToolCallRecord]]:
         started = time.perf_counter()
+        decision, status, usage = await self.decide(text, plan_name, classification, severity)
         calls: list[ToolCallRecord] = []
-        status, usage = "ok", TokenUsage()
-
-        matched = matching_escalation_rules(text, plan_name)
-        if matched:
-            top = max((r.severity for r in matched), key=SEVERITY_ORDER.__getitem__)
-            decision = EscalationDecision(
-                escalation_required=True,
-                reason=" ".join(r.reason for r in matched),
-                assigned_team=matched[0].team,
-                priority=top,
-                confidence=1.0,
-            )
-        else:
-            user = (
-                f"Category: {classification.category.value}\nSeverity: {severity.value}\n"
-                f"Ticket:\n{wrap_untrusted(text)}"
-            )
-            model: EscalationDecision | None = None
-            try:
-                result = await call_structured(
-                    EscalationDecision,
-                    system=ESCALATION_SYSTEM,
-                    user=user,
-                    tier="smart",
-                    llm=self._llm,
-                )
-                usage, model = result.usage, result.output
-            except LLMError as exc:
-                status, usage = "fallback", exc.usage
-            decision = self._judge(model, severity)
-
         if decision.escalation_required:
-            await call_tool(
-                self._registry,
-                calls,
-                "create_escalation",
-                {
-                    "ticket_id": ticket_id,
-                    "reason": decision.reason,
-                    "assigned_team": decision.assigned_team,
-                    "priority": decision.priority.value,
-                },
-                ticket_id=ticket_id,
-                workflow_id=workflow_id,
-            )
+            await self.record(ticket_id, decision, workflow_id, calls)
         return decision, status, usage, elapsed_ms(started), calls
 
     @staticmethod

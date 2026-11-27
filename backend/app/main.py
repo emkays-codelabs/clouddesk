@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.agents import router as agents_router
+from app.api.approvals import router as approvals_router
 from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.customers import router as customers_router
@@ -15,6 +17,7 @@ from app.api.knowledge import router as knowledge_router
 from app.api.mcp import router as mcp_router
 from app.api.settings import router as settings_router
 from app.api.tickets import router as tickets_router
+from app.api.workflow import router as workflow_router
 from app.core.config import get_settings, redact_url
 from app.core.database import create_tables, dispose_engine
 from app.core.logging import setup_logging
@@ -69,6 +72,9 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(tickets_router, prefix="/api/v1")
+    app.include_router(workflow_router, prefix="/api/v1")
+    app.include_router(approvals_router, prefix="/api/v1")
+    app.include_router(agents_router, prefix="/api/v1")
     app.include_router(customers_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
