@@ -73,7 +73,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 | **Health routes** | A status board outside the door: "open", "alive", "ready" | A hosting platform could not tell whether to send visitors |
 | **Readiness checks** | The checklist behind the "ready" light: is the filing cabinet there, is the phone line configured | "Ready" would be a guess |
 | **Offline test harness** | A rehearsal room with no outside phone line, so nobody can accidentally call a real customer | Tests could spend money or leak keys |
-| **Makefile and `.env.example`** | The new-starter handbook: how to start the office and which rules you must set | Every developer would have to work it out alone |
+| **Makefile and `.env.example` (removed 2026-11-27)** | The new-starter handbook: how to start the office and which rules you must set | Every developer would have to work it out alone |
 
 ### The application factory
 
@@ -90,7 +90,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 - **Purpose.** Hold every configurable value in one typed object.
 - **Receives.** Environment variables and an optional local `.env` file.
 - **Does.** Reads and checks values, hides secrets when the settings are printed, and is created once and reused.
-- **Produces.** A `Settings` object with 27 fields.
+- **Produces.** A `Settings` object with 27 fields (28 today: `LLM_BASE_URL` was added in a later phase).
 - **Talks to.** Everything that needs configuration.
 
 ### Logging
@@ -120,7 +120,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 ## D. Codebase structure and file-by-file explanation
 
-The Phase 1 application code is 455 lines across seven files, plus a 137-line test harness. Paths are relative to the project root.
+The Phase 1 application code is 455 lines across seven files today (it was 379 when the phase ended, because later phases added to `config.py`, `logging.py` and `main.py`), plus a 137-line test harness (106 when the phase ended). The line counts in the headings below are today's. Paths are relative to the project root.
 
 ### `backend/app/main.py` (96 lines today; 33 in Phase 1, later phases added the seed hook and the auth, tickets, customers, dashboard, audit, settings, knowledge and mcp routers, and the knowledge indexing at startup)
 
@@ -224,7 +224,7 @@ The reasons name the setting at fault but never echo a URL, password or key. Thi
 | File | What it is |
 |---|---|
 | `Makefile` | Five commands: `setup`, `backend`, `test`, `lint`, `format`. Every recipe starts with `uv` or `git`, so it runs the same in cmd, PowerShell and a Unix shell. |
-| `.env.example` | The 27 variables with safe placeholders, so a new developer knows what to set. No real key is in it. |
+| `.env.example` (removed 2026-11-27) | The 27 variables of Phase 1 (28 today) with safe placeholders, so a new developer knows what to set. No real key is in it. |
 | `pyproject.toml` | Python 3.12 or newer, the dependency list, and the settings for pytest and the linter |
 | `.gitattributes` | Forces the Makefile to use Unix line endings, because `make` rejects carriage returns |
 | `backend/app/__init__.py` | Holds the version, `0.1.0` |
@@ -327,7 +327,7 @@ These are the decisions the code and the project record actually show.
 
 **Results, run while writing this document:**
 
-- Phase 1's own tests: **99 passed** in about 3 seconds, offline.
+- Phase 1's own tests: **99 passed** in about 3 seconds, offline (the five files in the table below). This is the count today: it was 97 when the phase ended, and `tests/unit/test_makefile.py` has since grown from 9 to 11 tests. The table below shows the Phase 1 figures.
 - The whole suite when this was updated, on 2026-11-03 (`make test`): **346 passed**. The extra 249 belong to later tooling and documentation tasks, not to Phase 1. It was 220 when this document was first written.
 - `uv run ruff check .`: **All checks passed**.
 
@@ -335,7 +335,7 @@ These are the decisions the code and the project record actually show.
 |---|---|---|
 | `tests/unit/test_config_logging.py` | 29 | Settings defaults and parsing, secret redaction, JSON log shape, ID binding and restoring, idempotent logging setup |
 | `tests/unit/test_harness.py` | 24 | The offline profile holds, keys cannot leak in, outside network is blocked while loopback works, async tests share one loop |
-| `tests/unit/test_env_example.py` | 7 | `.env.example` lists every variable, matches the settings class, holds placeholders only |
+| `tests/unit/test_env_example.py` (removed 2026-11-27) | 7 | `.env.example` lists every variable, matches the settings class, holds placeholders only |
 | `tests/unit/test_makefile.py` | 9 | Required targets exist, tabs not spaces, Unix line endings, portable recipes |
 | `tests/api/test_health.py` | 28 | The three routes, readiness failures one at a time, no leaks in details, request-ID rules, a 500 reply, CORS |
 
@@ -381,13 +381,13 @@ For tests, the environment is fixed before the application even loads, every cre
 
 ## K. Key takeaways and next-phase dependencies
 
-**What was implemented:** the app factory, settings, JSON logging, request-ID middleware, three health routes with configuration readiness, an offline test harness, a portable Makefile, and an `.env.example` contract. 97 tests pass.
+**What was implemented:** the app factory, settings, JSON logging, request-ID middleware, three health routes with configuration readiness, an offline test harness, a portable Makefile, and an `.env.example` (removed 2026-11-27) contract. 97 tests pass.
 
 **Know this before explaining it:**
 
 - There is no database, no AI and no login in this phase, and saying so confidently is a strength.
 - Readiness checks configuration only. It does not prove reachability.
-- Only 9 of the 27 settings are read by Phase 1 code (the CORS origins, the environment name, and the ones the readiness checks use). The rest are declared and listed in `.env.example` for later phases.
+- Only 9 of the 27 settings are read by Phase 1 code (the CORS origins, the environment name, and the ones the readiness checks use). The rest are declared and listed in `.env.example` (removed 2026-11-27) for later phases.
 - `pyproject.toml` already lists the AI libraries (LangChain, LangGraph, OpenAI), but no Phase 1 code imports them.
 
 **Limitations that remain:** configuration-only readiness, no authentication, no rate limiting, no audit log, no containers.
@@ -396,7 +396,7 @@ For tests, the environment is fixed before the application even loads, every cre
 
 | Phase 1 piece | Reused by |
 |---|---|
-| Settings and `.env.example` | Phase 2 (the database URL), every later phase |
+| Settings and `.env.example` (removed 2026-11-27) | Phase 2 (the database URL), every later phase |
 | App factory and middleware order | Phase 3 adds rate limiting and an audit layer |
 | JSON logging with `workflow_id` | Phase 10 (workflow tracing) |
 | Offline harness | Every test in every phase |

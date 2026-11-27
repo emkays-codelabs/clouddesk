@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 11:35 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -37,17 +37,17 @@ Work every task the same way:
 | 2 | `P1-3`, `P1-4`, `P2-1` |
 | 3 | `P1-2`, `P2-2`, `P2-3`, `P4-1`, `P7-1`, `P7-2`, `P7-3`, `P7-4` |
 | 4 | `P2-4`, `P3-1`, `P3-3`, `P6-1`, `P6-4`, `P8-2`, `P12-1`, `P12-2` |
-| 5 | `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P5-1`, `P6-3`, `P8-1` |
-| 6 | `P4-4`, `P4-5`, `P5-2`, `P8-3`, `P12-3` |
-| 7 | `P5-3`, `P12-4` |
+| 5 | `P3-2`, `P3-4`, `P4-2`, `P4-3`, `P5-1`, `P6-3`, `P8-1`, `P14-2` |
+| 6 | `P4-4`, `P4-5`, `P5-2`, `P8-3`, `P12-3`, `P14-3`, `P14-4` |
+| 7 | `P5-3`, `P12-4`, `P14-5` |
 | 8 | `P5-4`, `P6-2` |
 | 9 | `P6-5`, `P9-1` |
 | 10 | `P9-2`, `P9-3`, `P9-4`, `P9-5`, `P9-6`, `P9-7`, `P9-8`, `P10-1` |
 | 11 | `P10-2`, `P10-3`, `P10-4`, `P10-6` |
 | 12 | `P10-5` |
-| 13 | `P10-7`, `P11-1`, `P11-3`, `P13-1`, `P14-2` |
-| 14 | `P11-2`, `P11-4`, `P11-6`, `P13-2`, `P14-3`, `P14-4` |
-| 15 | `P11-5`, `P13-3`, `P14-5` |
+| 13 | `P10-7`, `P11-1`, `P11-3`, `P13-1` |
+| 14 | `P11-2`, `P11-4`, `P11-6`, `P13-2` |
+| 15 | `P11-5`, `P13-3` |
 | 16 | `P13-4`, `P14-1` |
 
 The longest dependency chain is 16 tasks long.
@@ -104,9 +104,9 @@ The longest dependency chain is 16 tasks long.
 
 **P1-4 · Makefile and `.env.example`**
 - **Needs:** `P1-1`
-- **Build:** `.env.example` listing every §10.1 variable with placeholders only, and a `Makefile` with `setup`, `backend`, `test`, `lint` and `format` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`). Every recipe calls only `uv`, so the targets run in cmd.exe, PowerShell and sh alike (`setup` copies `.env.example` to `.env` through Python, never overwriting an existing `.env`).
-- **Files:** `.env.example`, `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py`, `tests/unit/test_makefile.py`
-- **Done when:** A test proves `.env.example` covers every variable in the spec and every `Settings` field, declares nothing the app does not read, and holds no real key; tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only portable commands (`uv` or `git`, never POSIX-shell syntax); `make test` and `make lint` run (checked with GNU Make 4.4.1).
+- **Build:** `.env.example` listing every §10.1 variable with placeholders only (removed on 2026-11-27 at the owner's request: `.env` is now the only environment file), and a `Makefile` with `setup`, `backend`, `test`, `lint` and `format` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`). Every recipe calls only `uv`, so the targets run in cmd.exe, PowerShell and sh alike (`setup` once copied `.env.example` to `.env` through Python; it now only runs `uv sync` and sets the git hooks path).
+- **Files:** `.env.example` (removed 2026-11-27), `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py` (replaced by `tests/unit/test_env_settings.py`, which checks `CLAUDE.md` §10.1 against `Settings`), `tests/unit/test_makefile.py`
+- **Done when:** A test proves the variable list covers every `Settings` field and declares nothing the app does not read (first for `.env.example`, since 2026-11-27 for `CLAUDE.md` §10.1); tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only portable commands (`uv` or `git`, never POSIX-shell syntax); `make test` and `make lint` run (checked with GNU Make 4.4.1).
 
 **P1-5 · Document timestamps (pre-commit hook)**
 - **Needs:** `P1-4`
@@ -122,7 +122,7 @@ The longest dependency chain is 16 tasks long.
   endings; a `#` inside a code fence is not mistaken for the heading; `stamp_files` leaves an unlisted
   path byte-identical; and a real commit is observed to update the stamp of a staged document.
 - **Note:** additive tooling, not a Phase 1 exit criterion — the phase's exit (health tests offline,
-  `.env.example` coverage) was already met and is unaffected.
+  `.env.example` coverage, a check since replaced by one on `CLAUDE.md` §10.1) was already met and is unaffected.
 
 **P1-6 · Claude Code cost governance**
 - **Needs:** `P1-4`
@@ -241,7 +241,7 @@ The longest dependency chain is 16 tasks long.
 - **Done when:** A test accepts `Phase01` and `Phase14` and rejects `Phase1`, `Phase001` and `phase01`; another shows
   padding keeps the folders in order; `required_documents` returns two-digit folders; the skill and the spec agree on
   `PhaseNN`; and the existing Phase 1 documents live under `internal/Phase01/`.
-- **Note:** done at the owner's request, and cheapest while only one phase folder exists. The Q&A ignore rule
+- **Note:** its commit (`b4c70a9`) reached `development` inside PR #19 (`docs/professional-readme`); PR #18 was closed unmerged. Done at the owner's request, and cheapest while only one phase folder exists. The Q&A ignore rule
   (`internal/Phase*/04_INTERVIEW_QNA.md`) needed no change because it uses a wildcard. No application code changes.
 
 **P1-13 · Professional README**
@@ -318,25 +318,25 @@ The longest dependency chain is 16 tasks long.
 **P2-1 · SQLAlchemy entities and category enum**
 - **Needs:** `P1-1`
 - **Build:** Async SQLAlchemy 2 models for the 16 tables plus `tenants`, portable across SQLite and Postgres (JSON not JSONB, `String(36)` UUIDs). Every data table carries a not-null, indexed `tenant_id` and the seeded demo tenant id is a constant (D1, `CLAUDE.md` §6). Categories, statuses, severities, and channels are defined first in `schemas/common.py`.
-- **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `pyproject.toml` (adds `sqlalchemy` and `aiosqlite`)
+- **Files:** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `tests/unit/test_entities.py`, `tests/unit/test_common_schemas.py`, `tests/unit/test_database.py`, `pyproject.toml` (adds `sqlalchemy` and `aiosqlite`)
 - **Done when:** Tables create on an empty SQLite file; a test asserts exactly the 10 categories, 7 statuses, 4 severities, and 4 channels; and a test asserts every data table has a not-null `tenant_id`, so a table added later cannot quietly omit it.
 
 **P2-2 · Postgres schema, RLS, and migrations**
 - **Needs:** `P2-1`
 - **Build:** The Postgres side: `schema.sql` (with the `set_updated_at()` trigger), `rls_policies.sql` (RLS on every data table, keyed `USING (tenant_id = current_setting('app.tenant_id')::uuid)`), and an additive migration folder. The first migration already contains `tenant_id`, so there is never a migration that adds it (D1).
-- **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_*.sql`
+- **Files:** `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/0001_initial.sql`, `tests/unit/sql_ddl.py` (a small SQL parser for the tests), `tests/unit/test_schema_sql.py`, `test_rls_policies.py`, `test_seed_sql.py`, `test_migrations.py`, `test_sql_ddl_parser.py`
 - **Done when:** A test shows `schema.sql` and the models agree on tables and column types; `schema.sql` becomes the authority for the table count; a test asserts every data table in `schema.sql` has RLS enabled and a policy keyed on `tenant_id`.
 
 **P2-3 · Repository layer**
 - **Needs:** `P2-1`
 - **Build:** The repository layer: all SQL goes through repositories for tickets, messages, customers, subscriptions, workspaces, memory, workflow runs and events, approvals, escalations, and audit logs. **Repositories are the only place the `tenant_id` filter lives** (D1, `CLAUDE.md` §6); SQLite has no RLS, so on the demo database this filter is the boundary.
-- **Files:** `backend/app/repositories/`, `tests/unit/` repository tests
+- **Files:** `backend/app/repositories/` (`base.py` plus one module per area: tickets, customers, reference, memory, workflow, approvals, audit, profiles, tenants), `tests/unit/repositories/`
 - **Done when:** Repository tests pass on SQLite; nothing under `repositories/` imports a model client or `agents/`; and a cross-tenant isolation test proves a second tenant's rows are invisible to every read, which is what makes the column more than decoration (upstream security checklist, LLD §20).
 
 **P2-4 · Sample data and demo bootstrap**
 - **Needs:** `P2-3`
 - **Build:** Demo data and bootstrap: 13 tickets (`CD-1001`–`CD-1013`), 8 customers, subscriptions, workspaces, incidents, previous resolutions, and products; `bootstrap_demo_data()` loads them when the database is empty and `DEMO_MODE=true`; `make seed`.
-- **Files:** `sample_data/*.json`, `backend/app/services/seed_service.py`, lifespan hook in `main.py`, `Makefile`
+- **Files:** `sample_data/*.json`, `backend/app/services/seed_service.py`, lifespan hook in `main.py`, `Makefile`, `tests/unit/test_sample_data.py`, `tests/unit/test_seed_service.py`, `tests/api/test_startup_seed.py`
 - **Done when:** Startup on an empty SQLite file loads 13 tickets and 8 customers; a second startup adds no rows; `CD-1002` and its customer are readable.
 
 ---
@@ -364,7 +364,7 @@ The longest dependency chain is 16 tasks long.
 **P3-2 · Demo auth routes and tokens**
 - **Needs:** `P3-1`
 - **Build:** Demo authentication: `POST /auth/demo-login` (only when `DEMO_MODE=true`) and `GET /auth/me`; 8-hour tokens for `admin@`, `sam.agent@`, and `vic.viewer@clouddesk.demo`.
-- **Files:** `backend/app/api/auth.py`, `backend/app/schemas/auth.py`, `tests/api/test_auth_routes.py`
+- **Files:** `backend/app/api/auth.py`, `backend/app/schemas/auth.py`, `backend/app/services/auth_service.py`, `backend/app/repositories/profiles.py` (`get_first_by_role`), `sample_data/profiles.json` (the three demo profiles, loaded by the seed service), `tests/api/test_auth_routes.py`
 - **Done when:** Demo login issues a token for each of the three users; no service-role secret is ever returned to the client.
 
 **P3-3 · Redis rate limit**
@@ -406,7 +406,7 @@ The longest dependency chain is 16 tasks long.
 **P4-2 · Ticket API**
 - **Needs:** `P4-1`, `P2-3`, `P3-1`
 - **Build:** Ticket API: `POST /tickets` (email, chat, web, api), `GET /tickets` (status, severity, search, paging), `GET /tickets/{id}` as `TicketDetail`. It does not start the workflow.
-- **Files:** `backend/app/api/tickets.py`, `backend/app/services/ticket_service.py`, `tests/api/test_tickets.py`
+- **Files:** `backend/app/api/tickets.py`, `backend/app/services/ticket_service.py`, new repository methods (`next_ticket_number`, `get_many`, `latest_for_ticket`, `list_for_ticket`), `tests/api/test_tickets.py`
 - **Done when:** F1 test: all four channels create a ticket and a first message; list, get, and 404 follow the contract; a viewer gets 403 on create; `CD-1001`–`CD-1013` are fetchable after `make seed`.
 
 **P4-3 · Customer API**
@@ -424,7 +424,7 @@ The longest dependency chain is 16 tasks long.
 **P4-5 · Dashboard, audit, and settings read APIs**
 - **Needs:** `P2-3`, `P3-1`, `P3-4`
 - **Build:** Read APIs for the console: `GET /dashboard/summary`, `GET /audit` (paging, actor, action filters), and `GET /settings` (redacted).
-- **Files:** `backend/app/api/dashboard.py`, `audit.py`, `settings.py`, matching schemas and tests
+- **Files:** `backend/app/api/dashboard.py`, `audit.py`, `settings.py`, `backend/app/services/dashboard_service.py`, `audit_service.py`, `settings_service.py`, matching schemas, and `tests/api/test_dashboard.py`, `test_audit_api.py`, `test_settings_api.py`
 - **Done when:** Responses match the contract; `/settings` reports `api_key_configured` as a boolean and never a key.
 
 ---
@@ -464,7 +464,7 @@ The longest dependency chain is 16 tasks long.
 **P5-4 · Ingest command and knowledge API**
 - **Needs:** `P5-3`, `P3-1`
 - **Build:** Ingest and the knowledge API: `make ingest`, `GET /knowledge/articles`, `GET /knowledge/articles/{id}`, `POST /knowledge/search`, and admin-only `POST /knowledge/reindex` that recreates the collection.
-- **Files:** `rag/ingest.py`, `backend/app/api/knowledge.py`, `Makefile`, `tests/rag/test_ingest.py`, `tests/api/test_knowledge.py`
+- **Files:** `rag/ingest.py`, `backend/app/services/knowledge_service.py` (also the `make ingest` entry point), `backend/app/schemas/knowledge.py`, `backend/app/api/knowledge.py`, `Makefile`, `tests/rag/test_ingest.py`, `tests/api/test_knowledge.py`
 - **Done when:** `make ingest` reports article and chunk counts; the MFA lockout query returns its article in the top 3; non-admins get 403 on reindex; a second ingest leaves the chunk count unchanged (`tests/rag/test_ingest.py`, the ingest-count test `CLAUDE.md` §13 assigns to `tests/rag/`).
 
 ---
@@ -472,74 +472,80 @@ The longest dependency chain is 16 tasks long.
 ## Phase 6 — Tools and mocks
 
 > Depends on: P2-3. P6-2 also needs P5-3 (`search_docs` calls the retriever) and P2-4 (`check_service_status` reads the incident data). Parallel with: Phases 4, 5, 7, and 12.
-> Merge order: P6-1 and P6-4 in parallel. P6-2 and P6-3 in parallel after both. P6-5 after P6-2.
+> Merge order planned: P6-1 and P6-4 in parallel. P6-2 and P6-3 in parallel after both. P6-5 after P6-2.
+> As built: P6-1 merged alone (PR #50); P6-2, P6-3, P6-4 and P6-5 merged together on `feature/tools-and-mocks` (PR #51), with the Phase 6 documents in PR #52.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P6-1 · Tool registry and policy | F9 | `feature/tool-registry-policy` | Completed ✅ |
-| P6-2 · Read-only support tools | F4, F5, F7 | `feature/tools-read-only` | Completed ✅ |
-| P6-3 · Approval-gated write tools | F9 | `feature/tools-approval-gated` | Completed ✅ |
-| P6-4 · Mock integrations | — | `feature/integrations-mock` | Completed ✅ |
-| P6-5 · MCP read-only server and `/mcp/tools` | — | `feature/mcp-server` | Completed ✅ |
+| P6-2 · Read-only support tools | F4, F5, F7 | `feature/tools-and-mocks` | Completed ✅ |
+| P6-3 · Approval-gated write tools | F9 | `feature/tools-and-mocks` | Completed ✅ |
+| P6-4 · Mock integrations | — | `feature/tools-and-mocks` | Completed ✅ |
+| P6-5 · MCP read-only server and `/mcp/tools` | — | `feature/tools-and-mocks` | Completed ✅ |
 
 #### Task definitions
 
 **P6-1 · Tool registry and policy**
 - **Needs:** `P2-3`
 - **Build:** The tool registry and policy: `ToolPolicy` with an explicit approval bit per tool, `ToolRegistry.execute(name, args, approved=…)`, unknown tools requiring approval, `TOOL_TIMEOUT_SECONDS`, exceptions turned into `ToolResult(ok=False)`, and a provenance check that rejects an argument id or amount which did not come from customer context or an earlier tool result (`CLAUDE.md` §7.4).
-- **Files:** `backend/app/tools/policy.py`, `backend/app/tools/registry.py`, `backend/app/tools/context.py`, `backend/app/tools/idempotency.py`, `backend/app/tools/factory.py`, `tests/unit/test_tool_policy.py`, `tests/unit/test_tool_registry.py`
+- **Files:** `backend/app/tools/policy.py`, `backend/app/tools/registry.py`, `tests/unit/test_tool_policy.py`, `tests/unit/test_tool_registry.py` (`context.py` and `factory.py` came with P6-2, `idempotency.py` with P6-3)
 - **Done when:** Reads and `update_ticket` need no approval; `reset_demo_setting` and `create_refund_request` do; unknown tools do; a raising tool returns `ok=False`; a slow tool times out; an amount lifted from ticket text is rejected while the same amount taken from a subscription record is accepted.
 
 **P6-2 · Read-only support tools**
 - **Needs:** `P6-1`, `P6-4`, `P5-3`, `P2-4`
 - **Build:** The read-only tools: `get_customer`, `get_subscription`, `get_ticket_history`, `search_docs`, `check_service_status`. Each is an async `@tool` whose docstring is its description.
-- **Files:** `backend/app/tools/read_tools.py`, `tests/unit/test_read_tools.py`
+- **Files:** `backend/app/tools/read_tools.py`, `backend/app/tools/context.py` (`ToolContext`), `backend/app/tools/factory.py` (`build_read_registry`), `tests/unit/test_read_tools.py`, and a seeded-database fixture in `tests/unit/conftest.py`
 - **Done when:** Every tool runs only through the registry and returns the documented shape; none writes.
+- **Note:** merged together with P6-3, P6-4 and P6-5 on `feature/tools-and-mocks` (PR #51), not on the branch first planned. Its Needs line is the planned order; P6-4 landed in the same pull request.
 
 **P6-3 · Approval-gated write tools**
 - **Needs:** `P6-1`, `P6-4`
 - **Build:** The write tools: `update_ticket` and `create_escalation` (no approval), `reset_demo_setting` and `create_refund_request` (approval required; `APPROVAL_REQUIRED_FOR_REFUNDS`, `MAX_REFUND_WITHOUT_APPROVAL` default 0).
-- **Files:** `backend/app/tools/write_tools.py`, `tests/unit/test_write_tools.py`
+- **Files:** `backend/app/tools/write_tools.py`, `backend/app/tools/idempotency.py` (`DbIdempotencyStore` over `resolution_actions`), `build_default_registry` in `backend/app/tools/factory.py`, `tests/unit/test_write_tools.py`
 - **Done when:** A direct registry call to `create_refund_request` without `approved=True` writes nothing; with it, the refund is recorded once (F9).
+- **Note:** merged on `feature/tools-and-mocks` (PR #51) with P6-2, P6-4 and P6-5.
 
 **P6-4 · Mock integrations**
 - **Needs:** `P2-3`
 - **Build:** Integration protocols and mock adapters: no real email, no real refunds. `core` never imports `integrations`.
 - **Files:** `integrations/protocols.py`, `integrations/mock/services.py`, `integrations/factory.py`, `tests/integrations/test_mock_integrations.py`
 - **Done when:** The factory returns mocks in demo mode; a test fails if anything under `core/` imports `integrations`.
+- **Note:** merged on `feature/tools-and-mocks` (PR #51) with P6-2, P6-3 and P6-5.
 
 **P6-5 · MCP read-only server and `/mcp/tools`**
 - **Needs:** `P6-2`
 - **Build:** A read-only MCP server exposing the read tools, a client example, `make mcp`, and `GET /mcp/tools`.
-- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `Makefile`, `pyproject.toml` (adds `mcp`), `tests/unit/test_mcp_server.py`, `tests/api/test_mcp_tools.py`
+- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `backend/app/services/tool_service.py`, `backend/app/schemas/mcp.py`, `backend/Dockerfile` (copies `integrations/`), `Makefile`, `pyproject.toml` (adds `mcp`), `tests/unit/test_mcp_server.py`, `tests/api/test_mcp_tools.py`
 - **Done when:** `/mcp/tools` lists `name`, `description`, and `requires_approval`; no write tool is exposed.
+- **Note:** merged on `feature/tools-and-mocks` (PR #51) with P6-2, P6-3 and P6-4.
 
 ---
 
 ## Phase 7 — Rules and guardrails
 
 > Depends on: P2-1. Parallel with: Phases 4, 5, 6, and 12.
-> Merge order: all four branches can be open together. They live in separate modules.
+> Merge order planned: all four branches can be open together. They live in separate modules.
+> As built: all four tasks merged together on `feature/phase-7-guardrails` (PR #53), with the Phase 7 documents.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P7-1 · Escalation and severity rules | F3, F10 | `feature/policy-rules` | Completed ✅ |
-| P7-2 · Injection wrapping and security preamble | N4 | `feature/guardrail-injection` | Completed ✅ |
-| P7-3 · Customer output validation | N5 | `feature/guardrail-output-validation` | Completed ✅ |
-| P7-4 · Secret scrub | N7 | `feature/guardrail-secret-scrub` | Completed ✅ |
+| P7-1 · Escalation and severity rules | F3, F10 | `feature/phase-7-guardrails` | Completed ✅ |
+| P7-2 · Injection wrapping and security preamble | N4 | `feature/phase-7-guardrails` | Completed ✅ |
+| P7-3 · Customer output validation | N5 | `feature/phase-7-guardrails` | Completed ✅ |
+| P7-4 · Secret scrub | N7 | `feature/phase-7-guardrails` | Completed ✅ |
 
 #### Task definitions
 
 **P7-1 · Escalation and severity rules**
 - **Needs:** `P2-1`
 - **Build:** Deterministic policy: category and severity rules (severity may rise, never fall) and `ESCALATION_RULES` for dispute, deletion, security, data loss, legal, and enterprise outage, each with a named team.
-- **Files:** `agents/rules.py`, `tests/unit/test_rules.py`
+- **Files:** `agents/__init__.py`, `agents/rules.py`, `tests/unit/test_rules.py`
 - **Done when:** `CD-1005`, `CD-1006`, `CD-1009`, and `CD-1011` return escalation required with no model call; `CD-1010` stays low (F3, F10).
 
 **P7-2 · Injection wrapping and security preamble**
 - **Needs:** `P2-1`
 - **Build:** Prompt-injection defence: `SECURITY_PREAMBLE`, `wrap_untrusted`, and `scan_for_injection`, applied to retrieved chunks as well as ticket text so a poisoned knowledge article is dropped before it reaches a prompt (`CLAUDE.md` §9).
-- **Files:** `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`), `tests/unit/test_injection.py`
+- **Files:** `agents/prompts.py` (`SECURITY_PREAMBLE`, `wrap_untrusted`), `backend/app/core/injection_guard.py` (`scan_for_injection`, `drop_injected_chunks`), `backend/app/services/knowledge_service.py` (passes the chunk filter to the retriever), `tests/unit/test_injection.py`
 - **Done when:** `CD-1013` is flagged and its text is wrapped as data, never as instruction, and a chunk carrying an instruction is dropped from the evidence it would otherwise join (N4).
 
 **P7-3 · Customer output validation**
@@ -553,19 +559,21 @@ The longest dependency chain is 16 tasks long.
 - **Build:** `scrub()` and `SECRET_PATTERNS` for card numbers, API keys, and passwords.
 - **Files:** `backend/app/core/scrub.py`, `tests/unit/test_scrub.py`
 - **Done when:** Card, key, and password fixtures are removed; clean text is unchanged (N7).
+- **Note:** P7-1 to P7-4 merged together on `feature/phase-7-guardrails` (PR #53). P7-4 was written before P7-3 because output validation imports the scrubber.
 
 ---
 
 ## Phase 8 — Memory
 
 > Depends on: P2-3, P3-3 (the Redis client), and P7-4. Parallel with: Phase 12. Does not wait for the graph.
-> Merge order: P8-1 and P8-2 in parallel. P8-3 after both.
+> Merge order planned: P8-1 and P8-2 in parallel. P8-3 after both.
+> As built: all three tasks merged together on `feature/phase-8-memory` (PR #54), with the Phase 8 documents.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P8-1 · Short-term Redis facade | F11 | `feature/memory-short-term` | Completed ✅ |
-| P8-2 · Long-term customer memory | F4, F11 | `feature/memory-long-term` | Completed ✅ |
-| P8-3 · Recall and record service | F4, F11, N7 | `feature/memory-service` | Completed ✅ |
+| P8-1 · Short-term Redis facade | F11 | `feature/phase-8-memory` | Completed ✅ |
+| P8-2 · Long-term customer memory | F4, F11 | `feature/phase-8-memory` | Completed ✅ |
+| P8-3 · Recall and record service | F4, F11, N7 | `feature/phase-8-memory` | Completed ✅ |
 
 #### Task definitions
 
@@ -578,46 +586,50 @@ The longest dependency chain is 16 tasks long.
 **P8-2 · Long-term customer memory**
 - **Needs:** `P2-3`, `P7-4`
 - **Build:** Long-term memory in `customer_memory`: types `preference`, `past_issue`, `troubleshooting`, `note`; permanent and de-duplicated; a fact is kept only at confidence ≥ 0.7, and erasing a customer's memory removes the rows and their vectors together (upstream FR-27).
-- **Files:** `memory/long_term.py`, `tests/unit/test_long_term.py`
+- **Files:** `memory/long_term.py`, `backend/app/repositories/memory.py` (adds `ids_for_customer`), `tests/unit/test_long_term.py`
 - **Done when:** Recall returns at most 10 notes; an exact duplicate is skipped; a fact below 0.7 confidence is discarded rather than stored; erasure leaves no row and no vector behind.
 
 **P8-3 · Recall and record service**
 - **Needs:** `P8-1`, `P8-2`
 - **Build:** The memory service: `recall_customer()` and `record_resolution()` (past issue, first three troubleshooting steps, resolution note). Every note passes `scrub()`.
-- **Files:** `memory/memory_service.py`, `tests/unit/test_memory_service.py`
+- **Files:** `memory/memory_service.py`, `backend/app/services/customer_memory_service.py` (the adapter that wires the scrubber, the repository and the vector store), `tests/unit/test_memory_service.py`
 - **Done when:** Card numbers, keys, passwords, and raw ticket bodies never reach `customer_memory`; nothing from another customer is stored (N7).
+- **Note:** P8-1 to P8-3 merged together on `feature/phase-8-memory` (PR #54). Nothing calls the service yet: the graph nodes arrive in Phase 10.
 
 ---
 
 ## Phase 9 — Specialist agents
 
 > Depends on: Phases 5, 6, 7, and 8. Parallel with: nothing required inside the phase after P9-1.
-> Merge order: P9-1 first. P9-2 through P9-8 in parallel after it. Each agent branch carries its own test.
+> Merge order planned: P9-1 first. P9-2 through P9-8 in parallel after it. Each agent branch carries its own test.
+> As built: P9-1 merged alone (PR #55); P9-2 to P9-5 together on `feature/phase-9-agents` (PR #56); P9-6 to P9-8 together on `feature/phase-9-agents-2` (PR #57). Each agent still has its own test file.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P9-1 · Workflow schemas and fake LLM | F14 | `feature/workflow-schemas-fake-llm` | Completed ✅ |
-| P9-2 · Supervisor agent | F2, F3 | `feature/agent-supervisor` | Completed ✅ |
-| P9-3 · Customer agent | F4 | `feature/agent-customer` | Completed ✅ |
-| P9-4 · Knowledge agent | F5, F6 | `feature/agent-knowledge` | Completed ✅ |
-| P9-5 · Troubleshooting agent | F7 | `feature/agent-troubleshooting` | Completed ✅ |
-| P9-6 · Resolution agent | F8 | `feature/agent-resolution` | Completed ✅ |
-| P9-7 · Escalation agent | F10 | `feature/agent-escalation` | Completed ✅ |
-| P9-8 · Eval case dataset | F2 | `feature/agent-eval-cases` | Completed ✅ |
+| P9-2 · Supervisor agent | F2, F3 | `feature/phase-9-agents` | Completed ✅ |
+| P9-3 · Customer agent | F4 | `feature/phase-9-agents` | Completed ✅ |
+| P9-4 · Knowledge agent | F5, F6 | `feature/phase-9-agents` | Completed ✅ |
+| P9-5 · Troubleshooting agent | F7 | `feature/phase-9-agents` | Completed ✅ |
+| P9-6 · Resolution agent | F8 | `feature/phase-9-agents-2` | Completed ✅ |
+| P9-7 · Escalation agent | F10 | `feature/phase-9-agents-2` | Completed ✅ |
+| P9-8 · Eval case dataset | F2 | `feature/phase-9-agents-2` | Completed ✅ |
 
 #### Task definitions
 
 **P9-1 · Workflow schemas and fake LLM**
 - **Needs:** `P5-4`, `P6-2`, `P6-3`, `P7-1`, `P7-2`, `P7-3`, `P7-4`, `P8-3`
 - **Build:** Workflow schemas and the LLM layer: `Classification`, `SeverityAssessment`, `CustomerContext`, `Evidence`, `PreviousCase`, `Diagnosis`, `ResolutionPlan`, `EscalationDecision`, `WorkflowState`; `get_llm()` with the fake provider; `call_structured` for telemetry, usage, and retry.
-- **Files:** `backend/app/schemas/workflow.py`, `backend/app/core/llm.py`, `tests/unit/test_llm.py`
+- **Files:** `backend/app/schemas/workflow.py`, `backend/app/core/llm.py` (fake provider, an OpenAI-compatible provider for `openai` and `euron`, `call_structured`), `backend/app/core/config.py` and `CLAUDE.md` §10.1 (the `LLM_BASE_URL` setting; it was added to `.env.example` then, which no longer exists), `tests/unit/test_llm.py`, `tests/unit/test_env_settings.py` (then `test_env_example.py`)
 - **Done when:** The fake provider returns valid structured output with cost `0.0`; no code calls a model except through `call_structured`.
+- **Note:** the OpenAI-compatible path was tested only against a stubbed client: no API key exists and no real call has been made. `anthropic` is deliberately unimplemented.
 
 **P9-2 · Supervisor agent**
 - **Needs:** `P9-1`
 - **Build:** Supervisor agent: classify into one of the 10 categories with a one-line summary, assess severity (rules may raise it), and write the ticket summary.
-- **Files:** `agents/specialists/supervisor.py`, `tests/agents/test_supervisor.py`
+- **Files:** `agents/specialists/supervisor.py`, `agents/specialists/common.py` (shared tool-call record), `agents/prompts.py` (classification and severity prompts), `tests/agents/conftest.py`, `tests/agents/test_supervisor.py`
 - **Done when:** Classification, summary, and severity with reason are produced; `CD-1010` stays low (F2, F3).
+- **Note:** P9-2 to P9-5 merged together on `feature/phase-9-agents` (PR #56). They also changed `get_customer` (adds `created_at`) and `get_ticket_history` (adds `channel`, `escalation_required`, `updated_at`) in `read_tools.py`.
 
 **P9-3 · Customer agent**
 - **Needs:** `P9-1`
@@ -640,13 +652,13 @@ The longest dependency chain is 16 tasks long.
 **P9-6 · Resolution agent**
 - **Needs:** `P9-1`
 - **Build:** Resolution agent: summary, customer reply, internal notes, and actions. Actions come from the deterministic `plan_actions`, never invented by the model; the reply is grounded and validated.
-- **Files:** `agents/specialists/resolution.py`, `tests/agents/test_resolution.py`
+- **Files:** `agents/specialists/resolution.py`, `agents/prompts.py` (`RESOLUTION_SYSTEM`), `tests/agents/test_resolution.py`
 - **Done when:** Actions equal `plan_actions` output; the reply passes `validate_customer_output`; grounding is measurable (F8).
 
 **P9-7 · Escalation agent**
 - **Needs:** `P9-1`
 - **Build:** Escalation agent: policy rules always win; a vague model escalation is distrusted unless severity is high with enough confidence; uses `create_escalation`.
-- **Files:** `agents/specialists/escalation.py`, `tests/agents/test_escalation.py`
+- **Files:** `agents/specialists/escalation.py`, `agents/prompts.py` (`ESCALATION_SYSTEM`), `tests/agents/test_escalation.py`
 - **Done when:** Policy cases escalate to the named team; a low-confidence model escalation does not (F10).
 
 **P9-8 · Eval case dataset**
@@ -654,6 +666,7 @@ The longest dependency chain is 16 tasks long.
 - **Build:** The evaluation dataset: one case per demo ticket at least, each with a valid `expected_category`, expected escalation, and expected article.
 - **Files:** `datasets/eval_cases.json`, `tests/evaluation/test_eval_cases.py`
 - **Done when:** A test rejects any case whose `expected_category` is not one of the 10 categories.
+- **Note:** P9-6 to P9-8 merged together on `feature/phase-9-agents-2` (PR #57). The dataset has 16 cases: the 13 demo tickets and 3 text cases.
 
 ---
 
@@ -790,8 +803,9 @@ The longest dependency chain is 16 tasks long.
 **P12-1 · Next.js app shell and navigation**
 - **Needs:** `P4-1`
 - **Build:** The Next.js 15 App Router shell with TypeScript and Tailwind, the hand-written `components/ui/` kit (no UI library, no gradients), navigation declared once, and `/api/health`.
-- **Files:** `frontend/app/`, `frontend/components/`, `frontend/components/layout/nav.ts`
+- **Files:** `frontend/app/`, `frontend/components/`, `frontend/components/layout/nav.ts`, `frontend/package.json` and its config files, `frontend/__tests__/` (`StatusPill`, `EmptyState`, `nav`), `.claude/hooks/pre-commit.sh` (runs the frontend lint and tests when `node_modules` exists)
 - **Done when:** `npm run lint` and `npm run build` pass; the app shows the navigation.
+- **Note:** the shell holds placeholder pages for eight console routes, `/login` and `/api/health`; `customers/[id]` and `tickets/[id]` arrive with P12-4 and P13-1, and `frontend/lib/` with P12-2.
 
 **P12-2 · Typed API client**
 - **Needs:** `P4-1`
@@ -856,7 +870,7 @@ The longest dependency chain is 16 tasks long.
 ## Phase 14 — Evaluation and delivery
 
 > Depends on: Phase 11 for the eval suite and the demo. Image and Terraform files do not import the graph.
-> Merge order: P14-1 after Phase 11. P14-2, P14-3, and P14-4 in parallel once the app boots. P14-5 after P14-2 and P14-3.
+> Merge order: P14-1 after Phase 11. P14-2 first, which was pulled forward (it needs only the backend and the console shell, not the graph). P14-3 and P14-4 after it, then P14-5 after P14-2 and P14-3.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
@@ -876,16 +890,16 @@ The longest dependency chain is 16 tasks long.
 
 **P14-2 · Backend and frontend Dockerfiles**
 - **Needs:** `P1-1`, `P12-1`
-- **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built when the task merged: the Docker daemon was not running. On 2026-11-27 both images were built and reported healthy inside the Compose stack (`MEMORY.md`, First Docker bring-up). The backend Dockerfile copies only the packages that exist today.
+- **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run, so the Needs line was relaxed from `P10-5` to `P1-1` and `P12-1`. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built when the task merged: the Docker daemon was not running. On 2026-11-27 both images were built and reported healthy inside the Compose stack (`MEMORY.md`, First Docker bring-up). The backend Dockerfile copies only the packages that exist today.
 - **Build:** Dockerfiles: the backend is multi-stage `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, built from the repo root; the frontend is `node:22-alpine` with `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
-- **Files:** `backend/Dockerfile`, `frontend/Dockerfile`
+- **Files:** `backend/Dockerfile`, `frontend/Dockerfile`, `.dockerignore`, `frontend/.dockerignore`, `tests/deployment/test_dockerfiles.py`
 - **Done when:** Both images build and report healthy.
 
 **P14-3 · Compose stack**
-- **Note:** `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up when the task merged (the Docker daemon was not running). On 2026-11-27 it was brought up and all four services reported healthy (`MEMORY.md`, First Docker bring-up).
+- **Note:** its Needs line never named the graph, and with P14-2 relaxed the chain to the graph is gone, so it ran ahead of Phase 10. Host ports are `${BACKEND_PORT:-8000}` and `${FRONTEND_PORT:-3000}`. `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up when the task merged (the Docker daemon was not running). On 2026-11-27 it was brought up and all four services reported healthy (`MEMORY.md`, First Docker bring-up).
 - **Needs:** `P14-2`
 - **Build:** The Compose stack: frontend → backend → redis and qdrant, `depends_on: service_healthy`, named volumes, `restart: unless-stopped`.
-- **Files:** `docker-compose.yml`
+- **Files:** `docker-compose.yml`, `tests/deployment/test_compose.py`
 - **Done when:** `docker compose config -q` succeeds and the stack comes up healthy.
 
 **P14-4 · Terraform and CI scaffolds**
@@ -896,7 +910,7 @@ The longest dependency chain is 16 tasks long.
 
 **P14-5 · Deployment hygiene tests**
 - **Needs:** `P14-2`, `P14-3`
-- **Build:** Deployment hygiene tests: compose services, non-root Dockerfiles with `HEALTHCHECK`, `.env.example` coverage, no committed `.env`; and `BASE_URL=http://localhost:8000 make smoke`.
+- **Build:** Deployment hygiene tests: compose services, non-root Dockerfiles with `HEALTHCHECK`, no committed `.env`; and `BASE_URL=http://localhost:8000 make smoke`.
 - **Files:** `tests/deployment/`, `deployment/scripts/smoke_test.sh`, `Makefile` (the `smoke` target)
 - **Done when:** The tests pass and the smoke test passes against the local stack.
 

@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 11:35 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -51,7 +51,7 @@ change that contradicts them belongs in §20 before it reaches the code.
 | Channels | chat, email, api, ticketing | email, chat, web, api (§5) |
 | Risk tiers | `low`/`medium`/`high`/`prohibited` from YAML policy per tool | `low`/`medium`/`high` and a per-tool approval bit (§7.4) |
 | Tool access | Six MCP servers, write tools over HTTP | In-process `ToolRegistry`; MCP exposes read-only tools (§7.4) |
-| LLM | LiteLLM gateway, tiers small/medium/large with failover | `get_llm()` with a `fake` provider; no tiering |
+| LLM | LiteLLM gateway, tiers small/medium/large with failover | `get_llm()` with a `fake` provider and an OpenAI-compatible one (`openai`, `euron`); an in-process tier router is planned (D4, limited form, §20); no gateway service |
 | Workers | arq or Celery on Redis, separate processes | FastAPI `BackgroundTasks`, in process (§10) |
 | Runtime | Kubernetes and Helm on EKS/AKS/GKE | Containers on ECS Fargate / Container Apps / Cloud Run (§15) |
 | Config | `pydantic-settings`, env prefix `ACSRP_` | `pydantic-settings`, no prefix (§10.1) |
@@ -95,6 +95,8 @@ Demo users: `admin@clouddesk.demo`, `sam.agent@clouddesk.demo`, `vic.viewer@clou
 | F13 | Every node, tool call, LLM call inspectable (timing, tokens, cost) | `workflow_events`, `GET /tickets/{id}/events` |
 | F14 | Runs offline in `DEMO_MODE` with no API key | `fake` provider in `backend/app/core/llm.py` |
 
+Status today: F1 (the API), F2 to F8 and F10 (the specialist agents and the rules, called directly in tests), F14 (the fake provider) and the policy half of F9 (tool policy) are built and tested. Not built: the graph nodes that join them (F9 pause and resume, F11), the trace behind F13 and the ticket screen behind F12 (Phases 10, 11 and 13).
+
 Non-functional: N1 JWT auth (Supabase-compatible) · N2 rate limiting · N3 `X-Request-ID` on every
 response · N4 prompt-injection defence (ticket text is data) · N5 output validation before any reply
 reaches a customer · N6 audit log of every state-changing request · N7 no secrets in memory notes ·
@@ -124,6 +126,8 @@ Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID
 ```
 
 ### 4.1 Request flow – "Run AI workflow"
+
+Planned for Phases 10 and 11; none of this flow is built yet (no run route, graph, approval routes or `workflow_service`). What exists is the pieces it will call: the specialist agents, the tools, the rules, the guardrails and the memory service.
 
 1. UI `POST /api/v1/tickets/{id}/run` → `api/workflow.py::run_workflow`
 2. `workflow_service.create_run()` writes `workflow_runs`, returns **202** `{workflow_id}`
@@ -176,7 +180,7 @@ scripts/       demo.py · stamp_docs.py · check_phase_docs.py · claude_usage/ 
 .claude/       settings.json · agents/ · skills/ · rules/ · hooks/pre-commit.sh (a commands/ folder is tracked too if one is added)
 internal/      one folder per phase, `Phase01/`, `Phase02/` and so on, with four documents written by `/phase-docs N` (§18, rule 19); the interview Q&A file is git-ignored
 (root)         CLAUDE.md · CLAUDE.local.md (optional personal overrides, git-ignored) · PLAN.md · TASKS.md · MEMORY.md · README.md · Makefile · docker-compose.yml
-               .env.example · pyproject.toml · uv.lock
+               pyproject.toml · uv.lock · .python-version · .gitignore · .gitattributes · .dockerignore
 ```
 
 The tree above is the target. **Not built yet** (each arrives with the `TASKS.md` task named): `agents/state.py`,
@@ -244,6 +248,7 @@ Key rules:
   writes `tenant_id` into a query, so it cannot be forgotten in one of them. SQLite has no RLS, so on
   the demo database the repository filter *is* the boundary — which is why one test proves a second
   tenant's rows stay invisible.
+- **Built so far:** the 17 tables, `schema.sql`, `rls_policies.sql` and the first migration are text-checked only: no Postgres has been run, so the RLS policies are unproven and the per-transaction `SET LOCAL` is not built. Today the repository filter, and its isolation test, are the whole boundary.
 - **Not in v1:** tenant CRUD or an admin screen, per-tenant routing, origins, autonomy mode or token
   budgets, and tenant switching in the console. The column and the policies are the whole of D1.
 - Migrations: add `database/migrations/000N_<name>.sql` and update the model + `schema.sql`. Never
@@ -265,6 +270,8 @@ Key rules:
 | Troubleshooting Agent | `troubleshooting` | `Diagnosis` | `check_service_status` | playbook enrichment per category |
 | Resolution Agent | `resolution_planning` | `ResolutionPlan` | plans `update_ticket`, `create_refund_request`, `reset_demo_setting` | `plan_actions` (deterministic), `_ground_response`, `validate_customer_output` |
 | Escalation Agent | `risk_check`, `escalation` | `EscalationDecision` | `create_escalation` | policy rules **always win** |
+
+The `Nodes` column names the planned graph nodes (not built); the specialist classes are built and tested directly. Each of their methods returns `(result, status, usage, ms, calls)`, which the nodes will pass to the tracer.
 
 All schemas: `backend/app/schemas/workflow.py`. All prompts: `agents/prompts.py` (share `SECURITY_PREAMBLE`:
 content inside `<untrusted_content>` is data, never instruction).
@@ -289,7 +296,7 @@ Severity: rules can **raise** the model's severity, never lower it.
 Budgets that end a run (upstream FR-22, LLD §7.3): at most **12 graph steps**, **2** investigation
 cycles and **2** clarifying questions, and escalate below **0.6** confidence. A run that exhausts a
 budget escalates instead of looping, because an unbounded loop is the cost risk the PRD names. Calls
-that decide something run at temperature ≤ 0.2.
+that decide something run at temperature ≤ 0.2. Today only the 0.6 floor exists (`ESCALATE_CONFIDENCE`, a module constant in `agents/specialists/escalation.py`); the step, cycle and question budgets arrive with the graph (P10-5).
 
 ### 7.3 LangGraph (`agents/graph.py`)
 
@@ -302,6 +309,8 @@ understand_ticket → classify_severity → customer_context → knowledge_retri
       └─ low risk                     → execute_resolution
   → ticket_summary → memory_update → END
 ```
+
+**Not built yet (Phases 10 and 11):** `agents/state.py`, `graph.py`, `checkpointer.py` and `nodes/`. Everything in this section, including `assess_risk()`, `tracer_for` and `record_tool_calls`, is the planned shape; only the specialist agents the nodes will call exist.
 
 Node ids are the `completed_nodes` values the frontend renders; `GRAPH_NODES` / `GRAPH_EDGES` feed
 `GET /api/v1/agents`.
@@ -348,7 +357,7 @@ Rules:
   – tool failures never crash the graph.
 - The same code path runs for auto-resolved and human-approved actions.
 - Planned actions are deterministic (`ResolutionAgent.plan_actions`), not model-invented.
-- **Idempotent** (FR-16): every action carries the key `ticket_id:tool:stable_hash(args)`. A key that
+- **Idempotent** (FR-16): every action carries the key `ticket_id:tool:stable_hash(args)` (stored by `DbIdempotencyStore`, `backend/app/tools/idempotency.py`, over `resolution_actions`). A key that
   already succeeded returns its stored result instead of acting again. This is what stops a second
   refund when a run is retried or resumed from a checkpoint.
 - **Verified** (FR-17): after a write, read the record back and store that verification with the result.
@@ -363,7 +372,8 @@ Rules:
 | Short-term | Redis / fakeredis | conversation per ticket, workflow state, retrieval cache (`rag:{mode}:{category}:{top_k}:{query}`) | 24 h (cache 300 s) |
 | Long-term | `customer_memory` | `preference`, `past_issue`, `troubleshooting`, `note` | permanent, de-duplicated |
 
-- Read: `customer_context` node → `recall_customer()` (up to 10 notes).
+- Built: `memory/short_term.py`, `long_term.py` and `memory_service.py`, with the adapter `backend/app/services/customer_memory_service.py`. Nothing calls them from the app yet, and the retriever still uses its own Redis cache adapter (`backend/app/services/retrieval_cache.py`).
+- Read: `customer_context` node → `recall_customer()` (up to 10 notes). The node is planned (Phase 10); `CustomerAgent` reads the notes today.
 - Write: `memory_update` node → `record_resolution()` writes past_issue, first 3 troubleshooting steps,
   resolution note. Every note goes through `scrub()`; exact-duplicate notes are skipped.
 - **Never store:** card numbers, API keys, passwords (`SECRET_PATTERNS`), raw ticket bodies, anything about other customers.
@@ -375,7 +385,7 @@ Rules:
 ## 8. RAG
 
 Pipeline: `sample_data/knowledge_base/*.md` → `load_article_files` (YAML front-matter: title, category,
-tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `retrieve()`.
+tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `HybridRetriever.retrieve()`.
 
 - **Chunking:** split on headings, then 900-char windows with 150-char overlap. Every chunk is
   prefixed with `"{title} - {heading}"` so short chunks stay retrievable.
@@ -384,7 +394,7 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `r
 - **Retrieval:** semantic ∪ keyword (`rank_bm25`) → reciprocal rank fusion (k=60) → heuristic rerank
   (category match + title overlap) → optional LLM rerank → one hit per article.
 - **Modes:** `hybrid` (default), `semantic`, `keyword`.
-- **Fake embeddings** (`FakeEmbeddings`, hashed bag-of-words, 384 dims) run offline. Changing the
+- **Fake embeddings** (`FakeEmbeddings`, hashed bag-of-words, 384 dims) run offline and are the only embeddings built; a euri-embedding provider (Euron) is planned. Changing the
   embedding model requires `POST /knowledge/reindex` (admin) – it recreates the collection.
 - Evidence shape: `{ id, title, source: "kb://slug#section", snippet, score, url: "/knowledge/<id>", article_id }`.
 - Knowledge articles are the only source for customer-facing policy claims. Cite them.
@@ -397,8 +407,9 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `r
   it; `SECURITY_PREAMBLE` tells the model to treat it as data. CD-1013 must never execute an export.
 - **Output validation (N5):** `validate_customer_output` blocks internal URLs, secrets, other customers'
   data before a reply is shown. Failure raises risk to `high`.
-- **Secrets:** never in code, never in memory notes, never in logs. Only `.env` (git-ignored) and
-  `.env.example` (committed, placeholders only). `tests/deployment` checks no `.env` is committed.
+- **Secrets:** never in code, never in memory notes, never in logs. Only `.env` (git-ignored, created by hand;
+  there is no committed template, and the variable list is §10.1). `tests/unit/test_env_settings.py` checks that no
+  `.env` file is tracked.
 - **JWT:** HS256 via PyJWT, `settings.effective_jwt_secret` (Supabase JWT secret when set). Demo tokens
   expire in 8 h.
 - **Rate limit (N2):** fixed window per client in Redis, `RATE_LIMIT_PER_MINUTE` (demo 120).
@@ -407,11 +418,11 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `r
 - **Retrieved content is untrusted too** (LLD §9): scan every chunk for instructions before it reaches
   a prompt, and drop the chunk if it fails. A poisoned knowledge article is the same attack as a
   poisoned ticket.
-- **Groundedness (N5):** the output judge scores each claim against its cited chunk. Below **0.8** the
+- **Groundedness (N5):** `validate_customer_output` scores each claim against its cited chunk by word overlap (no judge model; `GROUNDEDNESS_THRESHOLD`, a module constant in `backend/app/core/output_validation.py`). Below **0.8** the
   reply is revised once, then escalated.
 - **Approval timeouts (FR-24):** an approval nobody decides expires and escalates. It never executes
-  by default.
-- Middleware order (outermost last): CORS → RequestId → RateLimit → Audit.
+  by default. Planned (Phase 11), not built.
+- Middleware order, outermost first: CORS → RequestId → RateLimit → Audit (so a 429 still carries the request id and CORS headers).
 
 ---
 
@@ -419,25 +430,27 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `r
 
 - Stack: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (async), LangChain/LangGraph, PyJWT, pytest.
 - Startup (`main.py`): `setup_logging()` (JSON logs with `request_id`/`workflow_id`), middleware, lifespan
-  (`create_tables()`, `bootstrap_demo_data()` when `DEMO_MODE=true` and DB empty).
+  (`create_tables()`, `bootstrap_demo_data()` when `DEMO_MODE=true` and DB empty, then indexing the knowledge base when `VECTOR_STORE=memory`).
 - Routers mounted under `/api/v1`. Health routes unprefixed: `/health`, `/health/live` (no I/O, used by
   probes), `/health/ready` (db, redis, vector store, llm).
 - Settings: `get_settings()` is `lru_cache`d – restart the server after `.env` changes.
 - Errors: `{ "detail": string }` with proper status codes. 409 when a ticket is already
-  `waiting_on_approval`; 409 when resuming a run that is not paused.
+  `waiting_on_approval`; 409 when resuming a run that is not paused (both planned, Phase 11).
 - Background workflows run in-process for v1. The production extension moves them to a worker.
 
-### 10.1 Environment variables (`.env.example` must list every one)
+### 10.1 Environment variables (the list for your git-ignored `.env`; `.env.example` was removed on 2026-11-27)
+
+There is no committed template: create `.env` by hand from this list. `tests/unit/test_env_settings.py` keeps the list and `Settings` in step, so it names every `Settings` field and nothing the app does not read.
 
 ```text
 DEMO_MODE, ENVIRONMENT, CORS_ORIGINS, JWT_SECRET, SUPABASE_JWT_SECRET
 DATABASE_URL            sqlite+aiosqlite:///./data/support.db  |  postgresql+asyncpg://…
 CHECKPOINT_DB_PATH      ./data/checkpoints.db  |  :memory: (tests)
 REDIS_URL               empty → fakeredis  |  redis://redis:6379/0
-USE_FAKE_REDIS          true in tests
+USE_FAKE_REDIS          true in tests (docker-compose.yml sets false and a real Redis)
 LLM_PROVIDER            fake (default) | openai | euron (OpenAI-compatible) | anthropic (not implemented)
 LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
-EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
+EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS      only the fake embeddings exist today
 VECTOR_STORE            memory | qdrant
 QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)
 APPROVAL_REQUIRED_FOR_REFUNDS=true, MAX_REFUND_WITHOUT_APPROVAL=0
@@ -448,8 +461,8 @@ LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY, LANGCHAIN_PROJECT (clouddesk-support)
 ### 10.2 Settings later phases add
 
 These come from the upstream documents and are deliberately **not** in §10.1 yet. Each one arrives with
-the task that needs it, and `.env.example`, `Settings` and `tests/unit/test_env_example.py` change in
-that same commit — so §10.1 always lists exactly what the code reads today.
+the task that needs it, and `Settings` and this list change in that same commit, with
+`tests/unit/test_env_settings.py` as the check — so §10.1 always lists exactly what the code reads today.
 
 ```text
 MAX_GRAPH_STEPS=12                 budget that forces escalation instead of a loop
@@ -461,10 +474,13 @@ AUTONOMY_MODE                      copilot | supervised | autonomous (FR-41)
 COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a decision
 ```
 
+`ESCALATE_CONFIDENCE` (0.6) and `GROUNDEDNESS_THRESHOLD` (0.8) exist today as module constants, in `agents/specialists/escalation.py` and `backend/app/core/output_validation.py`. They are not `Settings` fields or environment variables yet, which is why §10.1 does not list them.
+
 ---
 
 ## 11. Frontend conventions
 
+- Built so far (P12-1): the app shell, `components/ui/`, `components/layout/nav.ts`, placeholder pages for eight console routes, `/login` and `/api/health`. `frontend/lib/`, the real screens and the ticket screen below are planned (P12-2 to P13-4).
 - Next.js 15 App Router, TypeScript, Tailwind. No UI library, no gradients (hand-written kit in `components/ui/`).
 - Backend is reached **only** through `frontend/lib/api.ts` (typed client, bearer token in `localStorage`,
   401 → `/login?reason=expired`, `NetworkError` banner with auto-retry). `types.ts` mirrors `06_API_CONTRACT.md`.
@@ -504,15 +520,15 @@ temp SQLite, `CHECKPOINT_DB_PATH=:memory:`). Auth fixtures: `agent_headers`, `ad
 
 | Folder | Proves |
 |---|---|
-| `tests/unit/` | guardrails, tool policy, rules, LLM provider selection, chunking |
-| `tests/api/` | health, request id, auth, RBAC 403s, ticket CRUD, run→poll→complete, refund pause→approve, rejection→escalation, security auto-escalation, injection containment, 404s |
+| `tests/unit/` | guardrails, tool policy and registry, rules, LLM provider, memory, repositories, SQL text checks, and the document and tracker checks |
+| `tests/api/` | health, request id, auth, RBAC 403s, ticket CRUD and actions, audit, rate limit, customers, knowledge, dashboard, settings, MCP tools, startup seed, 404s. Planned with the workflow: run→poll→complete, refund pause→approve, rejection→escalation, security auto-escalation, injection containment |
 | `tests/rag/` | ingest count, expected article for key queries, modes, cache, RRF, rerank, filters |
 | `tests/agents/` | one test per specialist behaviour |
 | `tests/integrations/` | mock integrations record calls and never reach a real system |
 | `tests/workflow/` (Phase 10, not built) | graph shape, routing, risk levels, e2e low-risk, pause/resume, rejection, GDPR policy escalation |
-| `tests/evaluation/` | threshold metrics over `datasets/eval_cases.json` |
-| `tests/deployment/` | compose services, Dockerfile hygiene (non-root, HEALTHCHECK), `.env.example` coverage, no committed `.env` |
-| `frontend/__tests__/` | StatusPill, EmptyState, WorkflowSteps.deriveSteps, api helpers |
+| `tests/evaluation/` | today: the dataset is valid and agrees with the rules; the threshold metrics are planned (P14-1) |
+| `tests/deployment/` | compose services, Dockerfile hygiene (non-root, HEALTHCHECK), no committed `.env` (the variable list is checked in `tests/unit/test_env_settings.py`) |
+| `frontend/__tests__/` | today: StatusPill, EmptyState, nav; planned: WorkflowSteps.deriveSteps, api helpers |
 
 **Evaluation thresholds – these fail the build:**
 
@@ -539,21 +555,21 @@ Every requirement in `PLAN.md` (F1–F14, N1–N8) must map to at least one test
 ## 14. Commands
 
 ```bash
-make setup            # .venv + deps + .env
+make setup            # .venv + deps + git hooks path (.env is created by hand; see §10.1)
 make seed             # load sample data into DB
 make ingest           # chunk + index knowledge base
 make backend          # FastAPI on :8000
-make demo             # CD-1002 refund end-to-end in terminal (pauses for approval)
-make demo TICKET=CD-1005
+make demo             # NOT BUILT YET (P11-5): CD-1002 refund end-to-end in terminal (pauses for approval)
+make demo TICKET=CD-1005     # NOT BUILT YET (P11-5)
 make mcp              # MCP server (read-only tools)
-make test             # backend pytest, about two minutes (1205 tests, 2026-11-27), offline
+make test             # backend pytest, about two minutes (1204 tests, 2026-11-27), offline
 make lint             # ruff
 make format           # ruff format
 git commit            # the pre-commit hook stamps each staged document with the time it changed
 cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
-docker compose config -q && docker compose up --build
-make terraform-validate
-BASE_URL=http://localhost:8000 make smoke
+docker compose config -q && docker compose up --build    # BACKEND_PORT / FRONTEND_PORT move a busy host port
+make terraform-validate    # NOT BUILT YET (P14-4)
+BASE_URL=http://localhost:8000 make smoke    # NOT BUILT YET (P14-5)
 ```
 
 Today's `Makefile` has `setup`, `backend`, `test`, `lint`, `format`, `seed`, `ingest` and `mcp`. `demo` (P11-5),
@@ -581,6 +597,7 @@ then `development` promotes to `testing`, then `main`. Remote:
 
 ## 15. Containers, infrastructure, delivery
 
+- **Built today:** the two Dockerfiles, the two `.dockerignore` files and `docker-compose.yml`. `deployment/` (Terraform and scripts) and `.github/` (workflows) are not in the repo yet (P14-4); the Terraform, scripts and CI bullets below are the plan.
 - **Docker:** `backend/Dockerfile` (multi-stage, `python:3.12-slim`, non-root `app`, `HEALTHCHECK` on
   `/health/live`) built with context = repo root. `frontend/Dockerfile` (`node:22-alpine`,
   `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`). Pin base images before production.
@@ -607,14 +624,16 @@ then `development` promotes to `testing`, then `main`. Remote:
 
 Track what is **implemented**, **validated locally**, **needs cloud credentials**, and **actually deployed**
 separately. Do not write "deployed" or "passes in CI" until it has. Current state: no cloud credentials
-used; nothing applied to a real account; workflows not executed on GitHub until the repo is pushed with
-secrets configured.
+used; nothing applied to a real account; no workflow files written and none executed on GitHub. The Docker
+stack was built and brought up once on 2026-11-27 (backend, frontend, redis and qdrant healthy, real Redis;
+demo login, 13 tickets, a knowledge search and the frontend `/dashboard` answered). Not run: a browser view,
+Postgres, real Qdrant use and any real language-model call.
 
 ---
 
 ## 16. Observability
 
-- JSON logs with `request_id` and `workflow_id` on every line (`core/logging.py`).
+- JSON logs with `request_id` and `workflow_id` on every line (`core/logging.py`; built). `WorkflowTracer`, the events and `GET /tickets/{id}/events` below are planned (P10-6); `TokenUsage` already exists in `schemas/workflow.py`.
 - `WorkflowTracer` writes `workflow_events` (never raises – telemetry must not break a run):
   `node_started`, `node_completed`, `tool_called`, `llm_called`, `approval_requested`,
   `approval_resolved`, `error`, `workflow_completed`.
@@ -648,10 +667,10 @@ the same principles: policy outside the model, approval gates, audit trail.
 8. **Small, idempotent interrupts.** No side effects before `interrupt()`.
 9. **Reducers append; never overwrite** `errors` and `completed_nodes`.
 10. **Money and accounts are approval-gated.** Refunds, setting resets, deletions, disputes never run unattended.
-11. **Never commit** `.env`, `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
+11. **Never commit** `.env` (the only environment file; there is no `.env.example`), `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
 12. **Migrations are additive.** Never edit an applied migration; never drop data in a migration without an explicit decision.
 13. **One change, one commit, one test.** Each feature maps to a requirement ID in `PLAN.md` and a test.
-14. **Demo before production.** Every stage must still run with `make demo` at the end.
+14. **Demo before production.** Every stage must still run with `make demo` at the end (the target arrives with P11-5; until then, the offline tests and the Docker bring-up are the check).
 15. **Say what is not done.** Keep the honest status (section 15.1) current.
 16. **Update `TASKS.md` when a task is done.** Every task's pull request updates `TASKS.md`: it sets the task's row to Completed ✅ and updates the Progress summary (the phase count and the total), and adds a line to the honest status in `MEMORY.md`. A task is not done until its pull request does this; it counts as complete when the pull request merges. If the task adds a significant component, or changes an architectural boundary, networking or an important flow, the same pull request also updates that phase's design-evolution or infrastructure document under `internal/` (`docs/09_PHASE_DOCUMENTATION.md` §7, Step 4); `/phase-docs N` consolidates them when the phase ends.
 17. **Actions are idempotent and verified.** Every write carries an idempotency key and is read back (§7.4). A retried or resumed run must never act twice.
@@ -680,7 +699,7 @@ and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and holds each 
 
 The upstream PRD, HLD and LLD are in `docs/` (§1.1); course documents 00 and 04–17 are not. Phase
 boundaries follow the dependency order in this file, not the upstream release plan. Stage 17 is
-optional and is not a core exit criterion.
+optional and is not a core exit criterion. Phase 9 has all 8 tasks done and stays `in progress` until `/phase-docs 9` writes its documents.
 
 | Phase | Name | Status |
 |---|---|---|
@@ -722,13 +741,17 @@ it from P2-2, with one seeded tenant and no tenant-management features (§6). Th
 already promised RLS on all data tables while the table list had no column to key a policy on, so the
 spec contradicted itself; and the column is nearly free now and ruinous to retrofit across 16 tables.
 
-**D2–D6 are not taken, and none may be built without a `TASKS.md` row first.** Each changes the plan,
-not just the code, and each is also a proposed record in `docs/adr/` (0008 to 0012):
+**D2, D3, D5 and D6 are not taken, and none may be built without a `TASKS.md` row first.** Each changes the plan,
+not just the code, and each is also a proposed record in `docs/adr/` (0008 to 0012). **D4 was resolved in a limited form on
+2026-11-27** (owner-approved in chat, recorded in `MEMORY.md`): an in-process LLM router in `backend/app/core` with tiers
+fast = `euri-chat-fast`, smart = `euri-chat-smart` and reasoning = `euri-reasoning`, a fallback chain and a circuit breaker, and
+no separate gateway service. It needs its `TASKS.md` row before it is built, an Euron embeddings provider (`euri-embedding`) is
+planned alongside it, no Euron key exists yet, and ADR 0010 still reads Proposed.
 
 | # | Decision | Why it cannot wait |
 |---|---|---|
 | D2 | **A fourth risk tier, `prohibited`** | The upstream policy engine can forbid an action outright (`crm.close_account`). §7.4 can only *require approval*, so today there is no way to express "never". |
 | D3 | **Write-capable MCP servers** | Upstream reaches back-office systems over MCP with scoped service tokens. §7.4 keeps MCP read-only and writes in process. Changes P6-5 and the deployment surface. |
-| D4 | **Model tiering and a gateway** | Upstream routes small/medium/large with failover and a circuit breaker; `get_llm()` returns one model. Affects P9-1 and the cost target. |
+| D4 | **Model tiering and a gateway** (resolved in a limited form: router yes, gateway no) | Upstream routes small/medium/large with failover and a circuit breaker; `get_llm()` returns one model. The in-process router answers it; a separate gateway service stays out of v1. |
 | D5 | **Kubernetes and Helm** | See §15. Changes every file in Phase 14. |
 | D6 | **The harder eval bar and the red-team set** | See §13. Changes the Phase 14 gate and needs new datasets. |

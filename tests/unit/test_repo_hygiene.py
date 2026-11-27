@@ -127,7 +127,6 @@ class TestIgnoreRules:
     @pytest.mark.parametrize(
         "path",
         [
-            ".env.example",
             ".claude/settings.json",
             ".claude/hooks/pre-commit.sh",
             ".claude/agents/planner.md",
@@ -366,7 +365,7 @@ class TestPhase1DocumentsQuoteTrueFacts:
         "tests/unit/test_harness.py",
         "tests/api/test_health.py",
         "tests/unit/test_makefile.py",
-        "tests/unit/test_env_example.py",
+        "tests/unit/test_env_settings.py",
     ]
 
     def test_the_api_title_they_quote_is_the_real_one(self, client):

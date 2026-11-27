@@ -1,6 +1,7 @@
 # CloudDesk local stack: frontend -> backend -> redis, qdrant.
 #   docker compose up --build
 # Image tags are pinned by tag only: pin by digest before production.
+# Built and brought up once on 2026-11-27 (all four services healthy, real Redis); see MEMORY.md.
 # Host ports: BACKEND_PORT (default 8000) and FRONTEND_PORT (default 3000) pick the host side of each
 # mapping when a port is busy, e.g. BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build.
 # They are compose-only variables: Settings does not read them. The frontend image inlines the API
@@ -37,7 +38,7 @@ services:
 
   backend:
     build:
-      context: . # the repo root, so rag/, sample_data/ and database/ are in the context
+      context: . # the repo root, so rag/, agents/, memory/, integrations/, sample_data/ and database/ are in the context
       dockerfile: backend/Dockerfile
     # Optional: a missing .env is fine. Values below win over it for the keys they set.
     env_file:
@@ -52,6 +53,8 @@ services:
       CHECKPOINT_DB_PATH: /app/data/checkpoints.db
       REDIS_URL: redis://redis:6379/0
       USE_FAKE_REDIS: "false"
+      # Fixed to the offline provider: these values win over .env, so a real provider (for example euron) means
+      # changing this line and adding LLM_API_KEY, which is not set here.
       LLM_PROVIDER: fake
       # Qdrant is running for later; the default store stays in memory so the demo needs nothing else.
       VECTOR_STORE: memory

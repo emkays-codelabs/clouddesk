@@ -10,7 +10,10 @@ keywords = ["ai", "agents", "rag", "langgraph", "fastapi"]
 # SQLAlchemy in P2-1, qdrant-client in P5-2). Vectors are Qdrant and the console is Next.js, so
 # chromadb and streamlit are not part of this design.
 # langchain, langchain-openai and langgraph are installed up front because Phase 10 builds on them; nothing
-# imports them yet. `openai` is imported lazily in backend/app/core/llm.py for the OpenAI-compatible providers.
+# imports them yet (P10-1 adds langgraph-checkpoint-sqlite with the checkpointer). `openai` is imported lazily
+# in backend/app/core/llm.py for the OpenAI-compatible providers, which include Euron's euri endpoint, so that
+# provider, the planned LLM router and the planned euri embeddings provider need no extra package.
+# python-dotenv is not imported directly: pydantic-settings reads .env itself.
 dependencies = [
     "aiosqlite>=0.22.1",
     "fakeredis>=2.26",

@@ -19,7 +19,7 @@ def redact_url(url: str) -> str:
 
 
 class Settings(BaseSettings):
-    """Process configuration. Every variable is documented in .env.example."""
+    """Process configuration; the variables are listed in CLAUDE.md section 10.1 (values: .env)."""
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False

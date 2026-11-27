@@ -1,6 +1,6 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-27 11:35 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -156,7 +156,7 @@ The ticket screen is three columns: messages and composer, customer context, and
 
 ### 2.2 Backend edge
 
-Middleware order, outermost last: CORS, then RequestId, then RateLimit, then Audit.
+Middleware order, outermost first: CORS, then RequestId, then RateLimit, then Audit. (`create_app()` adds them in the reverse order, Audit first, because the last one added is the outermost.)
 
 | Concern | Behaviour |
 |---|---|
@@ -554,7 +554,7 @@ with the API issuing `SET LOCAL app.tenant_id` per transaction. One tenant is se
 tenant features (decision D1, `CLAUDE.md` §6). Repositories are the only place the filter lives, so
 on SQLite — which has no RLS — that filter is the boundary.
 
-Relationships are logical. Foreign keys are fixed when `database/schema.sql` is written. The backend
+Most relationships above are foreign keys in `backend/app/models/entities.py` and `database/schema.sql`. Four are logical only, with no foreign key: `profiles` to `audit_logs` (the actor is a text field), `products` to `subscriptions`, `incidents` to `tickets`, and `support_articles` to `workflow_events` (evidence is stored inside the event). The backend
 uses the service-role key on the server. The browser receives only the anon key.
 
 ---
@@ -608,7 +608,7 @@ Compose [icon: docker, color: blue, label: "Docker Compose"] {
   Vol [icon: docker, label: "named volumes"]
 }
 
-HostFiles [icon: sqlite, color: grey, label: "Host data/"] {
+HostFiles [icon: sqlite, color: grey, label: "SQLite files: backend-data volume at /app/data in Compose, host data/ under make backend"] {
   SupportDB [icon: sqlite, label: "support.db"]
   Checkpoint [icon: sqlite, label: "checkpoints.db"]
 }
@@ -629,8 +629,8 @@ flowchart LR
   Web --> Api["backend :8000"]
   Api --> RedisC[redis]
   Api --> QdrantC[qdrant]
-  Api --> SupportDB["data/support.db"]
-  Api --> Checkpoint["data/checkpoints.db"]
+  Api --> SupportDB["support.db (backend-data volume in Compose)"]
+  Api --> Checkpoint["checkpoints.db (same volume)"]
   RedisC --> Vol[named volumes]
   QdrantC --> Vol
 ```

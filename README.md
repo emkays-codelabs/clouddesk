@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -113,12 +113,15 @@ answers requests. What exists today:
   yet (the workflow, approvals, escalations and agents routes).
 
 - **Language-model layer and agents (Phase 9):** a `get_llm()` factory with a deterministic fake provider and an
-  OpenAI-compatible provider, `call_structured`, the six specialist agents and a 16-case evaluation dataset.
-  They are called directly in tests; no graph runs them yet.
+  OpenAI-compatible provider (`openai`, or `euron`, Euron's euri API), `call_structured`, the six specialist agents and a
+  16-case evaluation dataset. They are called directly in tests; no graph runs them yet. The OpenAI-compatible path
+  has only been tested against a stubbed client.
 
 Not built yet: the workflow graph, its state and trace, approvals and escalation routing, the real console
-screens, the evaluation thresholds, and the Terraform and CI files. No real language-model call has been made:
-the application runs on the fake provider.
+screens, the evaluation thresholds, the demo, smoke-test and Terraform-validate make targets, and the
+Terraform and CI files. Planned next on the language-model side, with no key available yet: an in-process LLM
+router over Euron's three euri chat models with a fallback chain, and an euri embeddings provider. No real
+language-model call has been made: the application runs on the fake provider.
 
 No cloud resources have been created and nothing is deployed. Tests have not been run on GitHub Actions.
 
@@ -140,7 +143,8 @@ The six agents are the Support Supervisor, Customer, Knowledge, Troubleshooting,
 agents.
 
 The whole stack is designed to run offline with a fake language model, so the tests and the demo need no
-API key.
+API key. The real model is planned to be Euron's OpenAI-compatible euri API, reached through a small router
+inside the backend rather than a separate gateway service.
 
 [↑ Back to top](#clouddesk-ai)
 
@@ -176,7 +180,7 @@ Phase 9, the specialist agents, is built and checked locally (the six agents and
 ### 5.2 Install and run
 
 ```bash
-make setup              # install packages, and copy .env.example to .env if there is none
+make setup              # install packages and set the git hooks path (create .env by hand, see below)
 make backend            # start the API on http://localhost:8000 (reloads when you edit)
 curl http://localhost:8000/health/ready
 ```
@@ -202,7 +206,7 @@ You can activate the virtual environment instead of typing `uv run` before each 
 source .venv/bin/activate
 ```
 
-Keep secrets in a local `.env` file. It is ignored by git. Never commit real keys.
+Keep settings and secrets in a local `.env` file that you create by hand. It is ignored by git, and there is no committed template: the variables are listed in section 10.1 of `CLAUDE.md`. The defaults need no `.env` at all. Never commit real keys.
 
 ### 5.5 Run with containers
 
@@ -212,7 +216,7 @@ With Docker running, from the repository root:
 docker compose up --build
 ```
 
-The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store). The file is checked statically, and on 2026-11-27 the stack was also built and brought up once (see `MEMORY.md`).
+The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store) against a real Redis container; Qdrant starts and reports healthy, but the backend does not use it yet. The file is checked statically, and on 2026-11-27 the stack was also built and brought up once (see `MEMORY.md`). Compose values win over `.env`, so a real language model needs the `LLM_*` lines in `docker-compose.yml` changed as well.
 
 If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_PORT` (default 3000) set the host side of each mapping, the browser-facing API URL and the allowed CORS origin:
 
@@ -220,7 +224,7 @@ If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_POR
 BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build
 ```
 
-These two are compose-only variables, so they are not in `.env.example` and `Settings` does not read them. The frontend image inlines the API port at build time, so rebuild it after changing `BACKEND_PORT`.
+These two are compose-only variables, so they are not in the `CLAUDE.md` variable list and `Settings` does not read them. The frontend image inlines the API port at build time, so rebuild it after changing `BACKEND_PORT`.
 
 [↑ Back to top](#clouddesk-ai)
 
@@ -237,6 +241,8 @@ make ingest             # chunk and index the knowledge base
 make mcp                # start the read-only MCP server
 cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
 ```
+
+The demo, smoke-test and Terraform-validate make targets do not exist yet; later tasks add them (`TASKS.md`).
 
 On some Windows machines `uv run pytest` fails with a "trampoline" path error. `uv run python -m pytest` works.
 

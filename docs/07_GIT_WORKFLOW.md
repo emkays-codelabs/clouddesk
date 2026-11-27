@@ -1,6 +1,6 @@
 # CloudDesk AI: Git & GitHub Workflow Guide
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
 
@@ -174,7 +174,6 @@ These commands matter from Phase 1 onward. They are not required to push the spe
 ```
 uv sync
 $env:PYTHONIOENCODING = "utf-8"
-Copy-Item .env.example .env
 ```
 
 DEMO\_MODE=true, LLM\_PROVIDER=fake, VECTOR\_STORE=memory, and USE\_FAKE\_REDIS=true are the offline defaults. Tests must pass with no API key. get\_settings() is cached, so restart the server after an .env change. `uv run` finds .venv, and pytest's `pythonpath` setting finds backend, so PYTHONPATH is not needed.

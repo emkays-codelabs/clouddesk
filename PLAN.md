@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 11:35 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -124,11 +124,11 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | FR-41 | Feature flags per tenant: copilot, supervised or autonomous | `AUTONOMY_MODE` is listed in `CLAUDE.md` §10.2 as a later setting; no requirement, task or test. |
 | NFR-05 | 99.9% availability; a human-handoff mode if the model provider fails | No handoff mode and no availability target. |
 | NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is planned (P10-1, not built), and runs will be in process and a restart can drop one (ADR-0007). |
-| NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13); routing is decision D4 (ADR-0010). |
+| NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13). Routing is decision D4 (ADR-0010), resolved in a limited form on 2026-11-27: an in-process router in `backend/app/core` over three Euron tiers, with a fallback chain and a circuit breaker, no gateway service. Planned and not built; `MEMORY.md` records it. |
 
 Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a
-`prohibited` risk tier, MCP write servers, model tiering, Kubernetes and the harder eval bar remain
-decisions D2–D6 in `CLAUDE.md` §20. The chat widget (FR-37) and multi-language support are non-goals in
+`prohibited` risk tier, MCP write servers, Kubernetes and the harder eval bar remain open as decisions
+D2, D3, D5 and D6 in `CLAUDE.md` §20; model tiering (D4) is resolved in a limited form (NFR-13 above). The chat widget (FR-37) and multi-language support are non-goals in
 `CLAUDE.md` §1.
 
 
@@ -208,13 +208,13 @@ Tasks: `TASKS.md`, Phase 1.
 
 **Requirements.** F14 (settings hook), N3.
 
-**Files.** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/` (`config`, `logging`, `readiness`), `backend/app/middleware/request_id.py`, `.env.example`, `pyproject.toml`, `Makefile`, `tests/conftest.py`, `tests/api/test_health.py`, `tests/unit/`.
+**Files.** `backend/app/main.py`, `backend/app/api/health.py`, `backend/app/schemas/health.py`, `backend/app/core/` (`config`, `logging`, `readiness`), `backend/app/middleware/request_id.py`, `pyproject.toml`, `Makefile`, `tests/conftest.py`, `tests/api/test_health.py`, `tests/unit/`.
 
 **Tests.** `/health` and `/health/live` respond without I/O. Every response carries `X-Request-ID`. Settings read `DEMO_MODE` and `LLM_PROVIDER` from the environment. The test harness sets the offline env vars before importing the app.
 
 **Demo checkpoint.** `make backend` serves `/health/live`. `make demo` is not available yet.
 
-**Exit.** Health tests pass offline. `.env.example` lists every variable in `CLAUDE.md` §10.1 with placeholders only.
+**Exit.** Health tests pass offline. `CLAUDE.md` §10.1 lists every variable `Settings` reads, and a test keeps the two in step (the `.env.example` template this once required was removed on 2026-11-27).
 
 **Tooling (not an exit criterion).** P1-5 and P1-7 to P1-19 add document timestamps, numbered document names, the phase-documentation workflow and its documents, the README, and an audit with decision records in `docs/adr/`. P1-6 sets up Claude Code for this repository: agents, skills, rules, a commit hook, and pinned model ids in `.claude/`, with the open checks and proposed `CLAUDE.md` edits in `docs/08_CLAUDE_SETUP.md`. It serves no F or N requirement and changes no application code, so it is tracked in `TASKS.md` and does not gate the phase. Its cache was measured: it is complete inside a conversation, and partial between sessions because of user-level settings, not this repository (`docs/08_CLAUDE_SETUP.md`, section 7).
 
@@ -418,9 +418,9 @@ Tasks: `TASKS.md`, Phase 14.
 
 **Requirements.** F2, F5, F8, F10 thresholds; F14; N8. Honest status in §15.1.
 
-**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml`, `deployment/{aws,azure,gcp}`, `deployment/scripts/`, `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
+**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml` (these three and the two `.dockerignore` files exist), and, not built yet, `deployment/{aws,azure,gcp}`, `deployment/scripts/` and `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
 
-**Tests.** Eval metrics meet the thresholds in `PLAN.md`. Deployment tests check compose services, non-root Dockerfiles, `HEALTHCHECK`, `.env.example` coverage, and that no `.env` is committed. `docker compose config -q` passes. `make terraform-validate` passes locally. `BASE_URL=http://localhost:8000 make smoke` passes against the local stack.
+**Tests.** Eval metrics meet the thresholds in `PLAN.md`. Deployment tests check compose services, non-root Dockerfiles, `HEALTHCHECK`, and that no `.env` is committed. `docker compose config -q` passes. `make terraform-validate` passes locally. `BASE_URL=http://localhost:8000 make smoke` passes against the local stack.
 
 **Demo checkpoint.** `make test`, then `make demo` for `CD-1002` and `make demo TICKET=CD-1005`.
 

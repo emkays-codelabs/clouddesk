@@ -22,6 +22,9 @@
 - Run agents in parallel only for independent file scopes: at most 3, one worktree each. Anything touching
   the same file, migration, lock file or schema runs in sequence. `TASKS.md`, `PLAN.md` and `MEMORY.md` are
   shared files, so edits to them are always sequential.
+- `/implement` and `/phase-docs` are owner-only skills (`disable-model-invocation`). When the owner has
+  approved auto mode, the controller may delegate that work to a `general-purpose` agent with the same
+  instructions; every other rule here still applies to it.
 - Batch questions into one message.
 - Commit locally only after review and green tests. Never push, and never open, close or merge a pull
   request, unless the owner says so.

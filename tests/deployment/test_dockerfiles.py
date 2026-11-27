@@ -115,7 +115,6 @@ def test_frontend_takes_the_api_url_as_a_build_arg_and_copies_standalone():
 def test_root_dockerignore_excludes_secrets_and_local_data():
     lines = {ln.strip() for ln in _read(".dockerignore").splitlines()}
     assert {".env", ".env.*", "data/", ".git", ".venv", "node_modules"} <= lines
-    assert "!.env.example" in lines
 
 
 def test_frontend_dockerignore_excludes_env_and_build_output():

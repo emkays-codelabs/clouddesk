@@ -73,7 +73,7 @@ Limitations at the start: no route read tickets or customers, nothing used `requ
 ### C5. P4-5: dashboard, audit, settings
 
 - **Change.** Three read routes and services. New tenant-scoped aggregates: `TicketRepository.count_open`, `count_resolved_since`, `count_by_severity`, `count_by_category`, `resolution_spans`, `ApprovalRepository.count_pending`, `EscalationRepository.count_open`. Average resolution time is computed in Python from the (created, resolved) pairs so it behaves the same on SQLite and Postgres. `by_severity` and `by_category` always list every value, with zeros. `agent_activity` is an empty list until workflow events exist. "Resolved today" counts from UTC midnight.
-- `SettingsView` has fields only for booleans and names, so a key, URL or password cannot be serialised. `approval_required_tools` is a constant in `backend/app/services/settings_service.py` until the tool registry exists (Phase 6).
+- `SettingsView` has fields only for booleans and names, so a key, URL or password cannot be serialised. `approval_required_tools` is a constant in `backend/app/services/settings_service.py`. It was written to wait for the tool registry (Phase 6), but the constant is still there today and could read `ToolPolicy` instead.
 - **Verified.** `tests/api/test_dashboard.py`, `tests/api/test_audit_api.py`, `tests/api/test_settings_api.py`. Tests that count whole-table rows use the private `fresh_db` fixture in `tests/api/conftest.py`, because the default test database is shared by the session.
 
 ```mermaid

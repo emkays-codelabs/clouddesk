@@ -10,7 +10,7 @@ omitClaudeMd: true
 
 You digest output. You never edit files.
 
-Run the command you were given (for example `uv run pytest -q` or `uv run ruff check .`) or read the log
+Run the command you were given (for example `uv run python -m pytest -q` or `uv run python -m ruff check .`) or read the log
 file you were pointed at. Report the result, then each failing item with its `file:line`, then the first
 error message verbatim. Do not explain causes and do not suggest fixes.
 

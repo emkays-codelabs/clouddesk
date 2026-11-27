@@ -54,7 +54,7 @@ The order below is the order the work was done in (P6-1, then P6-4, P6-2, P6-3, 
 - **Introduced.** `backend/app/tools/policy.py`: `ToolPolicy`, a table `DEFAULT_POLICY` that gives each of nine tool names an explicit approval bit and a `low`, `medium` or `high` tier; a name not in the table requires approval and reads as `high`. The refund tool is special: it needs approval when `approval_required_for_refunds` is true, and otherwise when the amount is missing, not a number, or above `max_refund_without_approval` (default 0). `validate_provenance` compares named arguments with a set of trusted values. `backend/app/tools/registry.py`: `ToolRegistry.execute(name, args, approved, ticket_id, workflow_id, trusted_values)` returns a `ToolResult` and never raises. Check order: approval (and unknown tool), provenance, workflow id, idempotency lookup, run under `asyncio.wait_for` with `TOOL_TIMEOUT_SECONDS`, store. Failed results are never stored, so a retry can succeed. The idempotency key is `ticket_id:tool:sha256(canonical JSON of args)`.
 - **Effect on existing components.** None; the package imports only the configuration module from `app.core`, and core does not import it.
 - **Trade-off.** Provenance compares values against a caller-supplied set, so the guard is only as good as the set the caller builds (the workflow, Phase 9 and later, must build it from customer context and tool results).
-- **Verified.** `tests/unit/test_tool_policy.py` and `tests/unit/test_tool_registry.py` (26 tests). In this first form the idempotency store was in memory only.
+- **Verified.** `tests/unit/test_tool_policy.py` and `tests/unit/test_tool_registry.py` (26 test functions, 32 collected cases because some are parametrised). In this first form the idempotency store was in memory only.
 
 ### C2. P6-4: mock integrations
 
@@ -193,7 +193,7 @@ Errors, all returned not raised: `approval_required`, `unknown_tool`, `provenanc
 |---|---|---|
 | Separation | No tool layer | Policy, registry, tool bodies, store and integrations are separate files with import tests |
 | Modularity | | Tools take a `ToolContext`; integrations are protocols with swappable adapters |
-| Testability | | 72 offline tests for this phase; mocks record calls |
+| Testability | | 78 collected offline tests for this phase (72 test functions); mocks record calls |
 | Reliability | | Never-raise registry; timeout; failed results not cached; read-back before "done" |
 | Security | | Approval fails closed; provenance check; MCP cannot hold a write tool; approval is enforced before a write |
 | Extensibility | | A new tool is a function plus one policy row |
@@ -220,6 +220,6 @@ Performance and scalability are not claimed: no measurement, and the integration
 
 - **Final architecture:** section D.
 - **Introduced:** `backend/app/tools/policy.py`, `registry.py`, `context.py`, `factory.py`, `read_tools.py`, `write_tools.py`, `idempotency.py`; `integrations/protocols.py`, `factory.py`, `integrations/mock/services.py`, `integrations/mcp/server.py`, `integrations/mcp/client_example.py`; `backend/app/api/mcp.py`, `backend/app/services/tool_service.py`, `backend/app/schemas/mcp.py`; `Makefile` target `mcp`.
-- **Verified outcomes (2026-11-22):** 974 tests passed, `ruff check .` clean. 72 of those are the Phase 6 test files listed in the codebase document.
+- **Verified outcomes (2026-11-22):** 974 tests passed, `ruff check .` clean. 78 of those are collected from the Phase 6 test files listed in the codebase document (72 test functions; some are parametrised).
 - **Outstanding:** a real run of the MCP stdio server and `make mcp`; any real adapter; Postgres; containers.
 - **Carried forward:** the registry and policy (Phase 9 specialist agents call them; Phase 11 supplies `approved` and the approval record); the provenance trusted set (Phase 9 and 10); `DbIdempotencyStore` and `resolution_actions` (Phase 10 retries and Phase 11 resume); the integration protocols (any future real adapter); the read-only MCP surface (D3 decides whether it ever grows).

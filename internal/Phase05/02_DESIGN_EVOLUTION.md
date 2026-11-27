@@ -176,7 +176,7 @@ Errors: no token 401; bad body 422; unknown article id 404 `Article not found`; 
 |---|---|---|
 | Separation | Articles unread | Retrieval isolated in `rag/` with import tests |
 | Modularity | None | Store, embeddings, retriever, ingest are separate; hooks injected |
-| Testability | | 49 knowledge tests run offline in seconds |
+| Testability | | 51 knowledge tests (41 under `tests/rag/` plus 10 in `tests/api/test_knowledge.py`) run offline in seconds |
 | Reliability | | Startup indexing failure does not stop the service; one-retry cap |
 | Performance | | A 300 s result cache (only fakeredis exercised); no latency measurement taken |
 | Security | | Routes need a token; reindex needs admin; screening of retrieved text not yet |

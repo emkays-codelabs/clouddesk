@@ -1,6 +1,6 @@
 ---
 name: phase-docs
-description: Write the four mandatory documents for a finished phase: codebase explanation, system design evolution, infrastructure evolution, and interview Q&A. Use when a phase's exit criteria pass.
+description: "Write the four mandatory documents for a finished phase: codebase explanation, system design evolution, infrastructure evolution, and interview Q&A. Use when the exit criteria of a phase pass."
 context: fork
 agent: general-purpose
 background: false
@@ -25,9 +25,9 @@ Write the four documents for phase $ARGUMENTS.
    - `internal/Phase<NN>/02_DESIGN_EVOLUTION.md`
    - `internal/Phase<NN>/03_INFRA_EVOLUTION.md`
    - `internal/Phase<NN>/04_INTERVIEW_QNA.md`
-5. Claim a test passed only if you ran it now: run `uv run pytest -q` and `uv run ruff check .` and quote
+5. Claim a test passed only if you ran it now: run `uv run python -m pytest -q` and `uv run python -m ruff check .` and quote
    the result. If there is no Docker setup yet, say the infrastructure document covers a local setup.
-6. Draw Mermaid from the actual code. Run `uv run pytest tests/unit/test_phase_doc_checks.py -q`, and say
+6. Draw Mermaid from the actual code. Run `uv run python -m pytest tests/unit/test_phase_doc_checks.py -q`, and say
    the diagrams were checked for structure only. Never say they were rendered or validated.
 7. In the Q&A file cover Categories A to M of section 6.2, in the format of section 6.3 and at the four
    difficulty levels of section 6.5. Skip a category that does not apply and say so. In Category M never

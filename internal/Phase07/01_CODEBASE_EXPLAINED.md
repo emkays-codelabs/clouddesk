@@ -2,7 +2,7 @@
 
 > **What this document is.** A plain-language explanation of the code written in Phase 7 of CloudDesk, for explaining it to recruiters, hiring managers and interview boards. It describes only what exists in the repository today.
 >
-> **Status of this phase:** implemented and checked locally. All four tasks (P7-1 to P7-4) are done. In a run made for this document (2026-11-27) the whole suite passed (1072 tests, 98 of them new in Phase 7) and `ruff check .` and `ruff format --check .` were clean. Nothing is committed or deployed from this work yet. Phase 7 has **no language model, no agent, no workflow graph and no prompt that is actually sent anywhere**. The rules and guards are pure functions that later phases will call; today only tests (and one retrieval wiring) call them.
+> **Status of this phase:** implemented and checked locally. All four tasks (P7-1 to P7-4) are done. In a run made for this document (2026-11-27) the whole suite passed (1072 tests, 98 of them new in Phase 7) and `ruff check .` and `ruff format --check .` were clean. Nothing was committed or deployed when this document was written (the work has since merged as pull request #53, and nothing is deployed). Phase 7 has **no language model, no agent, no workflow graph and no prompt that is actually sent anywhere**. The rules and guards are pure functions that later phases will call; today only tests (and one retrieval wiring) call them.
 >
 > **Related documents:** [system design evolution](./02_DESIGN_EVOLUTION.md), [infrastructure evolution](./03_INFRA_EVOLUTION.md), the local-only `04_INTERVIEW_QNA.md`, and [Phase 6 explained](../Phase06/01_CODEBASE_EXPLAINED.md).
 

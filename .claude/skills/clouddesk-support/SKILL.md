@@ -10,7 +10,7 @@ description: >-
 
 # CloudDesk support platform
 
-_Last updated: 2026-11-21 23:49 +0530_
+_Last updated: 2026-11-27 14:41 +0530_
 
 ## The files, and which one to trust
 
@@ -43,6 +43,14 @@ leaves one enforcement point. See `CLAUDE.md` §6.
 
 **D2–D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, model
 tiering, Kubernetes, and the harder eval bar. Do not build any of them and do not assume one.
+
+## What is built
+
+Phases 1-6 are validated locally, and Phase 9 specialists exist: `agents/rules.py`, `agents/prompts.py`
+and `agents/specialists/` (supervisor, customer, knowledge, troubleshooting, resolution, escalation).
+`agents/state.py`, `agents/graph.py`, `agents/nodes/` and `agents/checkpointer.py` are **Phase 10 and not
+built yet**; so are `memory/` (Phase 8) and `tests/workflow/`. Check `TASKS.md` and `MEMORY.md` before
+assuming a file exists, and do not describe a planned file as present.
 
 ## Before coding
 
