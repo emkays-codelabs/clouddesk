@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-22 08:40 +0530_
+_Last updated: 2026-11-27 09:41 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -523,10 +523,10 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P7-1 · Escalation and severity rules | F3, F10 | `feature/policy-rules` | Pending ❌ |
-| P7-2 · Injection wrapping and security preamble | N4 | `feature/guardrail-injection` | Pending ❌ |
-| P7-3 · Customer output validation | N5 | `feature/guardrail-output-validation` | Pending ❌ |
-| P7-4 · Secret scrub | N7 | `feature/guardrail-secret-scrub` | Pending ❌ |
+| P7-1 · Escalation and severity rules | F3, F10 | `feature/policy-rules` | Completed ✅ |
+| P7-2 · Injection wrapping and security preamble | N4 | `feature/guardrail-injection` | Completed ✅ |
+| P7-3 · Customer output validation | N5 | `feature/guardrail-output-validation` | Completed ✅ |
+| P7-4 · Secret scrub | N7 | `feature/guardrail-secret-scrub` | Completed ✅ |
 
 #### Task definitions
 
@@ -946,7 +946,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 4 | Support API | 5 | 5 |
 | 5 | Knowledge pipeline | 4 | 4 |
 | 6 | Tools and mocks | 5 | 5 |
-| 7 | Rules and guardrails | 4 | 0 |
+| 7 | Rules and guardrails | 4 | 4 |
 | 8 | Memory | 3 | 0 |
 | 9 | Specialist agents | 8 | 0 |
 | 10 | Workflow graph and trace | 7 | 0 |
@@ -954,4 +954,4 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **82** | **44** |
+| **Total** | | **82** | **48** |
