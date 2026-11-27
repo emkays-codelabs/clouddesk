@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. This is decision D3 in `CLAUDE.md` section 20. It is not taken, and nothing may be built on it.
+Accepted on 2026-11-27 (owner approval in chat). This is decision D3 in `CLAUDE.md` section 20. The decision is taken; nothing is built, and MCP stays read-only in v1 until a `TASKS.md` row builds it.
 
 ## Context
 
@@ -12,7 +12,7 @@ CloudDesk keeps MCP read-only and runs writes in process (see
 
 ## Decision
 
-Not taken. The question is whether any write tool should move behind an MCP server.
+A write tool may be exposed over MCP only behind scoped service tokens, only for tools the policy already approval-gates, and with the idempotency key, the approval record and the read-back verification holding across the network boundary. Writes keep running through `ToolRegistry`; MCP is a front door to it, not a second path.
 
 ## Consequences
 

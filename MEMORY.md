@@ -1,6 +1,6 @@
 # MEMORY.md — CloudDesk AI
 
-_Last updated: 2026-11-27 16:38 +0530_
+_Last updated: 2026-11-27 16:50 +0530_
 
 Durable facts for this repository: what is really done, what has been decided, and what is still open. `CLAUDE.md` wins if this file drifts. Update it in place when a decision or the status changes. Do not store secrets, customer payloads, or raw ticket bodies here.
 
@@ -103,7 +103,7 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - The upstream PRD, HLD and LLD are in `docs/` (`CLAUDE.md` §1.1, copied in 2026-11-02). The remaining course documents and the `../deployment-agent/` and `../shared-infrastructure/` paths are still outside this repo.
 - Table counts disagree across the course notes (16 in the database doc, 15 data tables in the RLS note). Closed by P2-2: 17 tables, 16 data tables with RLS keyed on `tenant_id` plus `tenants` scoped on `id`, and `database/schema.sql` is the authority.
 - Course documents 00 and 04–17 are not in this repo.
-- D1 (multi-tenancy) is settled; see Locked decisions above and `CLAUDE.md` §6. **D2, D3, D5 and D6 in `CLAUDE.md` §20 are still open**: a `prohibited` risk tier, write-capable MCP servers, Kubernetes, and the harder eval bar. D4 (model tiering) was resolved in a limited form on 2026-11-27 (an in-process router, no gateway service; see Locked decisions). None of them blocks the work in progress.
+- D1 (multi-tenancy) is settled; see Locked decisions above and `CLAUDE.md` §6. **D2, D3, D5 and D6 in `CLAUDE.md` §20 were approved by the owner on 2026-11-27 and are Accepted but not built** (a `prohibited` risk tier, write-capable MCP servers, Kubernetes with Helm, and the harder eval bar with a red-team set); they need `TASKS.md` rows and are scheduled after the release-readiness review and the first deployment. D4 (model tiering) was resolved in a limited form on 2026-11-27 (an in-process router, no gateway service; see Locked decisions). None of them blocks the work in progress.
 - The Euron API key is not provided yet. Until it is, the application runs on the fake provider and the router and the euri embeddings provider cannot be exercised against a live endpoint.
 - Cross-session cache reuse is partial because of user-level settings (the output style and plugins), not this repository; inside one conversation it is complete. Decide whether to disable plugins this project does not need (section "Caching" in `docs/08_CLAUDE_SETUP.md` has the measured sizes). The TTL is left at the default; every write observed was a one-hour write, which is the subscription default.
 
@@ -114,3 +114,4 @@ Carried over from the earlier attempt. They are design decisions, not claims abo
 - When a phase exits, also set its status in the Build phases table in `PLAN.md`.
 - When a demo ticket’s expected behaviour changes, change `CLAUDE.md` §5 and the matching test together.
 - Leave secrets, tokens, connection strings, and ticket bodies out of this file.
+- 2026-11-27, deployment target: CloudDesk will be deployed on **AWS** first, on **ECR (registry), ECS Fargate (compute) and an ALB**, not EKS (owner decision in chat); that is the serverless profile the Terraform scaffold already targets, and Kubernetes with Helm (D5) follows later. Nothing is deployed yet. `deployment/aws/main.tf` is validated only and does not yet provision an application database (RDS or Supabase), a frontend ECS service, HTTPS certificate wiring or the Qdrant store; those, an AWS account with OIDC, the registry bootstrap and a real `terraform plan` are the gaps before a first apply.

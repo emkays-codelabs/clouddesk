@@ -60,14 +60,16 @@ def test_the_index_lists_every_record_and_nothing_else():
     assert linked == {p.name for p in _records()}
 
 
-def test_the_undecided_questions_d2_to_d6_are_recorded_as_proposed_not_decided():
-    # D4 is listed because ADR-0010 names it; it is accepted in a limited form (test below).
+def test_decisions_d2_to_d6_are_recorded_as_accepted_and_not_built():
+    # D2, D3, D5 and D6 were approved on 2026-11-27 but are not built; D4 is limited.
     texts = " ".join(_text(p) for p in _records())
 
     for decision in ("D2", "D3", "D4", "D5", "D6"):
         assert decision in texts
-    proposed = [p for p in _records() if "proposed" in _text(p).split("## Context")[0].lower()]
-    assert len(proposed) >= 4  # D4 (0010) was accepted in a limited form on 2026-11-27
+    for number in ("0008", "0009", "0011", "0012"):
+        record = next(p for p in _records() if p.name.startswith(f"{number}-"))
+        status = _text(record).split("## Context")[0].lower()
+        assert "accepted" in status
 
 
 def test_the_settled_tenancy_decision_d1_is_recorded_as_accepted():

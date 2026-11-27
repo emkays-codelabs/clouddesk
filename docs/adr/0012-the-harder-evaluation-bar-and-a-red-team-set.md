@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. This is decision D6 in `CLAUDE.md` section 20. It is not taken.
+Accepted on 2026-11-27 (owner approval in chat). This is decision D6 in `CLAUDE.md` section 20. The decision is taken; the v1 gate in section 13 stays the only gate that runs until the red-team dataset and the harder metrics exist.
 
 ## Context
 
@@ -13,7 +13,7 @@ retrieval hit-rate@3 0.75, escalation correctness 0.90, citation rate 0.90 and g
 
 ## Decision
 
-Not taken. The question is whether to raise the gate and add a red-team dataset.
+Raise the gate to the upstream PRD bar (triage 0.90, Recall@10 0.90, faithfulness 0.92, tool-call correctness 0.95, escalation recall 0.98) and add a red-team dataset where zero successful injections is required. No threshold is lowered to make a run pass, and the harder bar is measured on a real model as well as the fake one.
 
 ## Consequences
 

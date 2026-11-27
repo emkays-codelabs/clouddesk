@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 16:38 +0530_
+_Last updated: 2026-11-27 16:50 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -739,16 +739,15 @@ it from P2-2, with one seeded tenant and no tenant-management features (§6). Th
 already promised RLS on all data tables while the table list had no column to key a policy on, so the
 spec contradicted itself; and the column is nearly free now and ruinous to retrofit across 16 tables.
 
-**D2, D3, D5 and D6 are not taken, and none may be built without a `TASKS.md` row first.** Each changes the plan,
-not just the code, and each is also a proposed record in `docs/adr/` (0008 to 0012). **D4 was resolved in a limited form on
+**D2, D3, D5 and D6 were approved by the owner on 2026-11-27 and are Accepted, but none is built, and none may be built without a `TASKS.md` row first.** They are scheduled after the release-readiness review and the first deployment, which is **AWS** (owner decision, 2026-11-27), not before. Each is a record in `docs/adr/` (0008, 0009, 0011, 0012). **D4 was resolved in a limited form on
 2026-11-27** (owner-approved in chat, recorded in `MEMORY.md`): an in-process LLM router in `backend/app/core` with tiers
 fast = `euri-chat-fast`, smart = `euri-chat-smart` and reasoning = `euri-reasoning`, a fallback chain and a circuit breaker, and
 no separate gateway service. It is built (P9-9, P9-10) with an Euron embeddings provider (`euri-embedding`), and both were used against the real Euron API during the Docker bring-up; ADR 0010 is accepted in this limited form.
 
 | # | Decision | Why it cannot wait |
 |---|---|---|
-| D2 | **A fourth risk tier, `prohibited`** | The upstream policy engine can forbid an action outright (`crm.close_account`). §7.4 can only *require approval*, so today there is no way to express "never". |
-| D3 | **Write-capable MCP servers** | Upstream reaches back-office systems over MCP with scoped service tokens. §7.4 keeps MCP read-only and writes in process. Changes P6-5 and the deployment surface. |
+| D2 | **A fourth risk tier, `prohibited`** (approved, not built) | The upstream policy engine can forbid an action outright (`crm.close_account`). §7.4 can only *require approval*, so today there is no way to express "never". |
+| D3 | **Write-capable MCP servers** (approved, not built) | Upstream reaches back-office systems over MCP with scoped service tokens. §7.4 keeps MCP read-only and writes in process. Changes P6-5 and the deployment surface. |
 | D4 | **Model tiering and a gateway** (resolved in a limited form: router yes, gateway no) | Upstream routes small/medium/large with failover and a circuit breaker; `get_llm()` returns one model. The in-process router answers it; a separate gateway service stays out of v1. |
-| D5 | **Kubernetes and Helm** | See §15. Changes every file in Phase 14. |
-| D6 | **The harder eval bar and the red-team set** | See §13. Changes the Phase 14 gate and needs new datasets. |
+| D5 | **Kubernetes and Helm** (approved, not built) | See §15. Changes every file in Phase 14. |
+| D6 | **The harder eval bar and the red-team set** (approved, not built) | See §13. Changes the Phase 14 gate and needs new datasets. |

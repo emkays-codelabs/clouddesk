@@ -56,8 +56,8 @@ sections 6 and 20.
 | [0005](0005-vector-store-behind-a-protocol.md) | The vector store sits behind a protocol | Accepted | ADR-03 |
 | [0006](0006-sqlite-for-the-demo-postgres-for-the-cloud.md) | SQLite for the demo, Postgres for the cloud | Accepted | ADR-04, differs |
 | [0007](0007-workflows-run-in-the-backend-process.md) | Workflows run in the backend process | Accepted | ADR-08, differs |
-| [0008](0008-a-prohibited-risk-tier.md) | A fourth risk tier, `prohibited` | Proposed | D2 |
-| [0009](0009-write-capable-mcp-servers.md) | Write-capable MCP servers | Proposed | D3 |
+| [0008](0008-a-prohibited-risk-tier.md) | A fourth risk tier, `prohibited` | Accepted (not built) | D2 |
+| [0009](0009-write-capable-mcp-servers.md) | Write-capable MCP servers | Accepted (not built) | D3 |
 | [0010](0010-model-tiering-and-a-gateway.md) | Model tiering: an in-process router, no gateway service | Accepted (limited form) | D4, ADR-05 |
-| [0011](0011-kubernetes-and-helm.md) | Kubernetes and Helm as the parity target | Proposed | D5, ADR-06 |
-| [0012](0012-the-harder-evaluation-bar-and-a-red-team-set.md) | The harder evaluation bar and a red-team set | Proposed | D6 |
+| [0011](0011-kubernetes-and-helm.md) | Kubernetes and Helm as the parity target | Accepted (not built) | D5, ADR-06 |
+| [0012](0012-the-harder-evaluation-bar-and-a-red-team-set.md) | The harder evaluation bar and a red-team set | Accepted (not built) | D6 |

@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. This is decision D2 in `CLAUDE.md` section 20. It is not taken, and nothing may be built on it.
+Accepted on 2026-11-27 (owner approval in chat). This is decision D2 in `CLAUDE.md` section 20. The decision is taken; the code is not built yet, and building it needs a `TASKS.md` row.
 
 ## Context
 
@@ -12,8 +12,7 @@ and a per-tool approval bit. Today there is no way to express "never".
 
 ## Decision
 
-Not taken. The question is whether to add `prohibited` as a fourth tier, so a tool can be refused even with
-an approval.
+Add `prohibited` as a fourth risk tier. A tool marked `prohibited` is refused by `ToolRegistry.execute` even when `approved=True`, returns a distinct error, and is shown as refused (not as awaiting approval) on the approval screen. A tool missing from the policy table still fails closed as requiring approval.
 
 ## Consequences
 
