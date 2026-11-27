@@ -6,7 +6,7 @@
 | Document type | BRD |
 | Version | 1.0 (Draft) |
 | Date | 31 October 2026 |
-| Owner | Anu — OrionVexa (Agentic AI Production Engineering, Project 1) |
+| Owner | Mahesh Kumar, Saffronyx — AI Product & Engineering Studio |
 | Status | Draft for review |
 | Related docs | `02_PRD.md`, `03_HLD.md`, `04_LLD.md` |
 

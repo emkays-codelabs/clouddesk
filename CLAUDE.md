@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 21:56 +0530_
+_Last updated: 2026-11-27 22:27 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -28,8 +28,9 @@ Non-goals for v1:
 
 ### 1.1 Upstream design documents and scope
 
-The product and architecture documents for this project sit in `docs/`, written by the course author
-(Anu — OrionVexa) and copied into the repository on 2 November 2026:
+The product and architecture documents for this project sit in `docs/` and are owned by Saffronyx (Mahesh Kumar).
+They began as a course design by Anu — OrionVexa, were copied into the repository on 2 November 2026 and are now
+this product's own documents:
 
 | Document | Holds |
 |---|---|

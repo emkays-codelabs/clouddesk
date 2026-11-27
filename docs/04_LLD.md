@@ -5,7 +5,7 @@
 |---|---|
 | Version | 1.0 (Draft) |
 | Date | 31 October 2026 |
-| Owner | Anu — OrionVexa |
+| Owner | Mahesh Kumar, Saffronyx — AI Product & Engineering Studio |
 | Inputs | PRD/BRD (`01_…`), HLD (`02_…`) |
 
 ---

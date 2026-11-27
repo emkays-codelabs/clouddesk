@@ -5,7 +5,7 @@
 |---|---|
 | Version | 1.0 (Draft) |
 | Date | 31 October 2026 |
-| Owner | Anu — OrionVexa |
+| Owner | Mahesh Kumar, Saffronyx — AI Product & Engineering Studio |
 | Inputs | `01_PRD_BRD_Autonomous_Customer_Support_Platform.md` |
 | Next | `03_LLD_Autonomous_Customer_Support_Platform.md` |
 
