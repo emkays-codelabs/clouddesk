@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 11:05 +0530_
+_Last updated: 2026-11-27 11:35 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -364,7 +364,7 @@ The longest dependency chain is 16 tasks long.
 **P3-2 · Demo auth routes and tokens**
 - **Needs:** `P3-1`
 - **Build:** Demo authentication: `POST /auth/demo-login` (only when `DEMO_MODE=true`) and `GET /auth/me`; 8-hour tokens for `admin@`, `sam.agent@`, and `vic.viewer@clouddesk.demo`.
-- **Files:** `backend/app/api/auth.py`, `backend/app/schemas/auth.py`
+- **Files:** `backend/app/api/auth.py`, `backend/app/schemas/auth.py`, `tests/api/test_auth_routes.py`
 - **Done when:** Demo login issues a token for each of the three users; no service-role secret is ever returned to the client.
 
 **P3-3 · Redis rate limit**
@@ -487,7 +487,7 @@ The longest dependency chain is 16 tasks long.
 **P6-1 · Tool registry and policy**
 - **Needs:** `P2-3`
 - **Build:** The tool registry and policy: `ToolPolicy` with an explicit approval bit per tool, `ToolRegistry.execute(name, args, approved=…)`, unknown tools requiring approval, `TOOL_TIMEOUT_SECONDS`, exceptions turned into `ToolResult(ok=False)`, and a provenance check that rejects an argument id or amount which did not come from customer context or an earlier tool result (`CLAUDE.md` §7.4).
-- **Files:** `backend/app/tools/policy.py`, `backend/app/tools/registry.py`, `tests/unit/test_tool_policy.py`
+- **Files:** `backend/app/tools/policy.py`, `backend/app/tools/registry.py`, `backend/app/tools/context.py`, `backend/app/tools/idempotency.py`, `backend/app/tools/factory.py`, `tests/unit/test_tool_policy.py`, `tests/unit/test_tool_registry.py`
 - **Done when:** Reads and `update_ticket` need no approval; `reset_demo_setting` and `create_refund_request` do; unknown tools do; a raising tool returns `ok=False`; a slow tool times out; an amount lifted from ticket text is rejected while the same amount taken from a subscription record is accepted.
 
 **P6-2 · Read-only support tools**
@@ -505,13 +505,13 @@ The longest dependency chain is 16 tasks long.
 **P6-4 · Mock integrations**
 - **Needs:** `P2-3`
 - **Build:** Integration protocols and mock adapters: no real email, no real refunds. `core` never imports `integrations`.
-- **Files:** `integrations/protocols.py`, `integrations/mock/services.py`, `integrations/factory.py`
+- **Files:** `integrations/protocols.py`, `integrations/mock/services.py`, `integrations/factory.py`, `tests/integrations/test_mock_integrations.py`
 - **Done when:** The factory returns mocks in demo mode; a test fails if anything under `core/` imports `integrations`.
 
 **P6-5 · MCP read-only server and `/mcp/tools`**
 - **Needs:** `P6-2`
 - **Build:** A read-only MCP server exposing the read tools, a client example, `make mcp`, and `GET /mcp/tools`.
-- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `Makefile`, `pyproject.toml` (adds `mcp`)
+- **Files:** `integrations/mcp/server.py`, `integrations/mcp/client_example.py`, `backend/app/api/mcp.py`, `Makefile`, `pyproject.toml` (adds `mcp`), `tests/unit/test_mcp_server.py`, `tests/api/test_mcp_tools.py`
 - **Done when:** `/mcp/tools` lists `name`, `description`, and `requires_approval`; no write tool is exposed.
 
 ---
@@ -628,7 +628,7 @@ The longest dependency chain is 16 tasks long.
 **P9-4 · Knowledge agent**
 - **Needs:** `P9-1`
 - **Build:** Knowledge agent: cited evidence through `search_docs` and similar resolved cases by Jaccard overlap.
-- **Files:** `agents/specialists/knowledge.py`, `tests/agents/test_knowledge.py`
+- **Files:** `agents/specialists/knowledge.py`, `tests/agents/test_knowledge_agent.py`
 - **Done when:** Evidence carries `id`, `title`, `source`, `snippet`, and `score`; similar cases are returned (F5, F6).
 
 **P9-5 · Troubleshooting agent**
@@ -652,7 +652,7 @@ The longest dependency chain is 16 tasks long.
 **P9-8 · Eval case dataset**
 - **Needs:** `P9-1`
 - **Build:** The evaluation dataset: one case per demo ticket at least, each with a valid `expected_category`, expected escalation, and expected article.
-- **Files:** `datasets/eval_cases.json`
+- **Files:** `datasets/eval_cases.json`, `tests/evaluation/test_eval_cases.py`
 - **Done when:** A test rejects any case whose `expected_category` is not one of the 10 categories.
 
 ---
@@ -876,13 +876,13 @@ The longest dependency chain is 16 tasks long.
 
 **P14-2 · Backend and frontend Dockerfiles**
 - **Needs:** `P1-1`, `P12-1`
-- **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built: the Docker daemon was not running, so "both images build and report healthy" is still unproven. The backend Dockerfile copies only the packages that exist today.
+- **Note:** pulled forward at the owner's request (2026-11-22), ahead of the graph (P10-5): `backend/` and `frontend/` already run. The images were written and checked statically (`tests/deployment/test_dockerfiles.py`) but NOT built when the task merged: the Docker daemon was not running. On 2026-11-27 both images were built and reported healthy inside the Compose stack (`MEMORY.md`, First Docker bring-up). The backend Dockerfile copies only the packages that exist today.
 - **Build:** Dockerfiles: the backend is multi-stage `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, built from the repo root; the frontend is `node:22-alpine` with `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
 - **Files:** `backend/Dockerfile`, `frontend/Dockerfile`
 - **Done when:** Both images build and report healthy.
 
 **P14-3 · Compose stack**
-- **Note:** `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up: the Docker daemon was not running, so "comes up healthy" is still unproven.
+- **Note:** `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up when the task merged (the Docker daemon was not running). On 2026-11-27 it was brought up and all four services reported healthy (`MEMORY.md`, First Docker bring-up).
 - **Needs:** `P14-2`
 - **Build:** The Compose stack: frontend → backend → redis and qdrant, `depends_on: service_healthy`, named volumes, `restart: unless-stopped`.
 - **Files:** `docker-compose.yml`

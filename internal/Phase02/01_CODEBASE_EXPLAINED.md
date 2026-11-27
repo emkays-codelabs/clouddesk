@@ -115,7 +115,7 @@ Think of Phase 2 as building the **records office** behind the front desk Phase 
 
 Paths are relative to the project root. Line counts are from the files as they stand today.
 
-### `backend/app/schemas/common.py` (103 lines)
+### `backend/app/schemas/common.py` (103 lines when this phase was written; 117 today, after later phases added enums)
 
 | Item | Explanation |
 |---|---|
@@ -207,7 +207,7 @@ Interview explanation: "One clerk per drawer group, all trained by the same base
 
 Seven files: `customers.json` (8, all four plans), `subscriptions.json` (8), `workspaces.json` (8), `tickets.json` (13, CD-1001 to CD-1013), `incidents.json` (2), `products.json` (5) and `previous_resolutions.json` (6). All content is fictional. Each ticket carries a `customer_key` that links it to a customer. `previous_resolutions.json` is checked but not loaded into the database, because no table holds it; the Knowledge Agent in Phase 9 will read it from disk.
 
-### `backend/app/services/seed_service.py` (296 lines)
+### `backend/app/services/seed_service.py` (296 lines when this phase was written; 312 today)
 
 | Item | Explanation |
 |---|---|
@@ -221,7 +221,7 @@ Seven files: `customers.json` (8, all four plans), `subscriptions.json` (8), `wo
 | Execution point | Startup lifespan and `make seed` |
 | Interview explanation | "It checks the whole box is in order, then files it all in one go, and never files it twice." |
 
-### `backend/app/main.py` (60 lines)
+### `backend/app/main.py` (60 lines when this phase was written; 96 today, after later phases mounted their routers)
 
 The Phase 1 factory now has a `lifespan` that runs `create_tables()` and `bootstrap_demo_data()` before serving, and `dispose_engine()` on shutdown. A database failure is logged as the exception class and a redacted URL, not swallowed silently, and not allowed to stop the process, so `/health/ready` can still say "degraded".
 

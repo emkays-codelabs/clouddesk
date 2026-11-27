@@ -1,4 +1,4 @@
-"""P9-7: policy rules always escalate; vague model escalations are distrusted."""
+"""P9-7 (F10): policy rules always escalate; vague model escalations are distrusted."""
 
 from uuid import uuid4
 

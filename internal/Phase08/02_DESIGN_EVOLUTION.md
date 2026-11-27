@@ -72,7 +72,7 @@ flowchart TB
     ST --> R[("Redis client, passed in")]
 ```
 
-Callers on the live path: none yet. The graph nodes are planned (Phase 10).
+Callers on the live path: none yet. The graph nodes are planned (Phase 10). Since Phase 9, `CustomerAgent` calls `recall_customer`, but only tests run the agent.
 
 ## E. End-to-end execution and data flow
 

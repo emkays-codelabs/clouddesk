@@ -14,7 +14,8 @@ from typing import Any, Protocol
 
 from rag.embeddings import Embeddings
 
-# Re-exported by the retriever so memory/ never names a concrete store module.
+# Imported through the retriever (which imports them from the store module), so memory/ never
+# names the store module itself; a test enforces that.
 from rag.retriever import Document, VectorStoreService
 
 MEMORY_TYPES = ("preference", "past_issue", "troubleshooting", "note")

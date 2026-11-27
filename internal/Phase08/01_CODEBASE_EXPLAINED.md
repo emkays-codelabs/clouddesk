@@ -116,4 +116,4 @@ Run: `uv run python -m pytest -q`. Result on 2026-11-27: 1103 passed, `ruff chec
 
 - Implemented: short-term Redis memory, long-term notes, the memory service, the wiring adapter, and a container fix. Not implemented: any caller on the live path, memory vectors written by the app, a route to request erasure.
 - Understand before explaining: the floor, the scrub, the dedup, the erasure order, and why `memory/` takes everything as an argument.
-- Reused later: Phase 10 nodes call `recall_customer` and `record_resolution` (planned); Phase 9 specialists receive the recalled notes in customer context (planned); the erasure function awaits an API route (not planned yet).
+- Reused later: Phase 10 nodes call `recall_customer` and `record_resolution` (planned); Phase 9 specialists receive the recalled notes in customer context (done: `CustomerAgent` in `agents/specialists/customer.py` calls `recall_customer`, though no graph runs it yet); the erasure function awaits an API route (not planned yet).

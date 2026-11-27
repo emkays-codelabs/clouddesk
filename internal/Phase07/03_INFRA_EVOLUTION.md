@@ -16,7 +16,7 @@ Inherited from Phase 6: a local `uvicorn` process serving the API on port 8000, 
 
 ## C. Infrastructure evolution
 
-No changes. One thing to note for later: `backend/Dockerfile` copies `backend/` and `rag/` and `integrations/` (Phase 6) but **not** `agents/`. Nothing in the running backend imports `agents/` yet, so the image is not wrong today. The phase that first imports `agents/` from the backend (planned, Phase 9 or 10) must add the copy and the matching `tests/deployment/test_dockerfiles.py` check. This is a known follow-up, not done.
+No changes. One thing to note for later: `backend/Dockerfile` copies `backend/` and `rag/` and `integrations/` (Phase 6) but **not** `agents/`. Nothing in the running backend imports `agents/` yet, so the image is not wrong today. The phase that first imports `agents/` from the backend (planned, Phase 9 or 10) must add the copy and the matching `tests/deployment/test_dockerfiles.py` check. This was a known follow-up when this phase was written. It was done afterwards, in the Phase 8 container fix: the Dockerfile now copies `agents/` and `memory/`, and `tests/deployment/test_dockerfiles.py` checks it.
 
 ## D. Docker and container explanation
 

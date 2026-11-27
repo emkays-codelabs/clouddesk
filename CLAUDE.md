@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 11:20 +0530_
+_Last updated: 2026-11-27 11:35 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -69,7 +69,7 @@ own: change §5 or §10.1 here first, then the model, the schema and the tests i
 |---|---|
 | `viewer` | read tickets, customers, knowledge, audit |
 | `agent` | everything viewer can + run workflows, reply, approve/reject, escalate |
-| `admin` | everything + reindex knowledge, settings |
+| `admin` | everything + reindex knowledge (`GET /settings` is read-only for every role in v1) |
 
 Enforced by `require_role` in `backend/app/core/security.py` (`viewer 1 < agent 2 < admin 3`).
 Demo users: `admin@clouddesk.demo`, `sam.agent@clouddesk.demo`, `vic.viewer@clouddesk.demo`.
@@ -278,8 +278,10 @@ Policy cases (dispute, deletion, security, data loss, legal, enterprise outage) 
 matched = rules.matching_escalation_rules(text, plan_name)     # policy
 result  = await call_structured(EscalationDecision, ...)        # judgement
 if matched:                       decision = policy decision
-elif escalation and not (high severity and low confidence):
+elif model escalates and not (severity high or critical, confidence >= 0.6):
                                   decision.escalation_required = False   # distrust vague model escalations
+elif severity high or critical and confidence < 0.6:
+                                  escalate to Tier 2 support             # doubt on a serious ticket hands off
 ```
 
 Severity: rules can **raise** the model's severity, never lower it.
@@ -434,7 +436,7 @@ CHECKPOINT_DB_PATH      ./data/checkpoints.db  |  :memory: (tests)
 REDIS_URL               empty → fakeredis  |  redis://redis:6379/0
 USE_FAKE_REDIS          true in tests
 LLM_PROVIDER            fake (default) | openai | euron (OpenAI-compatible) | anthropic (not implemented)
-LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, LLM_BASE_URL
+LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
 EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 VECTOR_STORE            memory | qdrant
 QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTION (clouddesk_knowledge)
@@ -544,7 +546,7 @@ make backend          # FastAPI on :8000
 make demo             # CD-1002 refund end-to-end in terminal (pauses for approval)
 make demo TICKET=CD-1005
 make mcp              # MCP server (read-only tools)
-make test             # backend pytest, ~6 s, offline
+make test             # backend pytest, about two minutes (1205 tests, 2026-11-27), offline
 make lint             # ruff
 make format           # ruff format
 git commit            # the pre-commit hook stamps each staged document with the time it changed
@@ -702,15 +704,17 @@ optional and is not a core exit criterion.
 ## 20. Known gaps and open questions
 
 - The section 14 commands come from the course stage docs. Verified so far (GNU Make 4.4.1, Windows
-  PowerShell): `make setup`, `make backend`, `make test` and `make lint`. Check each remaining target
-  when the task that creates it lands (see `TASKS.md`), and fix this file if one differs.
+  PowerShell): `make setup`, `make backend`, `make test` and `make lint`; `make seed` was also run (twice,
+  against a throwaway database). `make format`, `make ingest` and `make mcp` exist but are not recorded as run
+  through make. Check each remaining target when the task that creates it lands (see `TASKS.md`), and fix this
+  file if one differs.
 - `terraform.tfvars` is contradictory: section 15 describes committed per-environment var-files while
   section 18 says never to commit it. Decide before Phase 14 (also tracked in `MEMORY.md`).
 - The upstream PRD, HLD and LLD are now in `docs/` (§1.1). The remaining course documents, and the
   `../deployment-agent/` and `../shared-infrastructure/` paths they reference, are still outside this
   repo. Decide whether they are copied in or referenced.
-- Document counts differ slightly between files (for example tables: 16 in the database doc, 15 data
-  tables in RLS). Treat `database/schema.sql` as the authority once written.
+- Document counts differed between course files (tables: 16 in the database doc, 15 data tables in RLS).
+  Closed by P2-2: `database/schema.sql` is the authority, with 17 tables (16 data tables plus `tenants`).
 - Stage 17 (Agentic DevOps) depends on Stages 13–16; treat it as optional for the core Project 1 completion.
 
 **D1 is settled (2026-11-02).** Every data table carries `tenant_id` from P2-1 and the RLS policies are keyed on

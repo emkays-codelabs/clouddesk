@@ -1,7 +1,7 @@
-"""Ticket use cases: create, list, and read one with its context (F1).
+"""Ticket use cases: create, list, read one with its context, reply, request info, escalate, update.
 
 Creating a ticket only records it and its first message; starting the workflow is a separate,
-explicit action (`POST /tickets/{id}/run`).
+explicit action (`POST /tickets/{id}/run`, not built yet: the graph arrives in Phase 10).
 """
 
 from datetime import UTC, datetime

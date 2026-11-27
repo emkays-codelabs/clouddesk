@@ -138,7 +138,7 @@ The Phase 1 application code is 455 lines across seven files, plus a 137-line te
 
 The order matters. Each `add_middleware` call wraps the previous layers, so the *last* one added is the *outermost*. CORS is added last, so it sees the request first and the response last.
 
-### `backend/app/core/config.py` (93 lines)
+### `backend/app/core/config.py` (99 lines)
 
 | Item | Explanation |
 |---|---|
@@ -154,7 +154,7 @@ The order matters. Each `add_middleware` call wraps the previous layers, so the 
 
 Secrets are stored as `SecretStr`. When settings are shown, secrets become `***` (or empty if unset), and a password inside a connection URL is masked while the user and host remain. Code that genuinely needs a secret reads the attribute directly.
 
-### `backend/app/core/logging.py` (67 lines)
+### `backend/app/core/logging.py` (74 lines)
 
 | Item | Explanation |
 |---|---|
