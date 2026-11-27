@@ -9,7 +9,7 @@
 - **Schemas.** `backend/app/schemas/workflow.py` now holds the agent outputs (`Classification`, `SeverityAssessment`, `CustomerContext`, `PreviousCase`, `Diagnosis`, `ResolutionPlan`, `EscalationDecision`), `TokenUsage` and the full `WorkflowState` from the API contract. Every state field except the run identity is optional and extra keys are still allowed, so states saved earlier still load.
 - **One door to a model.** `backend/app/core/llm.py` exposes `get_llm()` and `call_structured()`. `call_structured` caps temperature at 0.2, validates against the schema, sends an invalid reply back for repair at most twice, measures usage and latency, and raises only `LLMError` (carrying the usage spent). A static test fails if `openai` or `langchain_openai` is imported anywhere else.
 - **Providers.** `fake` (default) is deterministic with cost 0.0 and accepts rule results as `hints`, because the core layer cannot import the agents layer. `openai` and `euron` use one OpenAI-compatible client; `euron` defaults to its euri endpoint and model `euri-reasoning`. `anthropic` raises a clear not-implemented error. One model, no tiers, no gateway (ADR-0010, D4 undecided).
-- **Setting.** `LLM_BASE_URL` (empty default) joined `Settings`, `.env.example` (removed 2026-11-27) and `CLAUDE.md` 10.1. `/settings` is unchanged.
+- **Setting.** `LLM_BASE_URL` (empty default) joined `Settings`, `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) and `CLAUDE.md` 10.1. `/settings` is unchanged.
 - **Not done.** No real provider call has been made (no key yet); cost estimates for real models are a one-entry price table and 0.0 for unknown models.
 
 ---

@@ -22,4 +22,8 @@ SQLite, created at startup, with the workflow checkpointer in `AsyncSqliteSaver`
   [ADR-0001](0001-tenant-id-on-every-table.md)).
 - A restart can drop an in-memory pause, and file checkpoints survive only on a volume.
 - `database/schema.sql` is the authority for the table list (written in Phase 2; 17 tables). The checkpointer is
-  not built yet (Phase 10).
+  built (Phase 10).
+- **Update, 2026-11-27.** At the owner's request the Docker stack now runs on Postgres 16 (`asyncpg`), and the schema,
+  the row-level-security policies and the migration were applied to a real Postgres and tested. SQLite remains the
+  engine for the offline test suite. Row-level security is still not enforced at runtime (the API does not set
+  `app.tenant_id`), so the repository filter remains the boundary.

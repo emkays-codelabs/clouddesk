@@ -25,7 +25,7 @@
 | 1 | P1-1 | #3, with a follow-up commit on the same branch landed as #4 | Settings and JSON logging |
 | 2 | P1-3 | #5 | The offline test harness |
 | 3 | P1-2 | #6 | Health routes, request-ID middleware, readiness, the app factory |
-| 4 | P1-4 | #7 | The Makefile and `.env.example` (removed 2026-11-27) |
+| 4 | P1-4 | #7 | The Makefile and `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) |
 
 All four merged on 2026-10-31. The project record also notes that an earlier first attempt at Phase 1 was rolled back the same day and restarted from the plan, and that its commits remain reachable through a closed pull request. The design below is the second attempt.
 
@@ -125,7 +125,7 @@ flowchart TD
 
 - **Original design.** A service that only someone who knew the commands could start.
 - **Motivation.** A new developer should be able to start, test and lint with one obvious command, and know exactly which variables exist.
-- **Introduced.** A `Makefile` with five targets whose recipes start with `uv` or `git` (so they work in any shell), and `.env.example` (removed 2026-11-27) listing the 27 variables with safe placeholders.
+- **Introduced.** A `Makefile` with five targets whose recipes start with `uv` or `git` (so they work in any shell), and `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) listing the 27 variables with safe placeholders.
 - **Benefits and trade-offs.** One documented way to work. No shell chaining, because the recipes must run in PowerShell too.
 - **Status.** Completed and verified: 9 tests in `tests/unit/test_makefile.py` and 7 in `tests/unit/test_env_example.py` (removed 2026-11-27).
 
@@ -301,7 +301,7 @@ Compared with the empty start, and only where the implementation or a test suppo
 | Testability | Offline, hermetic tests and a lazily imported app | `tests/conftest.py` |
 | Security | Secrets redacted in settings output; request IDs allow-listed; readiness reasons never echo a URL or key | Tests in `tests/unit/test_config_logging.py` and `tests/api/test_health.py` |
 | Reliability | A crash returns a clean 500 with an ID | A test in `tests/api/test_health.py` |
-| Maintainability | One settings object and one `.env.example` (removed 2026-11-27), checked against each other by a test | `tests/unit/test_env_example.py` |
+| Maintainability | One settings object and one `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), checked against each other by a test | `tests/unit/test_env_example.py` |
 | Extensibility | The middleware order has room for two more layers | A comment in `backend/app/main.py` |
 | Scalability and performance | **No claim.** Nothing was measured. | None |
 
@@ -336,7 +336,7 @@ Compared with the empty start, and only where the implementation or a test suppo
 
 **Final architecture.** See section D.
 
-**Major components introduced:** app factory, settings, JSON logging, request-ID middleware, three health routes, configuration readiness, offline harness, Makefile, `.env.example` (removed 2026-11-27).
+**Major components introduced:** app factory, settings, JSON logging, request-ID middleware, three health routes, configuration readiness, offline harness, Makefile, `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template).
 
 **Important decisions:** build the harness first; plain ASGI middleware; configuration-only readiness; a work-free liveness route; shell-portable recipes.
 

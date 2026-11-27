@@ -19,7 +19,7 @@
 | What is externally hosted? | Nothing. The offline profile needs no outside service. |
 | How is it started? | `make backend`, which runs `uv run uvicorn app.main:app --app-dir backend --reload --port 8000` |
 | How do components communicate? | A client calls the process over HTTP on the same machine. Inside the process, plain function calls. |
-| How is configuration supplied? | Environment variables, plus an optional `.env` file copied from `.env.example` (removed 2026-11-27) by `make setup` |
+| How is configuration supplied? | Environment variables, plus an optional `.env` file copied from `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) by `make setup` |
 | How is it stopped? | Press Ctrl+C in the terminal that is running it |
 
 **Development versus deployment.** Only development exists. No separate deployment configuration was written in this phase.
@@ -50,7 +50,7 @@ flowchart LR
 | P1-1 settings and logging | Nothing | Settings read the environment; logs go to standard output as JSON | Everything later needs configuration and diagnosable output | 29 tests |
 | P1-3 test harness | Nothing | Tests run with a fixed offline environment, a throwaway database path in a temporary folder, and outside network blocked | Tests must never touch the internet or a real key | 24 tests |
 | P1-2 the service | No process to run | One uvicorn process listening on a port, with three health routes | A platform needs something to probe | 28 tests, and a live run for this document |
-| P1-4 Makefile and `.env.example` (removed 2026-11-27) | Commands known only to the author | Five `make` targets and a documented variable list | One obvious way to start, test and lint | 9 and 7 tests; `make test`, `make lint` and `make backend` were run for this document |
+| P1-4 Makefile and `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) | Commands known only to the author | Five `make` targets and a documented variable list | One obvious way to start, test and lint | 9 and 7 tests; `make test`, `make lint` and `make backend` were run for this document |
 
 **Routing and communication changed once:** at P1-2, when the first network listener appeared. Before it nothing listened on any port.
 
@@ -129,7 +129,7 @@ There is no Compose lifecycle. These are the commands that exist, all from the `
 
 | Goal | Command | Notes |
 |---|---|---|
-| Install dependencies and create `.env` | `make setup` | Runs `uv sync`, sets the shared git hooks path, and copies `.env.example` (removed 2026-11-27) to `.env` **only if `.env` is missing** |
+| Install dependencies and create `.env` | `make setup` | Runs `uv sync`, sets the shared git hooks path, and copies `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) to `.env` **only if `.env` is missing** |
 | Start the service | `make backend` | Port 8000, reloads on code edits |
 | Run the tests | `make test` | Offline |
 | Lint | `make lint` | `ruff check` |
@@ -147,7 +147,7 @@ There is no Compose lifecycle. These are the commands that exist, all from the `
 
 ## H. Environment variables and secrets
 
-The 27 variables are listed in `.env.example` (removed 2026-11-27), which holds names and safe placeholders only. Phase 1 code reads just 9 of them. The others are declared now for later phases.
+The 27 variables are listed in `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), which holds names and safe placeholders only. Phase 1 code reads just 9 of them. The others are declared now for later phases.
 
 | Variable | Read by Phase 1 code? | Purpose |
 |---|---|---|
@@ -164,7 +164,7 @@ The 27 variables are listed in `.env.example` (removed 2026-11-27), which holds 
 **Secrets.**
 
 - `.env` and `.env.*` are git-ignored, so local keys are never committed.
-- In `.env.example` (removed 2026-11-27) every secret is empty except `JWT_SECRET`, which holds an obvious demo placeholder. A test requires that.
+- In `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) every secret is empty except `JWT_SECRET`, which holds an obvious demo placeholder. A test requires that.
 - Secrets are held as `SecretStr`, and the redacted settings view prints `***`.
 - A readiness failure names the setting at fault but never prints a URL, password or key.
 

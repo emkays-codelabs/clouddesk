@@ -112,7 +112,7 @@ There is still **no route that reads the database**. The three health routes are
 
 | Command | Effect |
 |---|---|
-| `make setup` | Installs dependencies with `uv sync`, points git at `.githooks`, copies `.env.example` (removed 2026-11-27) to `.env` if absent |
+| `make setup` | Installs dependencies with `uv sync`, points git at `.githooks`, copies `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) to `.env` if absent |
 | `make backend` | Starts the server with auto-reload on port 8000; creates tables and seeds on startup |
 | `make seed` | Creates tables and seeds once, then prints "seeded: 8 customers, 13 tickets" or "already seeded"; exits with 1 and a message if `DEMO_MODE` is false |
 | `make test`, `make lint` | Runs the suite or ruff |
@@ -128,7 +128,7 @@ There is still **no route that reads the database**. The three health routes are
 | `DEMO_MODE` | `backend/app/services/seed_service.py` | `true` | Seeding refuses to run when false |
 | `SAMPLE_DATA_DIR` | `backend/app/services/seed_service.py` | `./sample_data` | Folder of the seven JSON files |
 
-Real values go only in `.env`, which is git-ignored. `.env.example` (removed 2026-11-27) holds placeholders. A cloud `DATABASE_URL` would be supplied by the deployment environment, never committed. No secret appears in this document.
+Real values go only in `.env`, which is git-ignored. `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) holds placeholders. A cloud `DATABASE_URL` would be supplied by the deployment environment, never committed. No secret appears in this document.
 
 ## I. Persistent storage and data management
 

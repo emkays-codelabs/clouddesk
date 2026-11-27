@@ -21,7 +21,7 @@
 | Start the MCP server (written, not run for this document) | `make mcp`, which runs `python -m integrations.mcp.server` with `backend` on the path |
 | Start (written, not run) | `docker compose up --build` |
 | Communication | In process: function calls, fakeredis, in-memory vector store, in-memory mocks. MCP is a separate process talking over standard input and output. |
-| Configuration | Environment variables or `.env`; `.env.example` (removed 2026-11-27) lists them. |
+| Configuration | Environment variables or `.env`; `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) lists them. |
 | Stop | Ctrl+C for a local process. `docker compose down` for the stack (never run). |
 
 Development is the only environment exercised.
@@ -142,7 +142,7 @@ Compose (written, **never run**): `docker compose config -q` (reads only), `dock
 
 ## H. Environment variables and secrets
 
-Phase 6 reads existing settings only (all in `.env.example` (removed 2026-11-27), placeholders only). Nothing new was added.
+Phase 6 reads existing settings only (all in `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), placeholders only). Nothing new was added.
 
 | Variable | Purpose | Default |
 |---|---|---|

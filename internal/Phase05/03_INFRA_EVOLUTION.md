@@ -20,7 +20,7 @@
 | Start (verified) | `make backend` (uvicorn, port 8000). The lifespan creates tables, seeds demo data and, with the memory store, indexes the 15 articles. |
 | Start (written, not run) | `docker compose up --build` |
 | Communication | In process: function calls, fakeredis, an in-memory vector store. |
-| Configuration | Environment variables or `.env`; `.env.example` (removed 2026-11-27) lists them. |
+| Configuration | Environment variables or `.env`; `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) lists them. |
 | Stop | Ctrl+C for the local process. `docker compose down` for the stack (never run). |
 
 Development is the only environment that has been exercised; there is no production configuration beyond the files.
@@ -150,7 +150,7 @@ Compose (written in the repository, **never run for this document**):
 
 ## H. Environment variables and secrets
 
-Phase 5 read these existing settings (all listed in `.env.example` (removed 2026-11-27), which has placeholders only):
+Phase 5 read these existing settings (all listed in `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), which has placeholders only):
 
 | Variable | Purpose | Default |
 |---|---|---|

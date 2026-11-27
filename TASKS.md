@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 21:10 +0530_
+_Last updated: 2026-11-27 21:28 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -105,7 +105,7 @@ The longest dependency chain is 16 tasks long.
 **P1-4 · Makefile and `.env.example`**
 - **Needs:** `P1-1`
 - **Build:** `.env.example` listing every §10.1 variable with placeholders only (removed on 2026-11-27 at the owner's request: `.env` is now the only environment file), and a `Makefile` with `setup`, `backend`, `test`, `lint` and `format` (later phases add `seed`, `ingest`, `demo`, `mcp`, `smoke`, `terraform-validate`). Every recipe calls only `uv`, so the targets run in cmd.exe, PowerShell and sh alike (`setup` once copied `.env.example` to `.env` through Python; it now only runs `uv sync` and sets the git hooks path).
-- **Files:** `.env.example` (removed 2026-11-27), `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py` (replaced by `tests/unit/test_env_settings.py`, which checks `CLAUDE.md` §10.1 against `Settings`), `tests/unit/test_makefile.py`
+- **Files:** `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template), `Makefile`, `.gitattributes` (keeps the Makefile on LF), `tests/unit/test_env_example.py` (replaced by `tests/unit/test_env_settings.py`, which checks `CLAUDE.md` §10.1 against `Settings`), `tests/unit/test_makefile.py`
 - **Done when:** A test proves the variable list covers every `Settings` field and declares nothing the app does not read (first for `.env.example`, since 2026-11-27 for `CLAUDE.md` §10.1); tests prove the Makefile has the required targets, tab-indented recipes, LF line endings and only portable commands (`uv` or `git`, never POSIX-shell syntax); `make test` and `make lint` run (checked with GNU Make 4.4.1).
 
 **P1-5 · Document timestamps (pre-commit hook)**

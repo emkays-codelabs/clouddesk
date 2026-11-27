@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 21:10 +0530_
+_Last updated: 2026-11-27 21:28 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -51,7 +51,7 @@ change that contradicts them belongs in §20 before it reaches the code.
 | Channels | chat, email, api, ticketing | email, chat, web, api (§5) |
 | Risk tiers | `low`/`medium`/`high`/`prohibited` from YAML policy per tool | `low`/`medium`/`high` and a per-tool approval bit (§7.4) |
 | Tool access | Six MCP servers, write tools over HTTP | In-process `ToolRegistry`; MCP exposes read-only tools (§7.4) |
-| LLM | LiteLLM gateway, tiers small/medium/large with failover | `get_llm()` with a `fake` provider and an OpenAI-compatible one (`openai`, `euron`); an in-process tier router is planned (D4, limited form, §20); no gateway service |
+| LLM | LiteLLM gateway, tiers small/medium/large with failover | `get_llm()` with a `fake` provider and an OpenAI-compatible one (`openai`, `euron`); an in-process tier router (fast, smart, reasoning, with a fallback chain and circuit breaker; D4, limited form, §20); no gateway service |
 | Workers | arq or Celery on Redis, separate processes | FastAPI `BackgroundTasks`, in process (§10) |
 | Runtime | Kubernetes and Helm on EKS/AKS/GKE | Containers on ECS Fargate / Container Apps / Cloud Run (§15) |
 | Config | `pydantic-settings`, env prefix `ACSRP_` | `pydantic-settings`, no prefix (§10.1) |
@@ -245,7 +245,7 @@ Key rules:
   writes `tenant_id` into a query, so it cannot be forgotten in one of them. SQLite has no RLS, so on
   the demo database the repository filter *is* the boundary — which is why one test proves a second
   tenant's rows stay invisible.
-- **Built so far:** the 17 tables, `schema.sql`, `rls_policies.sql` and the first migration are text-checked only: no Postgres has been run, so the RLS policies are unproven and the per-transaction `SET LOCAL` is not built. Today the repository filter, and its isolation test, are the whole boundary.
+- **Built so far:** the 17 tables, `schema.sql`, `rls_policies.sql` and the first migration. Run against a real Postgres 16 on 2026-11-27: the schema, the policies and the migration apply cleanly, the app creates its own tables and runs the whole workflow on Postgres, and a non-superuser role was isolated by the policies (cross-tenant read, update, delete and insert all blocked). The per-transaction `SET LOCAL app.tenant_id` is NOT built, so the policies are not enforced at runtime (enabling them now would block the app's own queries). Today the repository filter, and its isolation test, are the boundary.
 - **Not in v1:** tenant CRUD or an admin screen, per-tenant routing, origins, autonomy mode or token
   budgets, and tenant switching in the console. The column and the policies are the whole of D1.
 - Migrations: add `database/migrations/000N_<name>.sql` and update the model + `schema.sql`. Never
@@ -393,7 +393,8 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
 - **Modes:** `hybrid` (default), `semantic`, `keyword`.
 - **Fake embeddings** (`FakeEmbeddings`, hashed bag-of-words, 384 dims) run offline and are the only embeddings built; `EuronEmbeddings` (euri-embedding) is built and was used against the real API once. Changing the
   embedding model requires `POST /knowledge/reindex` (admin) – it recreates the collection.
-- Evidence shape: `{ id, title, source: "kb://slug#section", snippet, score, url: "/knowledge/<id>", article_id }`.
+- Evidence shape: `{ id, title, source: "kb://slug#section", snippet, passage, score, url: "/knowledge/<id>", article_id, strength }`. `snippet` is a short excerpt that ends at a sentence or word boundary with an ellipsis if cut (`snippet_of`); `passage` is the whole text.
+- **Relevance cut-off (QA fix, 2026-11-27).** `score` is rank-based (an unanswerable question still scores 0.93-0.96), so it cannot be thresholded. `HybridRetriever._relevant` instead measures how many of the query's content words the whole article contains and drops hits below `MIN_TERM_COVERAGE` (0.3), with at least `MIN_MATCHED_TERMS` (2) matched words and at least half the best hit's coverage. The constants come from measurement over the 16 evaluation cases (`tests/rag/test_relevance_cutoff.py`). Each kept hit is `strong` or `partial`; the result is returned with fewer than `top_k` hits, or none, when evidence is thin, and `sufficient` is false when no hit is strong. Known limit: a query that shares two real words with an article still returns one partial hit.
 - Knowledge articles are the only source for customer-facing policy claims. Cite them.
 
 ---
@@ -404,9 +405,9 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
   it; `SECURITY_PREAMBLE` tells the model to treat it as data. CD-1013 must never execute an export.
 - **Output validation (N5):** `validate_customer_output` blocks internal URLs, secrets, other customers'
   data before a reply is shown. Failure raises risk to `high`.
-- **Secrets:** never in code, never in memory notes, never in logs. Only `.env` (git-ignored, created by hand;
-  there is no committed template, and the variable list is §10.1). `tests/unit/test_env_settings.py` checks that no
-  `.env` file is tracked.
+- **Secrets:** never in code, never in memory notes, never in logs. Only `.env` (git-ignored; copy it from the
+  placeholders-only `.env.example`, and the variable list is §10.1). `tests/unit/test_env_settings.py` checks that no
+  `.env` file is tracked and that the template holds no secret value.
 - **JWT:** HS256 via PyJWT, `settings.effective_jwt_secret` (Supabase JWT secret when set). Demo tokens
   expire in 8 h.
 - **Rate limit (N2):** fixed window per client in Redis, `RATE_LIMIT_PER_MINUTE` (demo 120).
@@ -427,7 +428,7 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
 
 - Stack: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (async), LangChain/LangGraph, PyJWT, pytest.
 - Startup (`main.py`): `setup_logging()` (JSON logs with `request_id`/`workflow_id`), middleware, lifespan
-  (`create_tables()`, `bootstrap_demo_data()` when `DEMO_MODE=true` and DB empty, then indexing the knowledge base when `VECTOR_STORE=memory`).
+  (`create_tables()`, `bootstrap_demo_data()` when `DEMO_MODE=true` and DB empty, then indexing the knowledge base when the store is empty: always for `memory`, and for `qdrant` only when the collection has no points).
 - Routers mounted under `/api/v1`. Health routes unprefixed: `/health`, `/health/live` (no I/O, used by
   probes), `/health/ready` (db, redis, vector store, llm).
 - Settings: `get_settings()` is `lru_cache`d – restart the server after `.env` changes.
@@ -561,7 +562,7 @@ make backend          # FastAPI on :8000
 make demo             # CD-1002 refund end-to-end in terminal (pauses for approval)
 make demo TICKET=CD-1005
 make mcp              # MCP server (read-only tools)
-make test             # backend pytest, about two minutes (1204 tests, 2026-11-27), offline
+make test             # backend pytest, about three minutes (about 1,400 tests, 2026-11-27), offline
 make lint             # ruff
 make format           # ruff format
 git commit            # the pre-commit hook stamps each staged document with the time it changed
@@ -623,10 +624,12 @@ then `development` promotes to `testing`, then `main`. Remote:
 
 Track what is **implemented**, **validated locally**, **needs cloud credentials**, and **actually deployed**
 separately. Do not write "deployed" or "passes in CI" until it has. Current state: no cloud credentials
-used; nothing applied to a real account; no workflow files written and none executed on GitHub. The Docker
-stack was built and brought up once on 2026-11-27 (backend, frontend, redis and qdrant healthy, real Redis;
-demo login, 13 tickets, a knowledge search and the frontend `/dashboard` answered). Not run: a browser view,
-Postgres, real Qdrant use and any real language-model call.
+used; nothing applied to a real account; the workflow files are written and none has run on GitHub. On
+2026-11-27 the full stack was built and run in Docker on real services (Postgres, Redis, local Qdrant, Euron
+embeddings and chat), the headed Playwright suite passed (7 tests), a full container restart kept every
+Postgres row, and the real Euron model ran the whole workflow. Not run: a real cloud, any CI run, row-level
+security enforced at runtime, and the model's quality at scale (the evaluation thresholds run on the
+offline fake pipeline).
 
 ---
 
@@ -636,7 +639,7 @@ Postgres, real Qdrant use and any real language-model call.
 - `WorkflowTracer` writes `workflow_events` (never raises – telemetry must not break a run):
   `node_started`, `node_completed`, `tool_called`, `llm_called`, `approval_requested`,
   `approval_resolved`, `error`, `workflow_completed`.
-- Token usage and estimated cost per run (estimates only; fake provider = 0.0).
+- Token usage and cost per run with `cost_basis`: `actual` (provider-reported), `estimated` (a verified price: the built-in `openai/gpt-oss-120b-Turbo` entry or the owner's `LLM_PRICING`; the fake provider is a known 0.0), `unavailable` (tokens used, no verified price, so the cost is not shown as zero) or `none`. The plan-hosted `euri-*` models publish no per-token price and stay unavailable. Cost is shown in USD and INR together; action amounts such as refunds are INR.
 - LangSmith optional via `LANGCHAIN_TRACING_V2` + `LANGCHAIN_API_KEY`.
 - **Exposed:** decisions, tool calls and results, evidence with scores, node timings, token counts, errors.
   **Never exposed:** raw prompts, hidden chain-of-thought, other customers' data, secrets.

@@ -1,6 +1,6 @@
 # CloudDesk AI architecture
 
-_Last updated: 2026-11-27 14:41 +0530_
+_Last updated: 2026-11-27 21:28 +0530_
 
 Target architecture for the autonomous support-resolution platform. `CLAUDE.md` wins if this document disagrees with it.
 
@@ -8,7 +8,7 @@ These are CloudDesk's own diagrams, for the single-tenant v1 this repo builds. T
 high-level and low-level designs for the full product are [`03_HLD.md`](../03_HLD.md) and [`04_LLD.md`](../04_LLD.md) one folder up;
 `CLAUDE.md` §1.1 tables where the two differ and §20 lists the decisions still open.
 
-This is the design to build. Phases 1 to 9 exist: the service, data layer, auth and guards, the support API, retrieval, tools and mocks, rules and guardrails, memory, and the six specialist agents with the fake LLM. Not built yet: the workflow graph, state and tracer, the run, workflow, events, approvals, escalations and agents routes, the real console screens, the Terraform and CI files. No cloud account has been applied, and nothing in these diagrams is deployed.
+This is the design, and v1 of it is built: all 14 phases exist and run locally in Docker on real services (PostgreSQL, Redis, a local Qdrant container, Euron embeddings and chat). What is not built: row-level security enforced at runtime, the approval timeout, and the decisions D2, D3, D5 and D6 in `CLAUDE.md` §20. The Terraform and the GitHub workflows are written and validated only: no cloud account has been applied, no workflow has run, and nothing in these diagrams is deployed.
 
 The product is used by support agents of the fictional SaaS **CloudDesk**. A ticket is understood, classified, investigated, and turned into a resolution plan. A human approves anything that spends money or changes an account. v1 integrations are mocks: the platform does not send real email and does not issue real refunds.
 
@@ -578,20 +578,21 @@ uses the service-role key on the server. The browser receives only the anon key.
 
 ## 7. Local infrastructure
 
-Demo mode runs with no API key and no cloud account.
+The Docker stack runs on real services and needs only your Euron key in `.env`. The offline test suite needs no key, no network and no containers.
 
-| Setting | Local value |
-|---|---|
-| `DEMO_MODE` | `true` |
-| `LLM_PROVIDER` | `fake` |
-| `VECTOR_STORE` | `memory` |
-| `USE_FAKE_REDIS` | `true` in tests |
-| `DATABASE_URL` | `sqlite+aiosqlite:///./data/support.db` |
-| `CHECKPOINT_DB_PATH` | `./data/checkpoints.db`, or `:memory:` in tests |
-| Frontend | `:3000` |
-| Backend | `:8000` |
+| Setting | Docker stack | Offline tests |
+|---|---|---|
+| `DEMO_MODE` | `true` | `true` |
+| `LLM_PROVIDER` | `euron` (from `.env`) | `fake` |
+| `EMBEDDING_PROVIDER` | `euron`, `euri-embedding`, 1024 dimensions | `fake`, 384 dimensions |
+| `VECTOR_STORE` | `qdrant` (local container, no key) | `memory` |
+| `DATABASE_URL` | `postgresql+asyncpg://…@postgres:5432/clouddesk` | temporary SQLite file |
+| Redis | real (`USE_FAKE_REDIS=false`) | fakeredis |
+| `CHECKPOINT_DB_PATH` | `/app/data/checkpoints.db` (volume) | `:memory:` |
+| Frontend | `:3000` | n/a |
+| Backend | `:8000` (`BACKEND_PORT` moves it) | n/a |
 
-Compose is `frontend → backend → redis, qdrant`, with `depends_on: service_healthy`, named volumes, and `restart: unless-stopped`.
+Compose is `frontend → backend → postgres, redis, qdrant`, with `depends_on: service_healthy`, named volumes, and `restart: unless-stopped`. On start the backend creates its tables, seeds the demo data and fills Qdrant when it is empty.
 
 Images: backend `python:3.12-slim`, non-root user `app`, `HEALTHCHECK` on `/health/live`, build context the repo root. Frontend `node:22-alpine`, `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`.
 
@@ -603,22 +604,23 @@ Dev [icon: monitor, color: blue, label: "Developer browser"]
 Compose [icon: docker, color: blue, label: "Docker Compose"] {
   Web [icon: next, label: "frontend :3000"]
   Api [icon: fastapi, label: "backend :8000"]
+  PgC [icon: postgres, label: "postgres"]
   RedisC [icon: redis, label: "redis"]
   QdrantC [icon: qdrant, label: "qdrant"]
   Vol [icon: docker, label: "named volumes"]
 }
 
-HostFiles [icon: sqlite, color: grey, label: "SQLite files: backend-data volume at /app/data in Compose, host data/ under make backend"] {
-  SupportDB [icon: sqlite, label: "support.db"]
+HostFiles [icon: sqlite, color: grey, label: "Checkpoint file: backend-data volume at /app/data"] {
   Checkpoint [icon: sqlite, label: "checkpoints.db"]
 }
 
 Dev > Web: "HTTPS localhost"
 Web > Api: "REST"
 Api > RedisC: "cache and rate limit"
-Api > QdrantC: "vectors when not memory"
-Api > SupportDB: "tickets"
+Api > QdrantC: "knowledge vectors"
+Api > PgC: "tickets, customers, approvals, audit"
 Api > Checkpoint: "paused graphs"
+PgC > Vol
 RedisC > Vol
 QdrantC > Vol
 ```
@@ -627,21 +629,22 @@ QdrantC > Vol
 flowchart LR
   Dev[Developer browser] --> Web["frontend :3000"]
   Web --> Api["backend :8000"]
+  Api --> PgC[postgres]
   Api --> RedisC[redis]
   Api --> QdrantC[qdrant]
-  Api --> SupportDB["support.db (backend-data volume in Compose)"]
-  Api --> Checkpoint["checkpoints.db (same volume)"]
-  RedisC --> Vol[named volumes]
+  Api --> Checkpoint["checkpoints.db (backend-data volume)"]
+  PgC --> Vol[named volumes]
+  RedisC --> Vol
   QdrantC --> Vol
 ```
 
-Offline tests skip Compose. They use SQLite, fakeredis, the in-memory vector store, the fake LLM, and an in-memory checkpointer.
+Offline tests skip Compose. They use SQLite, fakeredis, the in-memory vector store, the fake LLM, and an in-memory checkpointer. Row-level security is applied to a real Postgres in a separate check, but the API does not yet set `app.tenant_id`, so at runtime the repository filter is the boundary.
 
 ---
 
 ## 8. Cloud infrastructure
 
-The same Terraform module set is composed from `deployment/aws`, `deployment/azure`, and `deployment/gcp`: networking, container-registry, secrets, compute, load-balancer, monitoring, and redis. Environments are var-files under `environments/{dev,staging,prod}/`. They are not copies of the modules. Remote state uses a git-ignored `backend.hcl`. Secrets enter only as `TF_VAR_*`.
+Terraform is one root per cloud, `deployment/aws`, `deployment/azure` and `deployment/gcp`, each with the same concerns in flat files: networking, container registry, secrets, compute, load balancing, monitoring and Redis (Terraform modules cannot be shared across providers, so what is shared is the per-environment var-files, the scripts and the workflows). Environments are var-files, `deployment/environments/{dev,staging,prod}.tfvars`, not copies of the code. Remote state uses a git-ignored `backend.hcl`. Secrets enter only as `TF_VAR_*`. The roots are validated with `make terraform-validate` and never applied. They do not yet provision the application database, a frontend service, HTTPS or Qdrant; AWS (ECR, ECS Fargate, ALB) is the first target.
 
 These products stay outside every cloud account: **Supabase** (Postgres and JWT), **Qdrant Cloud**, and the **LLM API**.
 

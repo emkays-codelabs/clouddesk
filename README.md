@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 16:38 +0530_
+_Last updated: 2026-11-27 21:28 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -126,7 +126,7 @@ Nothing is deployed. Not built or not run: a real cloud deployment (the Terrafor
 | Backend | FastAPI, Pydantic v2, async SQLAlchemy 2 |
 | Orchestration | LangGraph workflow coordinating six specialist agents |
 | Retrieval | Hybrid semantic and keyword search with reranking and cited evidence |
-| Data | PostgreSQL (SQLite for the demo), Redis (fakeredis offline), Qdrant (in memory offline) |
+| Data | PostgreSQL, Redis and Qdrant, all running in Docker (SQLite, fakeredis and an in-memory store are for the offline tests only) |
 | Safety | Prompt-injection defence, output checks, role-based access, audit log |
 | Delivery | Docker, Terraform for AWS, Azure and GCP, GitHub Actions |
 
@@ -171,7 +171,7 @@ All 14 phases are built and checked locally (84 of 84 tasks). The task list is i
 ### 5.2 Install and run
 
 ```bash
-make setup              # install packages and set the git hooks path (create .env by hand, see below)
+make setup              # install packages and set the git hooks path (copy .env.example to .env, see below)
 make backend            # start the API on http://localhost:8000 (reloads when you edit)
 curl http://localhost:8000/health/ready
 ```
@@ -197,7 +197,7 @@ You can activate the virtual environment instead of typing `uv run` before each 
 source .venv/bin/activate
 ```
 
-Keep settings and secrets in a local `.env` file that you create by hand. It is ignored by git, and there is no committed template: the variables are listed in section 10.1 of `CLAUDE.md`. The defaults need no `.env` at all. Never commit real keys.
+Copy the placeholders-only template and add your own key: `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`). `.env` is ignored by git; `.env.example` is committed and holds no secret. The variables are listed in section 10.1 of `CLAUDE.md`, and a test keeps the template, that list and `Settings` in step. The only value you must supply is `LLM_API_KEY` (Euron); also set a long random `JWT_SECRET`. The offline test suite needs no `.env` at all. Never commit real keys.
 
 ### 5.5 Run with containers
 
@@ -207,7 +207,9 @@ With Docker running, from the repository root:
 docker compose up --build
 ```
 
-The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store) against a real Redis container; Qdrant starts and reports healthy, but the backend does not use it yet. The file is checked statically, and on 2026-11-27 the stack was also built and brought up once (see `MEMORY.md`). Compose values win over `.env`, so a real language model needs the `LLM_*` lines in `docker-compose.yml` changed as well.
+The stack is `frontend` (:3000) to `backend` (:8000) to `postgres`, `redis` and `qdrant`, with named volumes, and every service is real: the backend uses PostgreSQL through `asyncpg`, real Redis and a local Qdrant container (no key needed). The chat model and the embeddings are Euron, chosen in `.env` (`LLM_PROVIDER=euron`, `EMBEDDING_PROVIDER=euron`). On start the backend creates its tables, seeds the demo data and fills Qdrant when it is empty. Row-level security is written and was tested against Postgres, but it is not enforced at runtime yet (the repository filter is the boundary). The compose file is checked statically; the stack was brought up and tested end to end on 2026-11-27 (see `MEMORY.md`). Compose values win over `.env` for the keys it sets.
+
+Check a running stack with `BASE_URL=http://localhost:8000 make smoke`, and drive it in a visible browser with `cd frontend && npm run e2e` (Playwright). `make terraform-validate` checks the AWS, Azure and GCP Terraform offline; nothing is applied.
 
 If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_PORT` (default 3000) set the host side of each mapping, the browser-facing API URL and the allowed CORS origin:
 
