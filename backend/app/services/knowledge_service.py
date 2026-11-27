@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from app.core.config import get_settings
+from app.core.injection_guard import drop_injected_chunks
 from app.schemas.knowledge import (
     Article,
     ArticleDetail,
@@ -30,6 +31,9 @@ from rag.ingest import IngestResult, get_vector_store, ingest, load_documents
 from rag.retriever import Document, HybridRetriever
 
 logger = logging.getLogger(__name__)
+
+# Retrieved chunks are untrusted too: a chunk carrying an instruction never reaches evidence (N4).
+CHUNK_FILTER = drop_injected_chunks
 
 _articles: dict[str, SourceArticle] = {}
 _documents: list[Document] = []
@@ -117,6 +121,7 @@ async def search(request: SearchRequest) -> SearchResponse:
         _embeddings(),
         _documents,
         cache=RedisRetrievalCache(),
+        chunk_filter=CHUNK_FILTER,
     )
     result = await retriever.retrieve(request.query, mode=request.mode, top_k=request.top_k)
     return SearchResponse(
