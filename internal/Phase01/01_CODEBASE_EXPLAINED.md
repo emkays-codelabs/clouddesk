@@ -90,7 +90,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 - **Purpose.** Hold every configurable value in one typed object.
 - **Receives.** Environment variables and an optional local `.env` file.
 - **Does.** Reads and checks values, hides secrets when the settings are printed, and is created once and reused.
-- **Produces.** A `Settings` object with 27 fields (28 today: `LLM_BASE_URL` was added in a later phase).
+- **Produces.** A `Settings` object with 27 fields (33 today: `LLM_BASE_URL`, the model tiers, `LLM_PRICING` and the embedding settings were added in later phases).
 - **Talks to.** Everything that needs configuration.
 
 ### Logging
@@ -122,7 +122,7 @@ Phase 1 contains eight parts. Think of the service as a small office with a fron
 
 The Phase 1 application code is 507 lines across seven files today (it was 379 when the phase ended, because later phases added to `config.py`, `logging.py` and `main.py`), plus a 149-line test harness (106 when the phase ended). The line counts in the headings below are today's. Paths are relative to the project root.
 
-### `backend/app/main.py` (102 lines today; 33 in Phase 1, later phases added the seed hook and the auth, tickets, customers, dashboard, audit, settings, knowledge and mcp routers, and the knowledge indexing at startup)
+### `backend/app/main.py` (105 lines today; 33 in Phase 1, later phases added the seed hook and the auth, tickets, customers, dashboard, audit, settings, knowledge and mcp routers, and the knowledge indexing at startup)
 
 | Item | Explanation |
 |---|---|
@@ -138,7 +138,7 @@ The Phase 1 application code is 507 lines across seven files today (it was 379 w
 
 The order matters. Each `add_middleware` call wraps the previous layers, so the *last* one added is the *outermost*. CORS is added last, so it sees the request first and the response last.
 
-### `backend/app/core/config.py` (104 lines)
+### `backend/app/core/config.py` (107 lines)
 
 | Item | Explanation |
 |---|---|
@@ -224,7 +224,7 @@ The reasons name the setting at fault but never echo a URL, password or key. Thi
 | File | What it is |
 |---|---|
 | `Makefile` | Five commands: `setup`, `backend`, `test`, `lint`, `format`. Every recipe starts with `uv` or `git`, so it runs the same in cmd, PowerShell and a Unix shell. |
-| `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) | The 27 variables of Phase 1 (28 today) with safe placeholders, so a new developer knows what to set. No real key is in it. |
+| `.env.example` (removed, then re-created 2026-11-27 as a placeholders-only template) | The 27 variables of Phase 1 (33 today) with safe placeholders, so a new developer knows what to set. No real key is in it. |
 | `pyproject.toml` | Python 3.12 or newer, the dependency list, and the settings for pytest and the linter |
 | `.gitattributes` | Forces the Makefile to use Unix line endings, because `make` rejects carriage returns |
 | `backend/app/__init__.py` | Holds the version, `0.1.0` |

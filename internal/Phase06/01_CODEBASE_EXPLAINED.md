@@ -91,7 +91,7 @@ Analogy: a bank counter. The teller (registry) will not hand over cash without a
 
 ## E. End-to-end execution flow
 
-There is no workflow yet; today the callers are tests. Example: a refund of 40 dollars for ticket CD-1002, run twice.
+There is no workflow yet at the end of this phase, so the callers are tests (Phase 10 later made the graph the caller). Example: a refund of 40 dollars for ticket CD-1002, run twice.
 
 1. The caller asks the registry to run `create_refund_request` with the customer id, subscription id, amount and reason, plus `approved=True`, a ticket id, a workflow run id, and a list of trusted values (from the subscription record).
 2. The registry asks the policy. Refunds need approval, and approval was given. (With `approved=False` the answer is `approval_required` and nothing happens.)

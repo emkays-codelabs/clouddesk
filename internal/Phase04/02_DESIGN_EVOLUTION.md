@@ -209,3 +209,10 @@ Errors: missing or bad token gives 401; viewer gives 403; unknown id gives 404 `
 ## I. Phase completion summary
 
 Final architecture: section D. New components: five routers, five services, new schema modules, 11 new repository methods (`get_many`, `latest_for_ticket`, `list_for_ticket`, `next_ticket_number`, and the seven aggregates), a corrected contract. Important decisions: section F. Verified: 807 tests and a clean `ruff check .` (run 2026-11-22). Outstanding: section H. Carried into later phases: the services and schemas the workflow will reuse, the contract as the source for the frontend types, and the open questions on audit visibility and a status state machine.
+
+
+---
+
+## Later additions to the support API, 2026-11-27
+
+While the console was built (Phase 12) the ticket list gained four optional query filters beyond status and severity: `channel`, `assigned_to`, `approval_status` and `escalated` (`backend/app/api/tickets.py`, passed through `backend/app/services/ticket_service.py`). `TicketRepository` gained the tenant-scoped aggregates `count_by_status` and `count_by_channel` (`backend/app/repositories/tickets.py`), which the isolation test now covers. Tests: `tests/api/test_ticket_filters.py` and the repository isolation tests. The Phase 4 figures above are as of the phase's own run (2026-11-22) and are unchanged.

@@ -22,9 +22,9 @@ Without a graph the agents are parts on a bench. The workflow gives support agen
 | `agents/graph.py` | Builds the graph, routing functions and `GRAPH_NODES` / `GRAPH_EDGES`. |
 | `agents/nodes/supervisor.py` | Understand, classify and the final summary. |
 | `agents/nodes/investigate.py` | Customer context, knowledge retrieval, troubleshooting. |
-| `agents/nodes/decision.py` | Resolution planning, risk check and execution. |
+| `agents/nodes/decision.py` | Resolution planning, the risk check, execution and the memory update. |
 | `agents/nodes/human_approval.py` | Pauses with `interrupt()`. |
-| `agents/nodes/escalation.py` | Escalation and the memory update. |
+| `agents/nodes/escalation.py` | The escalation node (writes the escalation through the tool registry). |
 | `agents/nodes/common.py` | Shared node plumbing: tracer, tool-call recording, failure handling. |
 | `backend/app/core/observability.py` | `WorkflowTracer` (never raises). |
 | `backend/app/services/workflow_service.py` | Run lifecycle, resume, state persistence. |

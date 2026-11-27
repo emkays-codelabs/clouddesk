@@ -50,7 +50,7 @@ No worker process, so a restart loses a run in flight. Only the 12-step and 0.6-
 
 ## I. Completion summary
 
-Seven tasks done; 1320 backend tests pass offline; the graph ran end to end in Docker on the real model.
+Seven tasks done; 1320 backend tests passed offline when the phase closed (1,406 by the end of the project); the graph ran end to end in Docker on the real model.
 
 
 ---

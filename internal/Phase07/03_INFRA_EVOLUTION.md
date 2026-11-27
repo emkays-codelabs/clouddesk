@@ -48,7 +48,7 @@ Unchanged. The guards are synchronous pure functions with no I/O, so they add no
 
 ## K. Observability and troubleshooting
 
-No logging or events yet: a flagged chunk is dropped silently. Planned (Phase 10): record guard flags in `workflow_events`. To troubleshoot a missing search result today, call `scan_for_injection` on the chunk text.
+No logging or events yet: a flagged chunk is dropped silently. Phase 10 later recorded the injection flag on the workflow state and its events. To troubleshoot a missing search result, call `scan_for_injection` on the chunk text.
 
 ## L. Final infrastructure architecture
 

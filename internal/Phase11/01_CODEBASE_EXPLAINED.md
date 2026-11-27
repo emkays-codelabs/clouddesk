@@ -22,7 +22,7 @@ The graph's `human_approval` node calls `interrupt()`. The service layer then cr
 | `agents/nodes/escalation.py` | Escalation and the post-rejection path. |
 | `agents/specialists/escalation.py` | `decide`, `record`, `run`: rules first, model for grey areas. |
 | `backend/app/services/approval_service.py` | Creates, decides and resumes approvals. |
-| `backend/app/api/approvals.py` | List, approve, reject. Agent role required. |
+| `backend/app/api/approvals.py` | List, approve and reject approvals, and list and update escalations (`/escalations`). Agent role required for every write. |
 | `backend/app/schemas/approval.py` | Approval and escalation schemas. |
 | `backend/app/tools/policy.py` | Which tools need approval. |
 | `backend/app/tools/idempotency.py` | One refund per key, even after a retry or resume. |

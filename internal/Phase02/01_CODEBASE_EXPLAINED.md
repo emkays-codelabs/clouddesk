@@ -221,7 +221,7 @@ Seven files in Phase 2 (`profiles.json`, three demo users, joined in Phase 3): `
 | Execution point | Startup lifespan and `make seed` |
 | Interview explanation | "It checks the whole box is in order, then files it all in one go, and never files it twice." |
 
-### `backend/app/main.py` (60 lines when this phase was written; 96 today, after later phases mounted their routers)
+### `backend/app/main.py` (60 lines when this phase was written; 105 today, after later phases mounted their routers)
 
 The Phase 1 factory now has a `lifespan` that runs `create_tables()` and `bootstrap_demo_data()` before serving, and `dispose_engine()` on shutdown. A database failure is logged as the exception class and a redacted URL, not swallowed silently, and not allowed to stop the process, so `/health/ready` can still say "degraded".
 

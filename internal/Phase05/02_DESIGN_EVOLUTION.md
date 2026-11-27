@@ -193,7 +193,7 @@ Scalability is not demonstrated: no load test, and the index is per process.
 - BM25 is rebuilt each time `search` builds a retriever; cheap at 75 chunks, not at scale.
 - The cache is not cleared by reindex, and keys embed the raw query text.
 - Qdrant has been run only against a stub; payload filters, `clear()` and `count()` on a real server are unverified.
-- Retrieved chunks are not scanned for instructions yet (Phase 7); articles are trusted data today.
+- Retrieved chunks are not scanned for instructions yet (Phase 7); articles are trusted data at the end of this phase (Phase 7 added the screening).
 - No similar-cases search (F6), no evidence use by agents (Phases 9 and 10), no knowledge screen (Phase 12).
 - Recommendations, not built: a real embedding provider behind `Embeddings`, cache invalidation on reindex, a persisted BM25 index, per-chunk freshness.
 

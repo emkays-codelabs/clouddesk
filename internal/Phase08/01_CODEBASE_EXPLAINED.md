@@ -61,7 +61,7 @@ The designed flow (the graph nodes that call it are planned, Phase 10):
 5. The caller commits the session. Calling the same resolution again changes nothing, because the note text is deterministic and duplicates are skipped.
 6. On an erasure request, `erase_customer_memory` lists every row id, deletes those vectors, then deletes the rows.
 
-Today steps 1 to 6 run only inside tests.
+At the end of this phase steps 1 to 6 run only inside tests (the `customer_context` and `memory_update` nodes of Phase 10 later called them).
 
 ## F. Technical concepts explained simply
 

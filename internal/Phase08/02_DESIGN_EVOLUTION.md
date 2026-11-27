@@ -76,7 +76,7 @@ Callers on the live path: none yet. The graph nodes are planned (Phase 10). Sinc
 
 ## E. End-to-end execution and data flow
 
-Designed: recall at customer context, record at memory update, erasure on request. Today only tests drive it; the sequence is in [the codebase document, section E](./01_CODEBASE_EXPLAINED.md).
+Designed: recall at customer context, record at memory update, erasure on request. At the end of this phase only tests drive it (the Phase 10 nodes later called it); the sequence is in [the codebase document, section E](./01_CODEBASE_EXPLAINED.md).
 
 ## F. Architectural decisions and trade-offs
 

@@ -136,7 +136,7 @@ Security boundaries: writes happen only through the registry and need `approved=
 
 There is no workflow yet, so the representative request is a test-driven call. Example: an approved refund.
 
-1. A caller (today a test) runs `registry.execute("create_refund_request", args, approved=True, ticket_id, workflow_id, trusted_values)`.
+1. A caller (a test in this phase; the graph from Phase 10) runs `registry.execute("create_refund_request", args, approved=True, ticket_id, workflow_id, trusted_values)`.
 2. Policy: refunds need approval (default), and `approved` is true, so it continues. Without approval the result is `ok=False`, `approval_required`, and nothing is written.
 3. Provenance: `amount`, `customer_id` and `subscription_id` must be in `trusted_values` (taken from the subscription record, not the ticket text). Otherwise `provenance_failed`.
 4. `DbIdempotencyStore.requires_workflow` is true, so a missing workflow id gives `workflow_id_required`.

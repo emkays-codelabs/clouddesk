@@ -86,7 +86,7 @@ Security boundary: untrusted text (tickets, chunks) is screened and delimited; r
 
 ## E. End-to-end execution and data flow
 
-The only live path today is search: `knowledge_service.search` builds the retriever with `CHUNK_FILTER`, which drops flagged chunks on both the vector and the keyword ranking before fusion. All other flows are test-driven; the designed flow is in [the codebase document, section E](./01_CODEBASE_EXPLAINED.md).
+At the end of this phase the only live path is search (the Knowledge agent and the graph of Phases 9 and 10 later joined it): `knowledge_service.search` builds the retriever with `CHUNK_FILTER`, which drops flagged chunks on both the vector and the keyword ranking before fusion. All other flows are test-driven; the designed flow is in [the codebase document, section E](./01_CODEBASE_EXPLAINED.md).
 
 ## F. Architectural decisions and trade-offs
 
