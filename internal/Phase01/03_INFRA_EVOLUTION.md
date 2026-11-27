@@ -6,7 +6,7 @@
 >
 > **Related documents:** [codebase explanation](./01_CODEBASE_EXPLAINED.md) and [system design evolution](./02_DESIGN_EVOLUTION.md).
 >
-> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the application programming interface (API) title ("CloudDesk artificial intelligence (AI) API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
+> **Updated 2026-11-03 (task P1-18).** Facts that changed after this phase was written were brought up to date: the application programming interface (API) title ("CloudDesk AI API"), the size of the test harness (106 lines), the whole-suite test count (346, of which 97 belong to Phase 1) and the range of later tooling and documentation tasks. The architecture and behaviour described here are unchanged.
 
 ---
 

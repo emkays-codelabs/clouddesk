@@ -992,7 +992,7 @@ Jobs are idempotent; retries with exponential backoff (max 5); dead-letter list 
 | Dataset | Size | Measures |
 |---|---|---|
 | `triage_golden.jsonl` | 500 | category/severity/intent accuracy |
-| `retrieval_golden.jsonl` | 300 queries + relevant chunk ids | Recall@10, nDCG@5, Monthly recurring revenue (MRR) |
+| `retrieval_golden.jsonl` | 300 queries + relevant chunk ids | Recall@10, nDCG@5, Mean reciprocal rank (MRR) |
 | `resolution_golden.jsonl` | 200 end-to-end scenarios | correct tool/args, faithfulness, answer relevance, resolution correctness |
 | `escalation_cases.jsonl` | 150 | escalation precision/recall |
 | `redteam_injection.jsonl` | 200 | injection-to-action success = 0, data leakage = 0 |

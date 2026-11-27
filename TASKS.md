@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 21:56 +0530_
+_Last updated: 2026-11-27 22:17 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -246,7 +246,7 @@ The longest dependency chain is 16 tasks long.
 
 **P1-13 · Professional README**
 - **Needs:** `P1-12`
-- **Build:** The README takes the product identity the owner chose: title CloudDesk artificial intelligence (AI), category AI-Powered Customer Support
+- **Build:** The README takes the product identity the owner chose: title CloudDesk AI, category AI-Powered Customer Support
   & Ticket Investigation Platform, tagline "Intelligent Resolution. Human-Controlled Decisions." It gains a numbered table of
   contents, numbered sections and subsections in sequence, a back-to-top link ending every section, and plainer wording. The
   repository, package and code keep the name `clouddesk`, and the README says so.

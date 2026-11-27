@@ -387,7 +387,7 @@ Deployment units are identical containers; Kubernetes is the default target for 
 | Containers (K8s) | Elastic Kubernetes Service (EKS) | Azure Kubernetes Service (AKS) | Google Kubernetes Engine (GKE) |
 | Containers (serverless) | ECS Fargate / App Runner | Azure Container Apps | Cloud Run |
 | Container registry | Elastic Container Registry (ECR) | Azure Container Registry (ACR) | Artifact Registry |
-| PostgreSQL | Relational Database Service (RDS) / Aurora PostgreSQL | Azure Database for PostgreSQL Flexible Server | Cloud Structured Query Language (SQL) for PostgreSQL / AlloyDB |
+| PostgreSQL | Relational Database Service (RDS) / Aurora PostgreSQL | Azure Database for PostgreSQL Flexible Server | Cloud SQL for PostgreSQL / AlloyDB |
 | Redis | ElastiCache for Redis | Azure Cache for Redis / Azure Managed Redis | Memorystore for Redis |
 | Vector DB | Qdrant on EKS · OpenSearch · pgvector | Qdrant on AKS · Azure AI Search · pgvector | Qdrant on GKE · Vertex AI Vector Search · pgvector |
 | Object storage | S3 | Blob Storage | Cloud Storage |

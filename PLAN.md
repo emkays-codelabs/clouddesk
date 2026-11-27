@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 21:56 +0530_
+_Last updated: 2026-11-27 22:17 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -228,7 +228,7 @@ Tasks: `TASKS.md`, Phase 2.
 
 **Files.** `backend/app/models/entities.py`, `backend/app/schemas/common.py`, `backend/app/core/database.py`, `backend/app/services/seed_service.py`, `backend/app/repositories/`, `database/schema.sql`, `database/rls_policies.sql`, `database/seed.sql`, `database/migrations/`, `sample_data/*.json`, `sample_data/knowledge_base/*.md`, seed bootstrap in the lifespan.
 
-**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows. Every data table has a not-null `tenant_id` and an row-level security (RLS) policy keyed on it, and a cross-tenant read returns nothing (D1).
+**Tests.** Startup on an empty SQLite file with `DEMO_MODE=true` loads 13 tickets and 8 customers. Models and `schema.sql` agree on tables and column types. A second startup does not duplicate rows. Every data table has a not-null `tenant_id` and a row-level security (RLS) policy keyed on it, and a cross-tenant read returns nothing (D1).
 
 **Demo checkpoint.** `make seed` loads sample data. Ticket `CD-1002` and customer records are readable from the database.
 

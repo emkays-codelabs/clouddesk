@@ -98,7 +98,7 @@ Worked example, `CD-1005` ("Suspicious logins, possible breach"): `rule_category
 - **Groundedness by token overlap, not a judge model.** Offline, free and testable. Weakness: it can pass a reply that reuses the right words with a wrong meaning, and it can fail an honest paraphrase. A judge model is a future recommendation.
 - **Leaks are not revised.** A groundedness miss gets one revise; a secret, internal link or other customer's data escalates at once.
 - **P7-4 before P7-3.** Output validation imports the secret patterns, so the scrub was built first. This differs from the task order and is recorded in `MEMORY.md`.
-- **`CD-1001` is not escalated by rule.** The enterprise-outage rule needs explicit outage words; an single sign-on (SSO) failure is raised to `high` severity but left to the model and to Phase 9 (the active-incident check). This is a judgement call, not a specification quote.
+- **`CD-1001` is not escalated by rule.** The enterprise-outage rule needs explicit outage words; a single sign-on (SSO) failure is raised to `high` severity but left to the model and to Phase 9 (the active-incident check). This is a judgement call, not a specification quote.
 
 ## H. Error handling and failure scenarios
 
@@ -114,7 +114,7 @@ Worked example, `CD-1005` ("Suspicious logins, possible breach"): `rule_category
 |---|---|---|
 | `tests/unit/test_rules.py` | 28 | Every demo ticket has the expected category, escalation team and severity floor; severity never falls; the rule table names a team per area; legal and enterprise-outage cases |
 | `tests/unit/test_injection.py` | 22 | Each attack family is flagged; `CD-1013` is flagged and wrapped; no other demo ticket and none of the 15 knowledge articles is flagged; closing tags are neutralised; a poisoned chunk is dropped from evidence; the service wires the guard |
-| `tests/unit/test_scrub.py` | 24 | Cards (Luhn), keys, tokens, passwords, JavaScript Object Notation (JSON) Web Tokens (JWTs) removed; clean text and non-card numbers unchanged; idempotent |
+| `tests/unit/test_scrub.py` | 24 | Cards (Luhn), keys, tokens, passwords, JSON Web Tokens (JWTs) removed; clean text and non-card numbers unchanged; idempotent |
 | `tests/unit/test_output_validation.py` | 24 | Internal uniform resource locators (URLs), secrets and other customers' data blocked as risk `high`; unsupported claims score under 0.8; revise once then escalate |
 
 Run: `uv run python -m pytest -q` (or `.venv/Scripts/python.exe -m pytest -q`). Result on 2026-11-27: 1072 passed; `ruff check .` and `ruff format --check .` clean. Each task had one deliberate break that turned a test red and was restored. Untested: behaviour against real model output, real tickets beyond the 13, and any live graph.

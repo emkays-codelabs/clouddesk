@@ -1,7 +1,7 @@
 # Architecture decision records
 
 An architecture decision record (ADR) says what was decided, why, and what follows from it, in one short
-file. This folder holds the ones that shape CloudDesk artificial intelligence (AI). `CLAUDE.md` still wins when it disagrees with a
+file. This folder holds the ones that shape CloudDesk AI. `CLAUDE.md` still wins when it disagrees with a
 record, and a decision that changes the plan is made in `CLAUDE.md` first.
 
 ## How to add one

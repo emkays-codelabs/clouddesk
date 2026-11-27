@@ -38,7 +38,7 @@ flowchart LR
     KB["sample_data/knowledge_base, 15 files, unread"]
 ```
 
-Limitations: no search at all; nothing could answer "which article explains an multi-factor authentication (MFA) lockout".
+Limitations: no search at all; nothing could answer "which article explains a multi-factor authentication (MFA) lockout".
 
 ---
 

@@ -1,6 +1,6 @@
 # CloudDesk glossary: abbreviations and labels
 
-Every abbreviation used in this repository's documents, written out. The documents themselves write an abbreviation in full the first time it appears in a file, with the abbreviation in brackets; this page is the one place to look one up. Code, file names, HTTP methods and product names (for example Next.js, LangGraph, Qdrant) are not abbreviations and are not listed.
+Every abbreviation used in this repository's documents, written out. The documents themselves write an abbreviation in full the first time it appears in a file, with the abbreviation in brackets; this list is the one place to look one up. Code, file names, HTTP methods and product names (for example Next.js, LangGraph, Qdrant) are not abbreviations and are not listed.
 
 ## Abbreviations
 
@@ -83,7 +83,7 @@ Every abbreviation used in this repository's documents, written out. The documen
 | MFA | Multi-factor authentication |
 | MIME | Multipurpose Internet Mail Extensions |
 | ML | Machine learning |
-| MRR | Monthly recurring revenue |
+| MRR | Mean reciprocal rank |
 | MTTR | Mean time to resolution |
 | MVP | Minimum viable product |
 | NAT | Network address translation |

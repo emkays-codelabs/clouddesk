@@ -57,7 +57,7 @@ Analogy: a building with a reception desk. The desk issues badges (login), the d
 | Audit middleware | The guest book | Every non-read request | A row in `audit_logs` | No record of changes (N6) |
 | Request id middleware (Phase 1) | The tracking number | Every request | `X-Request-ID` on the response and in logs | The audit row and logs could not be tied to a request |
 
-Technical terms. **JWT** (JavaScript Object Notation (JSON) Web Token): a small text that carries claims (who, role, expiry) and a signature made with a secret; anyone with the secret can check it was not altered. **Middleware**: code that wraps every request. **Fixed window**: counting requests per calendar minute.
+Technical terms. **JWT** (JSON Web Token): a small text that carries claims (who, role, expiry) and a signature made with a secret; anyone with the secret can check it was not altered. **Middleware**: code that wraps every request. **Fixed window**: counting requests per calendar minute.
 
 ---
 

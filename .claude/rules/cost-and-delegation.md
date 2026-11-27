@@ -4,7 +4,7 @@
 - Pick the model at the top of a session. Each model has its own cache, so `/model` mid-task makes the next
   request uncached. Default is Sonnet. Opus runs only inside `planner` and `opus-consultant`.
 - `CLAUDE.md`, rules and agent files load at session start. An edit applies after `/clear`, `/compact` or a
-  restart, so make those edits between tasks. Do not connect or remove an Model Context Protocol (MCP) server, or deny a whole tool,
+  restart, so make those edits between tasks. Do not connect or remove a Model Context Protocol (MCP) server, or deny a whole tool,
   mid-session: both rebuild the cache.
 - Delegate instead of reading long output yourself:
 

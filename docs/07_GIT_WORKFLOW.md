@@ -1,8 +1,8 @@
 # CloudDesk AI: Git & GitHub Workflow Guide
 
-_Last updated: 2026-11-27 21:56 +0530_
+_Last updated: 2026-11-27 22:17 +0530_
 
-CloudDesk artificial intelligence (AI) — AI-Powered Customer Support & Ticket Investigation Platform
+CloudDesk AI — AI-Powered Customer Support & Ticket Investigation Platform
 
 *Version 1.2*
 

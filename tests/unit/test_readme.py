@@ -209,3 +209,28 @@ class TestItPointsAtTheRealFolders:
 
     def test_it_says_the_routes_in_the_api_contract_are_built(self):
         assert "routes in the contract are built" in README
+
+
+class TestGlossary:
+    """The README glossary and docs/12_GLOSSARY.md list the same abbreviations."""
+
+    @staticmethod
+    def _rows(text: str, start: str, end: str) -> list[str]:
+        block = text.split(start, 1)[1].split(end, 1)[0]
+        return [
+            ln
+            for ln in block.splitlines()
+            if ln.startswith("| ") and not ln.startswith("| Abbreviation")
+        ]
+
+    def test_the_readme_has_a_glossary_section_in_its_contents(self):
+        assert "[Glossary](#8-glossary)" in README
+        assert "## 8. Glossary" in README
+
+    def test_the_readme_and_the_glossary_document_list_the_same_abbreviations(self):
+        glossary = (ROOT / "docs" / "12_GLOSSARY.md").read_text(encoding="utf-8")
+        readme_rows = self._rows(README.replace("\r\n", "\n"), "### 8.1 Abbreviations", "### 8.2")
+        doc_rows = self._rows(
+            glossary.replace("\r\n", "\n"), "## Abbreviations", "## Label schemes"
+        )
+        assert readme_rows and readme_rows == doc_rows

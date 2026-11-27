@@ -72,7 +72,7 @@ flowchart LR
 
 | Check | Status |
 |---|---|
-| Stack built and brought up in Docker, 2026-11-27 | Backend, frontend, redis, qdrant healthy; `/health/ready` ready with real Redis; demo login, 13 tickets, an multi-factor authentication (MFA) knowledge search and frontend `/dashboard` returned 200; ran on port 18000 through an override because 8000 was busy |
+| Stack built and brought up in Docker, 2026-11-27 | Backend, frontend, redis, qdrant healthy; `/health/ready` ready with real Redis; demo login, 13 tickets, a multi-factor authentication (MFA) knowledge search and frontend `/dashboard` returned 200; ran on port 18000 through an override because 8000 was busy |
 | `docker compose config -q` after the port change | Passed |
 | Image rebuilt with the `agents/` and `memory/` COPY lines | **Not run** |
 | Compose with `BACKEND_PORT` and `FRONTEND_PORT` set, brought up | **Not run** |
