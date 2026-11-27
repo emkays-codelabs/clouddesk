@@ -1,12 +1,20 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 21:28 +0530_
+_Last updated: 2026-11-27 21:45 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
 > CloudDesk AI is an AI-Powered Customer Support & Ticket Investigation Platform. A ticket arrives,
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
+
+> An AI-powered solution developed by Saffronyx.
+
+**Built by Saffronyx — AI Product & Engineering Studio**
+
+Designing Intelligent Systems That Last.
+
+🌐 https://saffronyx.in
 
 **Status**: All 14 phases and all 84 tasks are done and validated locally: the backend, the six-agent LangGraph workflow with human approval, the console and landing page, the evaluation thresholds, Docker and Compose, and validated (never applied) Terraform for AWS, Azure and GCP. Not done: any real cloud deployment, any GitHub Actions run, Postgres and RLS against a live database, the approval timeout and the PRD items listed in `CLAUDE.md` section 20. **Version**: 0.1.0
 
@@ -33,7 +41,7 @@ named `clouddesk`.
    - [6.2 Working with Claude Code](#62-working-with-claude-code)
    - [6.3 Branches and pull requests](#63-branches-and-pull-requests)
 7. [Where to find things](#7-where-to-find-things)
-8. [Author](#8-author)
+8. [Ownership & Attribution](#8-ownership--attribution)
 
 ## 1. About CloudDesk AI
 
@@ -290,8 +298,14 @@ builds a single-tenant first version of the same architecture, and `docs/design/
 
 [↑ Back to top](#clouddesk-ai)
 
-## 8. Author
+## 8. Ownership & Attribution
 
-Built by **Mahesh Kumar**, Founder & CEO of **SaffronyxAI.in**.
+This project is developed and maintained by **Saffronyx**.
+
+**Founder:** Mahesh Kumar  
+**Organization:** Saffronyx — AI Product & Engineering Studio  
+**Website:** https://saffronyx.in
+
+© 2026 Saffronyx. All rights reserved.
 
 [↑ Back to top](#clouddesk-ai)
