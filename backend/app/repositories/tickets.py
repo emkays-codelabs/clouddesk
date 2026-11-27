@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 from app.models.entities import Ticket, TicketMessage
 from app.repositories.base import ScopedRepository, contains_any
-from app.schemas.common import Category, Severity, TicketStatus
+from app.schemas.common import ApprovalStatus, Category, Channel, Severity, TicketStatus
 
 TICKET_PREFIX = "CD-"
 FIRST_TICKET_NUMBER = 1001
@@ -45,12 +45,24 @@ class TicketRepository(ScopedRepository[Ticket]):
         search: str | None = None,
         page: int = 1,
         page_size: int = 20,
+        channel: Channel | None = None,
+        assigned_to: str | None = None,
+        approval_status: ApprovalStatus | None = None,
+        escalated: bool | None = None,
     ) -> tuple[list[Ticket], int]:
         stmt = self._select().order_by(Ticket.created_at.desc())
         if status is not None:
             stmt = stmt.where(Ticket.status == status)
         if severity is not None:
             stmt = stmt.where(Ticket.severity == severity)
+        if channel is not None:
+            stmt = stmt.where(Ticket.channel == channel)
+        if assigned_to:
+            stmt = stmt.where(Ticket.assigned_to == assigned_to)
+        if approval_status is not None:
+            stmt = stmt.where(Ticket.approval_status == approval_status)
+        if escalated is not None:
+            stmt = stmt.where(Ticket.escalation_required == escalated)
         if search:
             stmt = stmt.where(contains_any(search, Ticket.subject, Ticket.ticket_number))
         return await self._page(stmt, page, page_size)
@@ -98,6 +110,12 @@ class TicketRepository(ScopedRepository[Ticket]):
 
     async def count_by_category(self) -> dict[Category, int]:
         return await self._count_by(Ticket.category)
+
+    async def count_by_status(self) -> dict[TicketStatus, int]:
+        return await self._count_by(Ticket.status)
+
+    async def count_by_channel(self) -> dict[Channel, int]:
+        return await self._count_by(Ticket.channel)
 
     async def resolution_spans(self) -> list[tuple[datetime, datetime]]:
         """(created_at, resolved_at) of every ticket that has been resolved."""

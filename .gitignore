@@ -100,3 +100,5 @@ docs/10_PROMPT_COST.md
 # --- Private interview preparation (see docs/09_PHASE_DOCUMENTATION.md) ---
 # The repository is public. The other documents in each internal/PhaseNN/ folder hold project documentation and are committed.
 internal/Phase*/04_INTERVIEW_QNA.md
+e2e/last-run.png
+test-results/

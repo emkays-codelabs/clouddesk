@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk AI Project 1
 
-_Last updated: 2026-11-27 15:23 +0530_
+_Last updated: 2026-11-27 16:38 +0530_
 
 Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `TASKS.md` is the order of work, and the phase exit criteria are at the end of this file. This file is the requirement catalog and the exit bar for the whole project.
 
@@ -123,7 +123,7 @@ as a v1 non-goal in `CLAUDE.md` §1. None is decided, and none may be built with
 | FR-36 | Admin: knowledge sources, ingestion jobs, policies, tool registry, users and roles | `GET /settings` is read-only; nothing edits sources, policies, tools or users. |
 | FR-41 | Feature flags per tenant: copilot, supervised or autonomous | `AUTONOMY_MODE` is listed in `CLAUDE.md` §10.2 as a later setting; no requirement, task or test. |
 | NFR-05 | 99.9% availability; a human-handoff mode if the model provider fails | No handoff mode and no availability target. |
-| NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is planned (P10-1, not built), and runs will be in process and a restart can drop one (ADR-0007). |
+| NFR-06 | Durable checkpoints; no lost tickets | The checkpointer is built (`agents/checkpointer.py`); runs are in process and a restart can drop one in flight (ADR-0007). |
 | NFR-13 | Per-ticket cost accounting; model routing | Tokens and estimated cost are recorded (F13). Routing is decision D4 (ADR-0010), resolved in a limited form on 2026-11-27: an in-process router in `backend/app/core` over three Euron tiers, with a fallback chain and a circuit breaker, no gateway service. Planned and not built; `MEMORY.md` records it. |
 
 Already answered elsewhere, not repeated here: multi-tenancy is settled as D1 (`CLAUDE.md` §6), and a
@@ -146,12 +146,12 @@ D2, D3, D5 and D6 in `CLAUDE.md` §20; model tiering (D4) is resolved in a limit
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
-| 9 | Specialist agents | in progress |
-| 10 | Workflow graph and trace | in progress |
-| 11 | Approval and escalation | in progress |
-| 12 | Console shell | in progress |
-| 13 | Ticket workflow screen | not started |
-| 14 | Evaluation and delivery | in progress |
+| 9 | Specialist agents | validated locally |
+| 10 | Workflow graph and trace | validated locally |
+| 11 | Approval and escalation | validated locally |
+| 12 | Console shell | validated locally |
+| 13 | Ticket workflow screen | validated locally |
+| 14 | Evaluation and delivery | validated locally |
 
 Stages 13–16 of the course (containers, observability, CI, multi-cloud) are represented inside Phase 14 as files and local validation. Stage 17 stays optional and unbuilt.
 
@@ -418,7 +418,7 @@ Tasks: `TASKS.md`, Phase 14.
 
 **Requirements.** F2, F5, F8, F10 thresholds; F14; N8. Honest status in §15.1.
 
-**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml` (these three and the two `.dockerignore` files exist), and, not built yet, `deployment/{aws,azure,gcp}`, `deployment/scripts/` and `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
+**Files.** `tests/evaluation/`, `datasets/eval_cases.json`, `tests/deployment/`, `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml` (these three and the two `.dockerignore` files exist), `deployment/{aws,azure,gcp}`, `deployment/scripts/` and `.github/workflows/` (`test.yml`, `security.yml`, `docker-build.yml`, `terraform-validate.yml`, `_deploy.yml`).
 
 **Tests.** Eval metrics meet the thresholds in `PLAN.md`. Deployment tests check compose services, non-root Dockerfiles, `HEALTHCHECK`, and that no `.env` is committed. `docker compose config -q` passes. `make terraform-validate` passes locally. `BASE_URL=http://localhost:8000 make smoke` passes against the local stack.
 

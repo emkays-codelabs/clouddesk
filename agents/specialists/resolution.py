@@ -140,7 +140,7 @@ class ResolutionAgent:
                         "amount": amount,
                         "reason": REFUND_REASON,
                     },
-                    f"Refund {amount:.2f} for unused seats",
+                    f"Refund INR {amount:,.2f} for unused seats",
                 )
             )
         reset = _RESET_ASK.search(text)

@@ -4,6 +4,7 @@ export type NavItem = { href: string; label: string };
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/tickets", label: "Tickets" },
+  { href: "/approvals", label: "Approvals" },
   { href: "/customers", label: "Customers" },
   { href: "/knowledge", label: "Knowledge" },
   { href: "/escalations", label: "Escalations" },

@@ -74,8 +74,9 @@ def test_setup_syncs_dependencies_and_sets_the_hooks_path_but_copies_no_env_temp
 
 def test_every_recipe_runs_in_cmd_powershell_and_sh_alike():
     # The rule is portability, not any one program: `test`, `cp`, `rm` and `&&` are POSIX-shell
-    # features that PowerShell does not have, while `uv` and `git` are programs that run anywhere.
-    portable = ("uv ", "git ")
+    # features that PowerShell does not have, while `uv`, `git`, `terraform` and `bash` are programs that run anywhere
+    # they are installed (`smoke` needs Git Bash on Windows, as its Makefile comment says).
+    portable = ("uv ", "git ", "terraform ", "bash ")
     for target, recipe in _targets().items():
         for line in recipe:
             command = line.lstrip("@-")

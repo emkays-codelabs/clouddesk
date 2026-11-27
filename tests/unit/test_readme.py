@@ -207,7 +207,5 @@ class TestItPointsAtTheRealFolders:
             assert prefix in README
         assert "CLAUDE.local.md" in README
 
-    def test_it_says_the_api_contract_describes_routes_that_are_not_built_yet(self):
-        assert "not built yet" in README.split("docs/design/")[1].split("\n")[0].lower() or (
-            "contract describes routes that are not built" in README
-        )
+    def test_it_says_the_routes_in_the_api_contract_are_built(self):
+        assert "routes in the contract are built" in README

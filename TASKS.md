@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 15:23 +0530_
+_Last updated: 2026-11-27 16:38 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -808,9 +808,9 @@ The longest dependency chain is 16 tasks long.
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
 | P12-1 · Next.js app shell and navigation | F12 | `feature/frontend-app-shell` | Completed ✅ |
-| P12-2 · Typed API client | F12 | `feature/frontend-api-client` | Pending ❌ |
-| P12-3 · Login and role-aware layout | F12, N1 | `feature/frontend-auth-layout` | Pending ❌ |
-| P12-4 · Read-only list pages | F12 | `feature/frontend-read-pages` | Pending ❌ |
+| P12-2 · Typed API client | F12 | `feature/frontend-api-client` | Completed ✅ |
+| P12-3 · Login and role-aware layout | F12, N1 | `feature/frontend-auth-layout` | Completed ✅ |
+| P12-4 · Read-only list pages | F12 | `feature/frontend-read-pages` | Completed ✅ |
 
 #### Task definitions
 
@@ -848,10 +848,10 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P13-1 · Ticket detail layout | F12 | `feature/frontend-ticket-layout` | Pending ❌ |
-| P13-2 · Workflow steps and polling | F12, F13 | `feature/frontend-workflow-panel` | Pending ❌ |
-| P13-3 · Approve, reject, reply, and escalate actions | F12, F9 | `feature/frontend-ticket-actions` | Pending ❌ |
-| P13-4 · Frontend unit tests | F12 | `feature/frontend-unit-tests` | Pending ❌ |
+| P13-1 · Ticket detail layout | F12 | `feature/frontend-ticket-layout` | Completed ✅ |
+| P13-2 · Workflow steps and polling | F12, F13 | `feature/frontend-workflow-panel` | Completed ✅ |
+| P13-3 · Approve, reject, reply, and escalate actions | F12, F9 | `feature/frontend-ticket-actions` | Completed ✅ |
+| P13-4 · Frontend unit tests | F12 | `feature/frontend-unit-tests` | Completed ✅ |
 
 #### Task definitions
 
@@ -888,11 +888,11 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P14-1 · Evaluation thresholds | F2, F5, F8, F10 | `feature/eval-thresholds` | Pending ❌ |
+| P14-1 · Evaluation thresholds | F2, F5, F8, F10 | `feature/eval-thresholds` | Completed ✅ |
 | P14-2 · Backend and frontend Dockerfiles | N8 | `feature/docker-images` | Completed ✅ |
 | P14-3 · Compose stack | N8 | `feature/docker-compose` | Completed ✅ |
-| P14-4 · Terraform and CI scaffolds | N8 | `feature/delivery-terraform-ci` | Pending ❌ |
-| P14-5 · Deployment hygiene tests | N8 | `feature/deployment-hygiene-tests` | Pending ❌ |
+| P14-4 · Terraform and CI scaffolds | N8 | `feature/delivery-terraform-ci` | Completed ✅ |
+| P14-5 · Deployment hygiene tests | N8 | `feature/deployment-hygiene-tests` | Completed ✅ |
 
 #### Task definitions
 
@@ -979,7 +979,7 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 9 | Specialist agents | 10 | 10 |
 | 10 | Workflow graph and trace | 7 | 7 |
 | 11 | Approval and escalation | 6 | 6 |
-| 12 | Console shell | 4 | 1 |
-| 13 | Ticket workflow screen | 4 | 0 |
-| 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **84** | **74** |
+| 12 | Console shell | 4 | 4 |
+| 13 | Ticket workflow screen | 4 | 4 |
+| 14 | Evaluation and delivery | 5 | 5 |
+| **Total** | | **84** | **84** |

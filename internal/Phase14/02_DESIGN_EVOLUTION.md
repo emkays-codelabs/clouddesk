@@ -1,25 +1,31 @@
 # Phase 14: system design evolution
 
-> **Status of this phase:** in progress. P14-2 (Dockerfiles) and P14-3 (Compose) are written and statically checked, and on 2026-11-27 the stack was built and brought up in Docker once (backend, frontend, redis and qdrant healthy; see `MEMORY.md`, First Docker bring-up). P14-1, P14-4 and P14-5 are not started. Nothing is deployed.
+> **Status:** complete and validated locally. P14-1 to P14-5 are done. The stack was brought up in Docker; the Terraform roots were validated only; no workflow has run on GitHub; nothing is deployed.
 
 ---
+
+## P14-1: Evaluation thresholds
+
+`tests/evaluation/test_eval_thresholds.py` runs the 13 ticket cases through `POST /tickets/{id}/run` on the fake model and the 3 text-only cases through the rules and retriever, then checks classification, retrieval hit-rate@3, escalation correctness, citation rate and grounding rate against the CLAUDE.md section 13 floors. Each test uses a private database (`tests/evaluation/conftest.py`) because the shared one remembers earlier runs. These measure the offline pipeline, not a real model.
 
 ## P14-2: Backend and frontend Dockerfiles
 
-- **Reordering.** Built ahead of the graph (P10-5) at the owner's request, because `backend/` and `frontend/` already run. The task's Needs line now reads `P1-1`, `P12-1`.
-- **Backend.** `backend/Dockerfile`, built from the repo root. A builder stage installs locked dependencies with `uv sync --frozen --no-dev`; the runtime stage copies the venv, `backend/`, `rag/`, `agents/`, `memory/`, `integrations/`, `sample_data/` and `database/` (the last four packages were added as COPY lines when they landed). Runs as non-root `app`, `/app/data` writable, `PYTHONPATH=/app/backend:/app`, HEALTHCHECK uses Python urllib on `/health/live` (no curl).
-- **Frontend.** `frontend/Dockerfile`: deps, builder, runner stages on `node:22-alpine`, copies `.next/standalone` and `.next/static`, non-root `app`, wget HEALTHCHECK on `/api/health`. `NEXT_PUBLIC_API_URL` is a build ARG (inlined at build time).
-- **Context hygiene.** Root `.dockerignore` and `frontend/.dockerignore` exclude `.env*`, `data/`, `.git`, virtualenvs and `node_modules`.
-- **Base images** are pinned by tag only, each with a "pin by digest before production" comment.
-- **Verified:** `tests/deployment/test_dockerfiles.py` (static text checks), and on 2026-11-27 both images built and ran healthy inside the Compose stack. **Not verified:** image size, `docker build --check`. When the task merged the Docker daemon was not running, so the first build came later.
-
----
+`backend/Dockerfile` is multi-stage `python:3.12-slim`, built from the repo root, non-root `app`, HEALTHCHECK on `/health/live`. `frontend/Dockerfile` is `node:22-alpine` standalone, non-root, HEALTHCHECK on `/api/health`. Built ahead of the graph at the owner's request and brought up healthy on 2026-11-27.
 
 ## P14-3: Compose stack
 
-- **Services.** `docker-compose.yml` (project `clouddesk`): `frontend` (:3000) depends on `backend` (:8000), which depends on `redis` (`redis:7-alpine`) and `qdrant` (`qdrant/qdrant:v1.12.4`), all with `condition: service_healthy`. Every service has a healthcheck and `restart: unless-stopped`. Tags only; pin by digest before production.
-- **Healthchecks.** Backend and frontend reuse the Dockerfile probes; redis uses `redis-cli ping`; qdrant has no curl, so it uses a bash `/dev/tcp` probe on 6333 (unverified against the image).
-- **Volumes.** `backend-data` at `/app/data` (SQLite DB and checkpoints), `redis-data`, `qdrant-storage`.
-- **Config.** Offline demo defaults: `LLM_PROVIDER=fake`, `VECTOR_STORE=memory` (Qdrant runs for later), real Redis (`USE_FAKE_REDIS=false`). `JWT_SECRET` comes from `${JWT_SECRET:-change-me-demo-only}`; `.env` is an optional `env_file`.
-- **Frontend API URL.** The build arg `NEXT_PUBLIC_API_URL` is `http://localhost:${BACKEND_PORT:-8000}`, the host port (8000 by default), because the browser makes the calls, not the container.
-- **Verified:** `docker compose config -q` and `tests/deployment/test_compose.py`, and the stack came up healthy on 2026-11-27 (on host port 18000 through an override, because 8000 was busy), including the qdrant `/dev/tcp` probe. **Not verified:** a browser view, Postgres, real Qdrant use.
+`docker-compose.yml`: frontend, backend, redis (`redis:7-alpine`) and qdrant, all `service_healthy`, named volumes, `restart: unless-stopped`, real Redis. Host ports come from `BACKEND_PORT` and `FRONTEND_PORT`; the stack ran on 18000 because 8000 was in use.
+
+## P14-4: Terraform and CI scaffolds
+
+One root per cloud under `deployment/` (`deployment/aws/main.tf`, `deployment/azure/main.tf`, `deployment/gcp/main.tf`) with registry, secrets, compute, load balancing, monitoring, Redis and networking declared per cloud. Var-files `deployment/environments/{dev,staging,prod}.tfvars`. Five scripts under `deployment/scripts/` and five workflows under `.github/workflows/`. `make terraform-validate` passes for all three. The CLAUDE.md section 20 contradiction about terraform.tfvars is resolved by naming the files `<env>.tfvars`.
+
+## P14-5: Deployment hygiene tests
+
+`tests/deployment/test_delivery.py` checks the roots, sensitive variables, var-files, script strictness and syntax, the `--auto-approve` rule, SHA tagging, workflow structure and ordering, no embedded credential, the Makefile targets and no committed `.env`. `make smoke` passed against the local stack.
+
+---
+
+## Limitations
+
+No `terraform plan` or `apply`, no application database in the scaffolds, no checkov or Trivy run, no CI run, and no harder evaluation bar or red-team set (D6).

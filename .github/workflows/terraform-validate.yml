@@ -1,0 +1,24 @@
+name: terraform-validate
+
+on:
+  pull_request:
+    paths: [deployment/**]
+  push:
+    branches: [development, testing, main]
+    paths: [deployment/**]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
+    defaults:
+      run:
+        working-directory: deployment/${{ matrix.cloud }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate

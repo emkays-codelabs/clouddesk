@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* The console shares the landing page's Emerald & sand look, kept calm and flat for daily work. */
+body {
+  background:
+    radial-gradient(900px 480px at 100% -10%, rgba(5, 150, 105, 0.08), transparent 60%),
+    radial-gradient(700px 420px at 0% 0%, rgba(245, 158, 11, 0.07), transparent 55%),
+    #fbf8f2;
+  background-attachment: fixed;
+}
+
+/* Page titles and sections fade in; reduced-motion visitors get none. */
+main > div > h1,
+main h1:first-child {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0b3b2e;
+}
+main > div { animation: rise 0.45s ease-out both; }
+
+/* Tables read as lists of rows, not grids. */
+main table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; }
+main th {
+  text-align: left;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5f7368;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e6dfcf;
+}
+main td { padding: 0.7rem 0.75rem; border-bottom: 1px solid #f0eadc; }
+main tbody tr { transition: background 0.15s; }
+main tbody tr:hover { background: #f6faf7; }
+main a { transition: color 0.15s; }
+
+input, select, textarea {
+  border-radius: 0.75rem;
+}
+input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main > div { animation: none; }
+  * { transition: none !important; }
+}

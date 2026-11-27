@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 15:23 +0530_
+_Last updated: 2026-11-27 16:38 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -95,7 +95,7 @@ Demo users: `admin@clouddesk.demo`, `sam.agent@clouddesk.demo`, `vic.viewer@clou
 | F13 | Every node, tool call, LLM call inspectable (timing, tokens, cost) | `workflow_events`, `GET /tickets/{id}/events` |
 | F14 | Runs offline in `DEMO_MODE` with no API key | `fake` provider in `backend/app/core/llm.py` |
 
-Status today: F1 (the API), F2 to F8 and F10 (the specialist agents and the rules, called directly in tests), F14 (the fake provider) and the policy half of F9 (tool policy) are built and tested. Not built: the graph nodes that join them (F9 pause and resume, F11), the trace behind F13 and the ticket screen behind F12 (Phases 10, 11 and 13).
+Status today: F1 to F14 are built and tested offline: the API, the specialist agents and rules, the graph with pause and resume (F9, F11), the trace behind F13, the ticket screen behind F12 and the fake provider (F14). Not built: the approval timeout (FR-24) and the other PRD items in §20. The real model was exercised by hand through Docker, not by the test suite.
 
 Non-functional: N1 JWT auth (Supabase-compatible) · N2 rate limiting · N3 `X-Request-ID` on every
 response · N4 prompt-injection defence (ticket text is data) · N5 output validation before any reply
@@ -127,7 +127,7 @@ Browser ─HTTPS─▶ Next.js (:3000) ─REST /api/v1 (Bearer JWT, X-Request-ID
 
 ### 4.1 Request flow – "Run AI workflow"
 
-Planned for Phases 10 and 11; none of this flow is built yet (no run route, graph, approval routes or `workflow_service`). What exists is the pieces it will call: the specialist agents, the tools, the rules, the guardrails and the memory service.
+Built (Phases 10 and 11). Run it with `make demo` offline, or from the ticket screen.
 
 1. UI `POST /api/v1/tickets/{id}/run` → `api/workflow.py::run_workflow`
 2. `workflow_service.create_run()` writes `workflow_runs`, returns **202** `{workflow_id}`
@@ -169,7 +169,7 @@ sample_data/   tickets.json · customers.json · subscriptions.json · workspace
 tests/         unit/ · api/ · rag/ · agents/ · workflow/ · evaluation/ · deployment/
 deployment/    aws/ · azure/ · gcp/ · docker/ · scripts/   (a kubernetes/ folder only if D5 is accepted)
 data/          (git-ignored) support.db · checkpoints.db
-docs/          07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md
+docs/          07_GIT_WORKFLOW.md · 08_CLAUDE_SETUP.md · 09_PHASE_DOCUMENTATION.md · 11_USER_GUIDE.md (step-by-step guide for a new agent, sign-in to resolution)
                design/ 05_ARCHITECTURE.md · 06_API_CONTRACT.md (the API contract – source of truth for routes and types)
                01_BRD · 02_PRD · 03_HLD · 04_LLD (upstream design, §1.1)
                docs/adr/ (architecture decision records, one per file) · docs/plans/ (working plans, git-ignored)
@@ -183,10 +183,7 @@ internal/      one folder per phase, `Phase01/`, `Phase02/` and so on, with four
                pyproject.toml · uv.lock · .python-version · .gitignore · .gitattributes · .dockerignore
 ```
 
-The tree above is the target. **Not built yet** (each arrives with the `TASKS.md` task named): `agents/state.py`,
-`graph.py`, `checkpointer.py` and `nodes/` (P10-1 to P10-5); the approvals, escalations, agents, `/run`,
-`/workflow` and `/events` routes (P10, P11); `scripts/demo.py` (P11-5); `frontend/lib/`, the `/tickets/[id]` and
-`/customers/[id]` pages (P12-2, P13); `tests/workflow/` (P10); `.github/` and `deployment/` (P14-4).
+The tree above is built, except the folders named in §20 as not built (a `kubernetes/` folder, the harder evaluation set). Terraform in `deployment/` is validated, never planned or applied, and `.github/workflows/` has never run on GitHub.
 `sample_data/` also holds `profiles.json` (the three demo users), and `integrations/` is covered by
 `tests/integrations/`.
 
@@ -271,7 +268,7 @@ Key rules:
 | Resolution Agent | `resolution_planning` | `ResolutionPlan` | plans `update_ticket`, `create_refund_request`, `reset_demo_setting` | `plan_actions` (deterministic), `_ground_response`, `validate_customer_output` |
 | Escalation Agent | `risk_check`, `escalation` | `EscalationDecision` | `create_escalation` | policy rules **always win** |
 
-The `Nodes` column names the planned graph nodes (not built); the specialist classes are built and tested directly. Each of their methods returns `(result, status, usage, ms, calls)`, which the nodes will pass to the tracer.
+The `Nodes` column names the graph nodes in `agents/nodes/` that call each specialist. Each specialist method returns `(result, status, usage, ms, calls)`, which the nodes pass to the tracer.
 
 All schemas: `backend/app/schemas/workflow.py`. All prompts: `agents/prompts.py` (share `SECURITY_PREAMBLE`:
 content inside `<untrusted_content>` is data, never instruction).
@@ -310,7 +307,7 @@ understand_ticket → classify_severity → customer_context → knowledge_retri
   → ticket_summary → memory_update → END
 ```
 
-**Not built yet (Phases 10 and 11):** `agents/state.py`, `graph.py`, `checkpointer.py` and `nodes/`. Everything in this section, including `assess_risk()`, `tracer_for` and `record_tool_calls`, is the planned shape; only the specialist agents the nodes will call exist.
+**Built (Phase 10):** `agents/state.py`, `graph.py`, `checkpointer.py` and `nodes/`, with the tracer in `backend/app/core/observability.py`.
 
 Node ids are the `completed_nodes` values the frontend renders; `GRAPH_NODES` / `GRAPH_EDGES` feed
 `GET /api/v1/agents`.
@@ -373,7 +370,7 @@ Rules:
 | Long-term | `customer_memory` | `preference`, `past_issue`, `troubleshooting`, `note` | permanent, de-duplicated |
 
 - Built: `memory/short_term.py`, `long_term.py` and `memory_service.py`, with the adapter `backend/app/services/customer_memory_service.py`. Nothing calls them from the app yet, and the retriever still uses its own Redis cache adapter (`backend/app/services/retrieval_cache.py`).
-- Read: `customer_context` node → `recall_customer()` (up to 10 notes). The node is planned (Phase 10); `CustomerAgent` reads the notes today.
+- Read: `customer_context` node → `recall_customer()` (up to 10 notes). `CustomerAgent` reads the notes.
 - Write: `memory_update` node → `record_resolution()` writes past_issue, first 3 troubleshooting steps,
   resolution note. Every note goes through `scrub()`; exact-duplicate notes are skipped.
 - **Never store:** card numbers, API keys, passwords (`SECRET_PATTERNS`), raw ticket bodies, anything about other customers.
@@ -394,7 +391,7 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
 - **Retrieval:** semantic ∪ keyword (`rank_bm25`) → reciprocal rank fusion (k=60) → heuristic rerank
   (category match + title overlap) → optional LLM rerank → one hit per article.
 - **Modes:** `hybrid` (default), `semantic`, `keyword`.
-- **Fake embeddings** (`FakeEmbeddings`, hashed bag-of-words, 384 dims) run offline and are the only embeddings built; a euri-embedding provider (Euron) is planned. Changing the
+- **Fake embeddings** (`FakeEmbeddings`, hashed bag-of-words, 384 dims) run offline and are the only embeddings built; `EuronEmbeddings` (euri-embedding) is built and was used against the real API once. Changing the
   embedding model requires `POST /knowledge/reindex` (admin) – it recreates the collection.
 - Evidence shape: `{ id, title, source: "kb://slug#section", snippet, score, url: "/knowledge/<id>", article_id }`.
 - Knowledge articles are the only source for customer-facing policy claims. Cite them.
@@ -421,7 +418,7 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
 - **Groundedness (N5):** `validate_customer_output` scores each claim against its cited chunk by word overlap (no judge model; `GROUNDEDNESS_THRESHOLD`, a module constant in `backend/app/core/output_validation.py`). Below **0.8** the
   reply is revised once, then escalated.
 - **Approval timeouts (FR-24):** an approval nobody decides expires and escalates. It never executes
-  by default. Planned (Phase 11), not built.
+  by default. Not built.
 - Middleware order, outermost first: CORS → RequestId → RateLimit → Audit (so a 429 still carries the request id and CORS headers).
 
 ---
@@ -435,7 +432,7 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
   probes), `/health/ready` (db, redis, vector store, llm).
 - Settings: `get_settings()` is `lru_cache`d – restart the server after `.env` changes.
 - Errors: `{ "detail": string }` with proper status codes. 409 when a ticket is already
-  `waiting_on_approval`; 409 when resuming a run that is not paused (both planned, Phase 11).
+  `waiting_on_approval`; 409 when resuming a run that is not paused (both built).
 - Background workflows run in-process for v1. The production extension moves them to a worker.
 
 ### 10.1 Environment variables (the list for your git-ignored `.env`; `.env.example` was removed on 2026-11-27)
@@ -482,7 +479,7 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 
 ## 11. Frontend conventions
 
-- Built so far (P12-1): the app shell, `components/ui/`, `components/layout/nav.ts`, placeholder pages for eight console routes, `/login` and `/api/health`. `frontend/lib/`, the real screens and the ticket screen below are planned (P12-2 to P13-4).
+- Built (Phases 12 and 13): the app shell, UI kit, typed client, auth, nine console pages, the ticket screen with workflow steps, evidence, approvals and actions, and a headed Playwright test (`npm run e2e`). **Landing page exception (owner decision, 2026-11-27):** the public `/` page may use gradients and its own `app/landing.css`; the console stays flat. **Money:** amounts are INR; model cost is always shown in USD and INR together at the display rate `NEXT_PUBLIC_USD_INR` (default 85, an estimate).
 - Next.js 15 App Router, TypeScript, Tailwind. No UI library, no gradients (hand-written kit in `components/ui/`).
 - Backend is reached **only** through `frontend/lib/api.ts` (typed client, bearer token in `localStorage`,
   401 → `/login?reason=expired`, `NetworkError` banner with auto-retry). `types.ts` mirrors `06_API_CONTRACT.md`.
@@ -506,8 +503,7 @@ COST_BUDGET_USD_PER_TICKET=0.08    tracked and alerted on, never an input to a d
 
 **Built today:** `/auth`, `/dashboard/summary`, `/tickets` (list, create, read, `/reply`, `/request-info`,
 `/escalate`, PATCH), `/customers`, `/knowledge`, `/audit`, `/settings`, `/mcp/tools` and the health routes.
-**Planned, not built:** `/tickets/{id}/run`, `/workflow`, `/events` (P10), `/approvals` (P11), `/escalations`
-(P11-6), `/agents` (P10-7).
+Also built (Phases 10 and 11): `/tickets/{id}/run`, `/workflow`, `/events`, `/approvals`, `/escalations`, `/agents`.
 
 Rule: if an endpoint changes, update `06_API_CONTRACT.md`, `backend/app/schemas/`, and `frontend/lib/types.ts`
 in the same change.
@@ -527,10 +523,10 @@ temp SQLite, `CHECKPOINT_DB_PATH=:memory:`). Auth fixtures: `agent_headers`, `ad
 | `tests/rag/` | ingest count, expected article for key queries, modes, cache, RRF, rerank, filters |
 | `tests/agents/` | one test per specialist behaviour |
 | `tests/integrations/` | mock integrations record calls and never reach a real system |
-| `tests/workflow/` (Phase 10, not built) | graph shape, routing, risk levels, e2e low-risk, pause/resume, rejection, GDPR policy escalation |
-| `tests/evaluation/` | today: the dataset is valid and agrees with the rules; the threshold metrics are planned (P14-1) |
+| `tests/workflow/` | graph shape, routing, risk levels, e2e low-risk, pause/resume, rejection, GDPR policy escalation |
+| `tests/evaluation/` | the dataset is valid and agrees with the rules, and the five thresholds run through the workflow (`test_eval_thresholds.py`) |
 | `tests/deployment/` | compose services, Dockerfile hygiene (non-root, HEALTHCHECK), no committed `.env` (the variable list is checked in `tests/unit/test_env_settings.py`) |
-| `frontend/__tests__/` | today: StatusPill, EmptyState, nav; planned: WorkflowSteps.deriveSteps, api helpers |
+| `frontend/__tests__/` | StatusPill, EmptyState, nav, WorkflowSteps, the API client and the formatters; `frontend/e2e/` is a headed Playwright test run by hand |
 
 **Evaluation thresholds – these fail the build:**
 
@@ -561,8 +557,8 @@ make setup            # .venv + deps + git hooks path (.env is created by hand; 
 make seed             # load sample data into DB
 make ingest           # chunk + index knowledge base
 make backend          # FastAPI on :8000
-make demo             # NOT BUILT YET (P11-5): CD-1002 refund end-to-end in terminal (pauses for approval)
-make demo TICKET=CD-1005     # NOT BUILT YET (P11-5)
+make demo             # CD-1002 refund end-to-end in terminal (pauses for approval)
+make demo TICKET=CD-1005
 make mcp              # MCP server (read-only tools)
 make test             # backend pytest, about two minutes (1204 tests, 2026-11-27), offline
 make lint             # ruff
@@ -570,12 +566,12 @@ make format           # ruff format
 git commit            # the pre-commit hook stamps each staged document with the time it changed
 cd frontend && npm run dev | npm run lint | npm run test -- --run | npm run build
 docker compose config -q && docker compose up --build    # BACKEND_PORT / FRONTEND_PORT move a busy host port
-make terraform-validate    # NOT BUILT YET (P14-4)
-BASE_URL=http://localhost:8000 make smoke    # NOT BUILT YET (P14-5)
+make terraform-validate    # init -backend=false and validate the three roots; nothing is planned or applied
+BASE_URL=http://localhost:8000 make smoke    # liveness, readiness, OpenAPI, demo login (needs bash)
+cd frontend && npm run e2e                    # headed Playwright test against the running stack
 ```
 
-Today's `Makefile` has `setup`, `backend`, `test`, `lint`, `format`, `seed`, `ingest` and `mcp`. `demo` (P11-5),
-`terraform-validate` and `smoke` (P14) are planned.
+The `Makefile` has `setup`, `backend`, `test`, `lint`, `format`, `seed`, `ingest`, `mcp`, `demo`, `terraform-validate` and `smoke`.
 
 In Claude Code: `/plan N` plans a task, `/implement path` runs the plan, `/test`, `/review`, `/consult-opus`, `/pr-review N`, `/cost-report`, and `/phase-docs N`, which writes a finished phase's four documents.
 
@@ -599,7 +595,7 @@ then `development` promotes to `testing`, then `main`. Remote:
 
 ## 15. Containers, infrastructure, delivery
 
-- **Built today:** the two Dockerfiles, the two `.dockerignore` files and `docker-compose.yml`. `deployment/` (Terraform and scripts) and `.github/` (workflows) are not in the repo yet (P14-4); the Terraform, scripts and CI bullets below are the plan.
+- **Built today:** the two Dockerfiles, the two `.dockerignore` files and `docker-compose.yml`. `deployment/` (Terraform for three clouds, five scripts, var-files) and `.github/workflows/` (five workflows) are written; the Terraform is validated and nothing is applied, and no workflow has run.
 - **Docker:** `backend/Dockerfile` (multi-stage, `python:3.12-slim`, non-root `app`, `HEALTHCHECK` on
   `/health/live`) built with context = repo root. `frontend/Dockerfile` (`node:22-alpine`,
   `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`). Pin base images before production.
@@ -635,7 +631,7 @@ Postgres, real Qdrant use and any real language-model call.
 
 ## 16. Observability
 
-- JSON logs with `request_id` and `workflow_id` on every line (`core/logging.py`; built). `WorkflowTracer`, the events and `GET /tickets/{id}/events` below are planned (P10-6); `TokenUsage` already exists in `schemas/workflow.py`.
+- JSON logs with `request_id` and `workflow_id` on every line (`core/logging.py`; built). `WorkflowTracer`, the events and `GET /tickets/{id}/events` are built (`backend/app/core/observability.py`).
 - `WorkflowTracer` writes `workflow_events` (never raises – telemetry must not break a run):
   `node_started`, `node_completed`, `tool_called`, `llm_called`, `approval_requested`,
   `approval_resolved`, `error`, `workflow_completed`.
@@ -701,7 +697,7 @@ and merge order. [`PLAN.md`](PLAN.md) is the requirement catalog and holds each 
 
 The upstream PRD, HLD and LLD are in `docs/` (§1.1); course documents 00 and 04–17 are not. Phase
 boundaries follow the dependency order in this file, not the upstream release plan. Stage 17 is
-optional and is not a core exit criterion. Phase 9 has all 10 tasks done and stays `in progress` until `/phase-docs 9` writes its documents.
+optional and is not a core exit criterion. All 14 phases are done and have their documents.
 
 | Phase | Name | Status |
 |---|---|---|
@@ -713,12 +709,12 @@ optional and is not a core exit criterion. Phase 9 has all 10 tasks done and sta
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
 | 8 | Memory | validated locally |
-| 9 | Specialist agents | in progress |
-| 10 | Workflow graph and trace | in progress |
-| 11 | Approval and escalation | in progress |
-| 12 | Console shell | in progress |
-| 13 | Ticket workflow screen | not started |
-| 14 | Evaluation and delivery | in progress |
+| 9 | Specialist agents | validated locally |
+| 10 | Workflow graph and trace | validated locally |
+| 11 | Approval and escalation | validated locally |
+| 12 | Console shell | validated locally |
+| 13 | Ticket workflow screen | validated locally |
+| 14 | Evaluation and delivery | validated locally |
 
 ---
 
@@ -729,8 +725,8 @@ optional and is not a core exit criterion. Phase 9 has all 10 tasks done and sta
   against a throwaway database). `make format`, `make ingest` and `make mcp` exist but are not recorded as run
   through make. Check each remaining target when the task that creates it lands (see `TASKS.md`), and fix this
   file if one differs.
-- `terraform.tfvars` is contradictory: section 15 describes committed per-environment var-files while
-  section 18 says never to commit it. Decide before Phase 14 (also tracked in `MEMORY.md`).
+- Resolved in Phase 14: the per-environment var-files are `deployment/environments/<env>.tfvars`, not `terraform.tfvars`, so they can be committed while `terraform.tfvars` stays ignored. They hold non-secret sizing only.
+- Not built from the PRD (do not claim): an analytics page, memory erasure from the console, take-over and assign controls beyond `PATCH /tickets/{id}`, a tools and policies page, the approval timeout, the `prohibited` tier, and the harder evaluation set.
 - The upstream PRD, HLD and LLD are now in `docs/` (§1.1). The remaining course documents, and the
   `../deployment-agent/` and `../shared-infrastructure/` paths they reference, are still outside this
   repo. Decide whether they are copied in or referenced.
@@ -747,8 +743,7 @@ spec contradicted itself; and the column is nearly free now and ruinous to retro
 not just the code, and each is also a proposed record in `docs/adr/` (0008 to 0012). **D4 was resolved in a limited form on
 2026-11-27** (owner-approved in chat, recorded in `MEMORY.md`): an in-process LLM router in `backend/app/core` with tiers
 fast = `euri-chat-fast`, smart = `euri-chat-smart` and reasoning = `euri-reasoning`, a fallback chain and a circuit breaker, and
-no separate gateway service. It needs its `TASKS.md` row before it is built, an Euron embeddings provider (`euri-embedding`) is
-planned alongside it, no Euron key exists yet, and ADR 0010 still reads Proposed.
+no separate gateway service. It is built (P9-9, P9-10) with an Euron embeddings provider (`euri-embedding`), and both were used against the real Euron API during the Docker bring-up; ADR 0010 is accepted in this limited form.
 
 | # | Decision | Why it cannot wait |
 |---|---|---|

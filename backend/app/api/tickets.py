@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.core.security import Principal, get_current_user, require_role
 from app.repositories.base import MAX_PAGE_SIZE
-from app.schemas.common import Severity, TicketStatus
+from app.schemas.common import ApprovalStatus, Channel, Severity, TicketStatus
 from app.schemas.ticket import (
     Ticket,
     TicketCreate,
@@ -54,9 +54,22 @@ async def list_tickets(
     search: str | None = None,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = 20,
+    channel: Channel | None = None,
+    assigned_to: str | None = None,
+    approval_status: ApprovalStatus | None = None,
+    escalated: bool | None = None,
 ) -> TicketPage:
     return await ticket_service.list_tickets(
-        session, status=status, severity=severity, search=search, page=page, page_size=page_size
+        session,
+        status=status,
+        severity=severity,
+        search=search,
+        page=page,
+        page_size=page_size,
+        channel=channel,
+        assigned_to=assigned_to,
+        approval_status=approval_status,
+        escalated=escalated,
     )
 
 
