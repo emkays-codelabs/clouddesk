@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 16:38 +0530_
+_Last updated: 2026-11-27 21:10 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -912,7 +912,7 @@ The longest dependency chain is 16 tasks long.
 **P14-3 · Compose stack**
 - **Note:** its Needs line never named the graph, and with P14-2 relaxed the chain to the graph is gone, so it ran ahead of Phase 10. Host ports are `${BACKEND_PORT:-8000}` and `${FRONTEND_PORT:-3000}`. `docker compose config -q` passes and `tests/deployment/test_compose.py` checks the file statically. The stack was NOT brought up when the task merged (the Docker daemon was not running). On 2026-11-27 it was brought up and all four services reported healthy (`MEMORY.md`, First Docker bring-up).
 - **Needs:** `P14-2`
-- **Build:** The Compose stack: frontend → backend → redis and qdrant, `depends_on: service_healthy`, named volumes, `restart: unless-stopped`.
+- **Build:** The Compose stack: frontend → backend → redis and qdrant, `depends_on: service_healthy`, named volumes, `restart: unless-stopped`. Postgres was added on 2026-11-27 at the owner's request (five services, the backend on Postgres and Qdrant).
 - **Files:** `docker-compose.yml`, `tests/deployment/test_compose.py`
 - **Done when:** `docker compose config -q` succeeds and the stack comes up healthy.
 

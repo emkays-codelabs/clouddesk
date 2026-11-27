@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 20:27 +0530_
+_Last updated: 2026-11-27 21:10 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -435,9 +435,9 @@ tags, summary) → `chunk_article` → embeddings → vector store + BM25 → `H
   `waiting_on_approval`; 409 when resuming a run that is not paused (both built).
 - Background workflows run in-process for v1. The production extension moves them to a worker.
 
-### 10.1 Environment variables (the list for your git-ignored `.env`; `.env.example` was removed on 2026-11-27)
+### 10.1 Environment variables (the list behind `.env.example` and your git-ignored `.env`)
 
-There is no committed template: create `.env` by hand from this list. `tests/unit/test_env_settings.py` keeps the list and `Settings` in step, so it names every `Settings` field and nothing the app does not read.
+Copy `.env.example` (placeholders only) to `.env` and add your own key. `tests/unit/test_env_settings.py` keeps this list, `.env.example` and `Settings` in step: each names every `Settings` field and nothing the app does not read, and the template holds no secret value.
 
 ```text
 DEMO_MODE, ENVIRONMENT, CORS_ORIGINS, JWT_SECRET, SUPABASE_JWT_SECRET
@@ -600,7 +600,7 @@ then `development` promotes to `testing`, then `main`. Remote:
 - **Docker:** `backend/Dockerfile` (multi-stage, `python:3.12-slim`, non-root `app`, `HEALTHCHECK` on
   `/health/live`) built with context = repo root. `frontend/Dockerfile` (`node:22-alpine`,
   `output: "standalone"`, non-root, `HEALTHCHECK` on `/api/health`). Pin base images before production.
-- **Compose:** `frontend → backend → redis, qdrant`, `depends_on: service_healthy`, named volumes,
+- **Compose:** `frontend → backend → postgres, redis, qdrant` (all real services; SQLite and the in-memory store are for the offline tests), `depends_on: service_healthy`, named volumes,
   `restart: unless-stopped`.
 - **Terraform:** roots `deployment/{aws,azure,gcp}` compose shared modules
   (networking, container-registry, secrets, compute, load-balancer, monitoring, redis). Environments are
@@ -666,7 +666,7 @@ the same principles: policy outside the model, approval gates, audit trail.
 8. **Small, idempotent interrupts.** No side effects before `interrupt()`.
 9. **Reducers append; never overwrite** `errors` and `completed_nodes`.
 10. **Money and accounts are approval-gated.** Refunds, setting resets, deletions, disputes never run unattended.
-11. **Never commit** `.env` (the only environment file; there is no `.env.example`), `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
+11. **Never commit** `.env` (your real values; `.env.example` is the committed placeholder template), `data/`, `*.db`, `terraform.tfvars`, `backend.hcl`, `tfplan`, or any real key.
 12. **Migrations are additive.** Never edit an applied migration; never drop data in a migration without an explicit decision.
 13. **One change, one commit, one test.** Each feature maps to a requirement ID in `PLAN.md` and a test.
 14. **Demo before production.** Every stage must still run with `make demo` at the end (the target arrives with P11-5; until then, the offline tests and the Docker bring-up are the check).

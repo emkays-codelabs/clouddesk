@@ -8,7 +8,7 @@ The workflow runs inside the backend process. Its state lives in `workflow_runs`
 
 ## B. Initial design
 
-Four containers from earlier phases, with `backend-data` mounted at `/app/data`.
+The containers from earlier phases (a Postgres container joined on 2026-11-27), with `backend-data` mounted at `/app/data` for the checkpoint file.
 
 ## C. Evolution
 

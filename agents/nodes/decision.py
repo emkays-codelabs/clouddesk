@@ -10,12 +10,13 @@ Must NOT: run an action that needs approval before a human approved it, invent a
 write SQL (the registry and the memory service do).
 """
 
+import time
 from datetime import UTC, datetime
 from typing import Any
 
 from agents.nodes.common import GraphDeps, NodeFn, traced_node, usage_dict
 from agents.rules import matching_escalation_rules
-from agents.specialists.common import ToolCallRecord, call_tool, ticket_text
+from agents.specialists.common import ToolCallRecord, call_tool, elapsed_ms, ticket_text
 from agents.specialists.escalation import EscalationAgent
 from agents.specialists.resolution import ResolutionAgent, reply_failed_validation, trusted_values
 from agents.state import ESCALATE_CONFIDENCE, MAX_GRAPH_STEPS, SupportState
@@ -98,9 +99,12 @@ def risk_check(deps: GraphDeps) -> NodeFn:
         plan = ResolutionPlan.model_validate(state["resolution_plan"])
         policy = bool(matching_escalation_rules(text, state.get("plan_name")))
 
+        # Timing only: a monotonic timer around the judgement, so the trace shows its real duration.
+        judged_at = time.perf_counter()
         decision, _status, usage = await EscalationAgent(deps.registry, deps.llm).decide(
             text, state.get("plan_name"), classification, severity
         )
+        judgement_ms = elapsed_ms(judged_at)
         reasons: list[str] = []
         if decision.escalation_required:
             reasons.append(decision.reason)
@@ -114,7 +118,7 @@ def risk_check(deps: GraphDeps) -> NodeFn:
             reasons.append("Confidence is below the escalation threshold.")
 
         risk = assess_risk(plan, severity, state.get("injection_flags", []), policy)
-        await tracer.llm(RISK, usage_dict(usage), 0, "escalation judgement")
+        await tracer.llm(RISK, usage_dict(usage), judgement_ms, "escalation judgement")
         update: dict[str, Any] = {
             "risk": risk.model_dump(mode="json"),
             "escalation": decision.model_dump(mode="json"),

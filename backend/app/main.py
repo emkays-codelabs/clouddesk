@@ -27,6 +27,7 @@ from app.middleware.request_id import HEADER as REQUEST_ID_HEADER
 from app.middleware.request_id import RequestIdMiddleware
 from app.services.knowledge_service import index_knowledge_base
 from app.services.seed_service import bootstrap_demo_data
+from rag.ingest import get_vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,11 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 async def _index_knowledge() -> None:
     """Index the articles so search works at once; in-memory store only, never fatal."""
-    if get_settings().vector_store != "memory":
-        return  # a persistent store is filled by `make ingest` or POST /knowledge/reindex
+    settings = get_settings()
     try:
+        # A persistent store keeps its vectors across restarts: fill it only when it is empty.
+        if settings.vector_store != "memory" and await get_vector_store(settings).count() > 0:
+            return
         result = await index_knowledge_base()
         logger.info(
             "knowledge indexed", extra={"articles": result.articles, "chunks": result.chunks}

@@ -63,3 +63,15 @@ flowchart LR
 ## M. Verification
 
 Run: Compose bring-up, smoke test, `terraform validate` x3, static delivery tests. Not run: `terraform plan`, `apply`, `checkov`, Trivy, any real cloud, Postgres, real Qdrant use.
+
+---
+
+## Real services in Docker, 2026-11-27
+
+At the owner's request ("all should run in docker locally, no fakes") the Compose stack now has five services: `postgres` (`postgres:16-alpine`, volume `postgres-data`, `pg_isready` health check), `qdrant`, `redis`, `backend` and `frontend`. The backend uses `postgresql+asyncpg` (added with `uv add asyncpg`), `VECTOR_STORE=qdrant` (the collection is filled at startup when empty) and the Euron embeddings chosen in `.env`. The offline test suite still uses SQLite, the in-memory store and the fake provider, because tests must run with no network.
+
+Verified on this stack: the app created its 17 tables and seeded the demo data on Postgres; the refund workflow paused for approval; a viewer got 403, a duplicate approve 409 and a reject after approve 409; exactly one refund executed; a full restart kept every row. `database/schema.sql`, `database/rls_policies.sql` and the migration applied cleanly to a fresh Postgres 16, and a non-superuser role was isolated correctly by the policies (cross-tenant read, update, delete and insert all blocked).
+
+Not true yet: row-level security is not enforced at runtime. The API does not set `app.tenant_id` per transaction, and enabling the policies today would stop the application's own queries, so the repository filter remains the real boundary.
+
+`.env.example` is a placeholders-only template and `.env` holds your real values; `tests/unit/test_env_settings.py` keeps both, `CLAUDE.md` section 10.1 and `Settings` in step.

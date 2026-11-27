@@ -51,7 +51,7 @@ Every model call logs provider, schema, attempts, tier, served tier, model and t
 
 ## L. Final infrastructure
 
-Same four containers; the backend now has outbound access to Euron when configured.
+Same containers as then (a Postgres container was added later); the backend now has outbound access to Euron when configured.
 
 ## M. Verification
 

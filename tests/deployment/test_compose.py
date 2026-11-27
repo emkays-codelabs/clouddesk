@@ -19,11 +19,11 @@ def test_the_project_is_named_clouddesk():
     assert COMPOSE["name"] == "clouddesk"
 
 
-def test_the_four_services_exist():
-    assert set(SERVICES) == {"frontend", "backend", "redis", "qdrant"}
+def test_the_five_services_exist():
+    assert set(SERVICES) == {"frontend", "backend", "postgres", "redis", "qdrant"}
 
 
-@pytest.mark.parametrize("name", ["frontend", "backend", "redis", "qdrant"])
+@pytest.mark.parametrize("name", ["frontend", "backend", "postgres", "redis", "qdrant"])
 def test_every_service_restarts_and_has_a_healthcheck(name):
     assert SERVICES[name]["restart"] == "unless-stopped"
     assert SERVICES[name]["healthcheck"]["test"]
@@ -31,7 +31,7 @@ def test_every_service_restarts_and_has_a_healthcheck(name):
 
 @pytest.mark.parametrize(
     ("service", "needs"),
-    [("frontend", {"backend"}), ("backend", {"redis", "qdrant"})],
+    [("frontend", {"backend"}), ("backend", {"postgres", "redis", "qdrant"})],
 )
 def test_dependencies_wait_for_healthy(service, needs):
     depends = SERVICES[service]["depends_on"]
@@ -46,6 +46,7 @@ def test_the_healthchecks_probe_the_documented_endpoints():
     assert "/health/live" in flat["backend"]
     assert "/api/health" in flat["frontend"]
     assert "redis-cli ping" in flat["redis"]
+    assert "pg_isready" in flat["postgres"]
     assert "/dev/tcp" in flat["qdrant"]
 
 
@@ -58,7 +59,7 @@ def test_named_volumes_are_declared_and_mounted():
         if not v.startswith((".", "/"))
     }
 
-    assert declared == {"backend-data", "redis-data", "qdrant-storage"}
+    assert declared == {"backend-data", "postgres-data", "redis-data", "qdrant-storage"}
     assert mounted == declared
 
 
@@ -81,17 +82,35 @@ def test_the_browser_facing_api_url_is_the_host_port():
     assert args["NEXT_PUBLIC_API_URL"] == "http://localhost:${BACKEND_PORT:-8000}"
 
 
-def test_the_backend_runs_the_offline_demo_defaults():
+    """The Docker stack uses Postgres, Redis and Qdrant; SQLite and fakes are for offline tests."""
+    """The Docker stack uses Postgres, Redis and Qdrant; SQLite and fakes are for offline tests."""
     env = SERVICES["backend"]["environment"]
 
     assert env["DEMO_MODE"] == "true"
-    assert env["LLM_PROVIDER"] == "${LLM_PROVIDER:-fake}"  # fake unless the host asks otherwise
-    assert env["VECTOR_STORE"] == "memory"
+    assert env["LLM_PROVIDER"] == "${LLM_PROVIDER:-fake}"  # the .env chooses the model provider
+    assert env["VECTOR_STORE"] == "${VECTOR_STORE:-qdrant}"
+    assert env["QDRANT_URL"] == "http://qdrant:6333"
     assert env["USE_FAKE_REDIS"] == "false"
     assert env["REDIS_URL"] == "redis://redis:6379/0"
     assert env["CORS_ORIGINS"] == "http://localhost:${FRONTEND_PORT:-3000}"
-    assert env["DATABASE_URL"].endswith("//app/data/support.db")
+    assert env["DATABASE_URL"].startswith("postgresql+asyncpg://clouddesk:")
+    assert env["DATABASE_URL"].endswith("@postgres:5432/clouddesk")
     assert env["CHECKPOINT_DB_PATH"].startswith("/app/data/")
+
+
+def test_the_database_password_is_substituted_with_a_local_only_default():
+    env = SERVICES["postgres"]["environment"]
+
+    assert env["POSTGRES_PASSWORD"] == "${POSTGRES_PASSWORD:-clouddesk-local}"
+    assert env["POSTGRES_DB"] == "clouddesk"
+    assert (
+        "${POSTGRES_PASSWORD:-clouddesk-local}"
+        in SERVICES["backend"]["environment"]["DATABASE_URL"]
+    )
+
+
+def test_postgres_keeps_its_data_on_a_named_volume():
+    assert "postgres-data:/var/lib/postgresql/data" in SERVICES["postgres"]["volumes"]
 
 
 # Passed from the host `.env` or environment by substitution. A machine without a key still comes up

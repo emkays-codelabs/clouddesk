@@ -1,7 +1,8 @@
-# CloudDesk local stack: frontend -> backend -> redis, qdrant.
+# CloudDesk local stack: frontend -> backend -> postgres, redis, qdrant. All real services.
 #   docker compose up --build
 # Image tags are pinned by tag only: pin by digest before production.
-# Built and brought up once on 2026-11-27 (all four services healthy, real Redis); see MEMORY.md.
+# The database is Postgres, the vector store is Qdrant and embeddings come from .env (euron); SQLite and
+# the in-memory store remain only for the offline test suite.
 # Host ports: BACKEND_PORT (default 8000) and FRONTEND_PORT (default 3000) pick the host side of each
 # mapping when a port is busy, e.g. BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build.
 # They are compose-only variables: Settings does not read them. The frontend image inlines the API
@@ -10,6 +11,23 @@
 name: clouddesk
 
 services:
+  postgres:
+    image: postgres:16-alpine # pin by digest before production
+    environment:
+      POSTGRES_DB: clouddesk
+      POSTGRES_USER: clouddesk
+      # A local-only default; set POSTGRES_PASSWORD in .env for anything shared.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clouddesk-local}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clouddesk -d clouddesk"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine # pin by digest before production
     command: ["redis-server", "--appendonly", "yes"]
@@ -49,7 +67,7 @@ services:
       ENVIRONMENT: development
       CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-3000}
       JWT_SECRET: ${JWT_SECRET:-change-me-demo-only}
-      DATABASE_URL: sqlite+aiosqlite:////app/data/support.db
+      DATABASE_URL: postgresql+asyncpg://clouddesk:${POSTGRES_PASSWORD:-clouddesk-local}@postgres:5432/clouddesk
       CHECKPOINT_DB_PATH: /app/data/checkpoints.db
       REDIS_URL: redis://redis:6379/0
       USE_FAKE_REDIS: "false"
@@ -69,14 +87,17 @@ services:
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
       EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
       EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-384}
-      # Qdrant is running for later; the default store stays in memory so the demo needs nothing else.
-      VECTOR_STORE: memory
+      # Vectors live in Qdrant. Embeddings come from the project's .env (EMBEDDING_PROVIDER=euron);
+      # changing the embedding model needs POST /knowledge/reindex because it recreates the collection.
+      VECTOR_STORE: ${VECTOR_STORE:-qdrant}
       QDRANT_URL: http://qdrant:6333
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - backend-data:/app/data
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
       qdrant:
@@ -116,5 +137,6 @@ services:
 
 volumes:
   backend-data:
+  postgres-data:
   redis-data:
   qdrant-storage:

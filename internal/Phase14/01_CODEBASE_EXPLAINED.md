@@ -22,7 +22,7 @@ A demo that "seems fine" is not evidence. The thresholds put numbers on classifi
 | `tests/evaluation/conftest.py` | A private database per test. |
 | `datasets/eval_cases.json` | 16 cases: 13 demo tickets, 3 text-only. |
 | `backend/Dockerfile`, `frontend/Dockerfile` | Images, non-root, health-checked. |
-| `docker-compose.yml` | The four-service stack. |
+| `docker-compose.yml` | The five-service stack: frontend, backend, postgres, redis, qdrant. |
 | `deployment/aws/main.tf`, `deployment/azure/main.tf`, `deployment/gcp/main.tf` | Per-cloud infrastructure. |
 | `deployment/environments/dev.tfvars` | Dev settings; staging and prod sit beside it. |
 | `deployment/scripts/deploy.sh` | Plan and apply; refuses `--auto-approve` outside dev. |
