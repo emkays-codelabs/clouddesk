@@ -31,3 +31,8 @@ class CustomerMemoryRepository(ScopedRepository[CustomerMemory]):
 
     async def delete_for_customer(self, customer_id: str) -> int:
         return await self._delete_where(CustomerMemory.customer_id == customer_id)
+
+    async def ids_for_customer(self, customer_id: str) -> list[str]:
+        """Every row id for the customer, unbounded: erasure must not stop at the recall limit."""
+        stmt = self._select(CustomerMemory.customer_id == customer_id)
+        return [r.id for r in (await self.session.execute(stmt)).scalars().all()]

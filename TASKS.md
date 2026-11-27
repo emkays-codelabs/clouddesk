@@ -1,6 +1,6 @@
 # CloudDesk AI — Task tracker
 
-_Last updated: 2026-11-27 09:41 +0530_
+_Last updated: 2026-11-27 10:37 +0530_
 
 > Concise checklist for GitHub-visible progress.
 > Full plan and phase exit criteria: `PLAN.md` · Status and decisions: `MEMORY.md` · Spec: `CLAUDE.md`
@@ -563,9 +563,9 @@ The longest dependency chain is 16 tasks long.
 
 | Task | Covers | Branch | Status |
 |------|--------|--------|--------|
-| P8-1 · Short-term Redis facade | F11 | `feature/memory-short-term` | Pending ❌ |
-| P8-2 · Long-term customer memory | F4, F11 | `feature/memory-long-term` | Pending ❌ |
-| P8-3 · Recall and record service | F4, F11, N7 | `feature/memory-service` | Pending ❌ |
+| P8-1 · Short-term Redis facade | F11 | `feature/memory-short-term` | Completed ✅ |
+| P8-2 · Long-term customer memory | F4, F11 | `feature/memory-long-term` | Completed ✅ |
+| P8-3 · Recall and record service | F4, F11, N7 | `feature/memory-service` | Completed ✅ |
 
 #### Task definitions
 
@@ -947,11 +947,11 @@ Phases 4, 5, 6, and 7 start together once Phase 2 has merged. Phase 4 also waits
 | 5 | Knowledge pipeline | 4 | 4 |
 | 6 | Tools and mocks | 5 | 5 |
 | 7 | Rules and guardrails | 4 | 4 |
-| 8 | Memory | 3 | 0 |
+| 8 | Memory | 3 | 3 |
 | 9 | Specialist agents | 8 | 0 |
 | 10 | Workflow graph and trace | 7 | 0 |
 | 11 | Approval and escalation | 6 | 0 |
 | 12 | Console shell | 4 | 1 |
 | 13 | Ticket workflow screen | 4 | 0 |
 | 14 | Evaluation and delivery | 5 | 2 |
-| **Total** | | **82** | **48** |
+| **Total** | | **82** | **51** |

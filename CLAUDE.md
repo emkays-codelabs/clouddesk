@@ -1,6 +1,6 @@
 # CLAUDE.md – CloudDesk AI, Project 1: Autonomous Customer Support & Resolution Platform
 
-_Last updated: 2026-11-27 09:41 +0530_
+_Last updated: 2026-11-27 10:37 +0530_
 
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code. The upstream product and architecture documents it is derived from are in `docs/` (§1.1).
 
@@ -673,7 +673,7 @@ optional and is not a core exit criterion.
 | 5 | Knowledge pipeline | validated locally |
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
-| 8 | Memory | not started |
+| 8 | Memory | validated locally |
 | 9 | Specialist agents | not started |
 | 10 | Workflow graph and trace | not started |
 | 11 | Approval and escalation | not started |

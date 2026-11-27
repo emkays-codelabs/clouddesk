@@ -1,6 +1,6 @@
 # CloudDesk AI
 
-_Last updated: 2026-11-27 09:41 +0530_
+_Last updated: 2026-11-27 10:37 +0530_
 
 > **Intelligent Resolution. Human-Controlled Decisions.**
 >
@@ -8,7 +8,7 @@ _Last updated: 2026-11-27 09:41 +0530_
 > a team of AI agents investigates it and proposes a resolution, and a human approves anything that
 > costs money or touches an account.
 
-**Status**: In development. Phases 1 to 7 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails), all validated locally, with 48 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
+**Status**: In development. Phases 1 to 8 of 14 are complete (runtime skeleton; persistence and demo data; identity and request guards; support API; knowledge pipeline; tools and mocks; rules and guardrails; memory), all validated locally, with 51 of 82 tasks done. Phases 12 and 14 are in progress. **Version**: 0.1.0
 
 **Name note**: the product is called CloudDesk AI. The repository, the Python package and the code are still
 named `clouddesk`.
@@ -133,7 +133,7 @@ API key.
 | 5 | Knowledge pipeline | validated locally |
 | 6 | Tools and mocks | validated locally |
 | 7 | Rules and guardrails | validated locally |
-| 8 | Memory | not started |
+| 8 | Memory | validated locally |
 | 9 | Specialist agents | not started |
 | 10 | Workflow graph and trace | not started |
 | 11 | Approval and escalation | not started |
@@ -190,7 +190,15 @@ With Docker running, from the repository root:
 docker compose up --build
 ```
 
-The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store). The file is checked statically; it has not been brought up yet.
+The stack is `frontend` (:3000) to `backend` (:8000) to `redis` and `qdrant`, with named volumes. It runs the offline demo defaults (fake LLM, in-memory vector store). The file is checked statically, and on 2026-11-27 the stack was also built and brought up once (see `MEMORY.md`).
+
+If a host port is busy, move it. `BACKEND_PORT` (default 8000) and `FRONTEND_PORT` (default 3000) set the host side of each mapping, the browser-facing API URL and the allowed CORS origin:
+
+```bash
+BACKEND_PORT=18000 FRONTEND_PORT=13000 docker compose up --build
+```
+
+These two are compose-only variables, so they are not in `.env.example` and `Settings` does not read them. The frontend image inlines the API port at build time, so rebuild it after changing `BACKEND_PORT`.
 
 [↑ Back to top](#clouddesk-ai)
 
